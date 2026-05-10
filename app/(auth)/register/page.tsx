@@ -59,24 +59,9 @@ export default function RegisterPage() {
         toast.error('Registration failed, please try again.');
         return;
       }
-
-      // 2. Create the user profile in public.users table
-      // Note: We need to make sure RLS allows INSERT for authenticated users matching their ID.
-      // If a trigger is setup, this step might be redundant, but we do it manually for explicit control.
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id,
-          email: email,
-          full_name: fullName,
-          role: role,
-        });
-        
-      if (profileError) {
-        // If it violates RLS, it means we must use a Trigger, or we need to add INSERT policy
-        console.error('Error creating profile:', profileError);
-        // We do not block the UI if email signup requires confirmation and session is null
-      }
+      
+      // Auto-profile creation is now handled securely by Supabase Postgres triggers.
+      // (See /supabase/user_trigger.sql)
 
       toast.success('Registration successful! Redirecting...');
       

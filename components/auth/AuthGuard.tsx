@@ -11,16 +11,23 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !profile) {
-      if (pathname !== '/login' && pathname !== '/register' && !pathname.startsWith('/onboarding')) {
+      if (pathname === '/') {
+        const hasOnboarded = typeof window !== 'undefined' ? localStorage.getItem('gema_has_onboarded') : null;
+        if (!hasOnboarded) {
+          router.replace('/onboarding');
+        } else {
+          router.replace('/login');
+        }
+      } else if (pathname !== '/login' && pathname !== '/register' && !pathname.startsWith('/onboarding') && !pathname.startsWith('/register/role')) {
         router.replace('/login');
       }
     } else if (!isLoading && profile) {
-      // If user is authenticated but trying to access auth pages, redirect to home
-      if (pathname === '/login' || pathname === '/register') {
+      // If user is authenticated but trying to access auth pages or root, redirect to home
+      if (pathname === '/login' || pathname === '/register' || pathname === '/' || pathname.startsWith('/onboarding') || pathname.startsWith('/register/role')) {
         if (profile.role === 'customer') router.replace('/customer/home');
         else if (profile.role === 'vendor') router.replace('/vendor/dashboard');
         else if (profile.role === 'admin') router.replace('/admin/dashboard');
-        else router.replace('/'); // Needs role selection?
+        else router.replace('/register/role'); // Needs role selection
       }
     }
   }, [profile, isLoading, pathname, router]);
