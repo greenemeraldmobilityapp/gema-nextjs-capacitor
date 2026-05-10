@@ -1,28 +1,24 @@
-import type {Metadata} from 'next';
-import './globals.css';
-import { Geist } from "next/font/google";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 import { cn } from "@/lib/utils";
-import { AuthProvider } from "@/components/providers/auth-provider";
-import { Toaster } from "@/components/ui/sonner";
-import { AuthGuard } from "@/components/auth/AuthGuard";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: 'GEMA App',
-  description: 'Green Emerald Mobility Apps',
+  title: "GEMA",
+  description: "Green Emerald Mobility Apps",
 };
 
-export default function RootLayout({children}: {children: React.ReactNode}) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body suppressHydrationWarning>
-        <AuthProvider>
-          <AuthGuard>
-            {children}
-          </AuthGuard>
-          <Toaster />
-        </AuthProvider>
+    <html lang="en" className={cn("font-sans", inter.variable)}>
+      <body className={cn("min-h-screen bg-background font-sans antialiased", inter.variable)}>
+        {children}
       </body>
     </html>
   );
