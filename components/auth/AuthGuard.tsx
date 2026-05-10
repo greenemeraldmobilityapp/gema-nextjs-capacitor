@@ -1,0 +1,37 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useAuthStore } from '@/store/auth';
+
+export function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { profile, isLoading } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (!isLoading && !profile) {
+      if (pathname !== '/login' && pathname !== '/register' && !pathname.startsWith('/onboarding')) {
+        router.replace('/login');
+      }
+    } else if (!isLoading && profile) {
+      // If user is authenticated but trying to access auth pages, redirect to home
+      if (pathname === '/login' || pathname === '/register') {
+        if (profile.role === 'customer') router.replace('/customer/home');
+        else if (profile.role === 'vendor') router.replace('/vendor/dashboard');
+        else if (profile.role === 'admin') router.replace('/admin/dashboard');
+        else router.replace('/'); // Needs role selection?
+      }
+    }
+  }, [profile, isLoading, pathname, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
