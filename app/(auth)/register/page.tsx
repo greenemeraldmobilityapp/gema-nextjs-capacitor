@@ -1,162 +1,128 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { Mail, Lock, ArrowLeft, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
 
 export default function RegisterPage() {
-  const router = useRouter();
+  return (
+    <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+      <RegisterContent />
+    </Suspense>
+  );
+}
+
+function RegisterContent() {
   const searchParams = useSearchParams();
-  const role = searchParams.get('role') || 'customer'; // Default fallback or force select
-  
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const role = searchParams.get('role') || 'customer';
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+  });
 
-  useEffect(() => {
-    if (!searchParams.get('role')) {
-      // In a real flow, redirect to /register/role. For now let's just use customer as default if accessing directly
-      // router.replace('/register/role');
-    }
-  }, [searchParams, router]);
-
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!fullName || !email || !password) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      // 1. Sign up with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            role: role,
-          }
-        }
-      });
-
-      if (authError) {
-        toast.error(authError.message);
-        return;
-      }
-      
-      if (!authData.user) {
-        toast.error('Registration failed, please try again.');
-        return;
-      }
-      
-      // Auto-profile creation is now handled securely by Supabase Postgres triggers.
-      // (See /supabase/user_trigger.sql)
-
-      toast.success('Registration successful! Redirecting...');
-      
-      // If auto-login happens, AuthGuard handles redirect.
-      // If email confirmation is required, session might be null.
-      if (!authData.session) {
-        toast.info('Please check your email to verify your account.');
-        router.push('/login');
-      }
-
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      toast.error(error.message || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
+    // TODO: Connect to Supabase Auth
+    console.log('Registering...', { role, ...formData });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-      <Card className="w-full max-w-sm rounded-[24px] shadow-sm border-gray-100">
-        <CardHeader className="space-y-1 pt-8 pb-6">
-          <CardTitle className="text-2xl font-bold text-center text-gray-900">Create Account</CardTitle>
-          <CardDescription className="text-center text-gray-500">
-            Join GEMA as a {role.charAt(0).toUpperCase() + role.slice(1)}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
+    <div className="flex flex-col min-h-screen bg-gray-50 pb-safe">
+      <div className="p-4 pt-8 sticky top-0 z-10 bg-gray-50">
+        <Link href="/register/role" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm text-gray-700 hover:bg-gray-100 transition-colors">
+          <ArrowLeft size={20} />
+        </Link>
+      </div>
+
+      <div className="flex-1 p-6 flex flex-col">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Buat Akun {role === 'vendor' ? 'Mitra' : 'Pelanggan'}</h1>
+          <p className="text-gray-500">Lengkapi data Anda untuk mendaftar di GEMA.</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5 flex-1">
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-gray-700">Nama Lengkap</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <UserIcon size={18} className="text-gray-400" />
+              </div>
               <Input
-                id="fullName"
-                type="text"
-                placeholder="John Doe"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
                 required
-                className="h-12 rounded-xl"
-                disabled={loading}
+                value={formData.fullName}
+                onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                placeholder="Masukkan nama lengkap"
+                className="pl-10 h-12 bg-white border-transparent focus:border-emerald-500 rounded-xl shadow-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="me@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="h-12 rounded-xl"
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="h-12 rounded-xl"
-                disabled={loading}
-              />
-              <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters</p>
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full h-12 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-medium text-base mt-4" 
-              disabled={loading}
-            >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating account...
-                </span>
-              ) : (
-                'Register'
-              )}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4 pb-8">
-          <div className="text-sm text-center text-gray-500 w-full mt-2">
-            Already have an account?{' '}
-            <Link href="/login" className="font-semibold text-emerald-600 hover:text-emerald-500">
-              Sign in here
-            </Link>
           </div>
-        </CardFooter>
-      </Card>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-gray-700">Email</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <Mail size={18} className="text-gray-400" />
+              </div>
+              <Input
+                required
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="nama@email.com"
+                className="pl-10 h-12 bg-white border-transparent focus:border-emerald-500 rounded-xl shadow-sm"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-gray-700">Kata Sandi</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <Lock size={18} className="text-gray-400" />
+              </div>
+              <Input
+                required
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                placeholder="Minimal 8 karakter"
+                className="pl-10 h-12 bg-white border-transparent focus:border-emerald-500 rounded-xl shadow-sm"
+              />
+            </div>
+          </div>
+
+          <div className="pt-4">
+            <Button type="submit" className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm">
+              Daftar Sekarang
+            </Button>
+          </div>
+          
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gray-50 text-gray-500">Atau daftar dengan</span>
+            </div>
+          </div>
+
+          <Button type="button" variant="outline" className="w-full h-14 rounded-xl bg-white hover:bg-gray-50 text-gray-700 font-medium border-gray-200 shadow-sm flex items-center justify-center gap-2">
+            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)"><path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/><path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/><path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/><path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/></g></svg>
+            Lanjutkan dengan Google
+          </Button>
+        </form>
+
+        <div className="mt-8 text-center pb-6">
+          <span className="text-sm text-gray-500">Sudah punya akun? </span>
+          <Link href="/login" className="text-sm font-bold text-emerald-600 hover:underline">
+            Masuk di sini
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
