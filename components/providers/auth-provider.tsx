@@ -5,12 +5,17 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { setProfile, setLoading } = useAuthStore();
+  const { profile, setProfile, setLoading } = useAuthStore();
 
   useEffect(() => {
     let mounted = true;
 
     async function fetchProfile(userId: string, email: string) {
+      if (profile?.id === userId) {
+        if (mounted) setLoading(false);
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from('users')
@@ -19,7 +24,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         if (error) {
-          console.error('Error fetching profile:', error);
+          // PGRST116 means no rows returned (profile not found)
+          if (error.code === 'PGRST116') {
+            console.warn('Profile not found for user. Needs role selection fallback.');
+          } else {
+            console.error('Error fetching profile:', error);
+          }
           if (mounted) setProfile(null);
           return;
         }
@@ -58,7 +68,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(true);
       }
       if (session) {
-        fetchProfile(session.user.id, session.user.email || '');
+        // Only re-fetch on SIGNED_IN or USER_UPDATED to avoid unnecessary requests
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
+          fetchProfile(session.user.id, session.user.email || '');
+        } else {
+           if (mounted) setLoading(false);
+        }
       } else {
         if (mounted) {
           setProfile(null);
@@ -71,7 +86,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [setProfile, setLoading]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only on mount. UseAuthStore methods are stable.
 
   return <>{children}</>;
 }
+
