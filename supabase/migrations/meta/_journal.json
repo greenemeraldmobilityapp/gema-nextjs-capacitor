@@ -8,6 +8,13 @@
       "when": 1778433095877,
       "tag": "0000_ancient_valkyrie",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778449445932,
+      "tag": "0001_legal_sheva_callister",
+      "breakpoints": true
     }
   ]
 }

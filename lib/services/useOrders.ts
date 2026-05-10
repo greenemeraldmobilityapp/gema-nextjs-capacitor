@@ -1,0 +1,116 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
+
+const supabase = createClient();
+
+export type Order = {
+  id: string;
+  customer_id: string;
+  vendor_id: string;
+  service_id: string;
+  service_category: string;
+  service_name: string;
+  scheduled_date: string;
+  scheduled_time: string | null;
+  service_address: string;
+  notes: string | null;
+  base_amount: number;
+  platform_fee: number;
+  vendor_payout: number;
+  total_amount: number;
+  payment_status: 'unpaid' | 'escrow' | 'released' | 'refunded';
+  order_status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  completed_at: string | null;
+  cancelled_at: string | null;
+  customer?: { full_name: string; phone: string | null } | null;
+};
+
+export function useCustomerOrders(customerId: string | undefined) {
+  return useQuery({
+    queryKey: ['customer-orders', customerId],
+    queryFn: async () => {
+      if (!customerId) return [];
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('customer_id', customerId)
+        .order('scheduled_date', { ascending: false });
+
+      if (error) throw error;
+      return data as Order[];
+    },
+    enabled: !!customerId,
+  });
+}
+
+export function useVendorOrders(vendorId: string | undefined) {
+  return useQuery({
+    queryKey: ['vendor-orders', vendorId],
+    queryFn: async () => {
+      if (!vendorId) return [];
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, customer:customer_id(full_name)')
+        .eq('vendor_id', vendorId)
+        .order('scheduled_date', { ascending: false });
+
+      if (error) throw error;
+      return data as Order[];
+    },
+    enabled: !!vendorId,
+  });
+}
+
+export function useOrder(orderId: string | undefined) {
+  return useQuery({
+    queryKey: ['order', orderId],
+    queryFn: async () => {
+      if (!orderId) return null;
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, customer:customer_id(full_name, phone)')
+        .eq('id', orderId)
+        .single();
+
+      if (error) throw error;
+      return data as Order;
+    },
+    enabled: !!orderId,
+  });
+}
+
+export function useUpdateOrderStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      orderId,
+      order_status,
+      completed_at,
+      cancelled_at,
+      payment_status,
+    }: {
+      orderId: string;
+      order_status: Order['order_status'];
+      completed_at?: string | null;
+      cancelled_at?: string | null;
+      payment_status?: Order['payment_status'];
+    }) => {
+      const updates: Record<string, unknown> = { order_status };
+      if (completed_at !== undefined) updates.completed_at = completed_at;
+      if (cancelled_at !== undefined) updates.cancelled_at = cancelled_at;
+      if (payment_status !== undefined) updates.payment_status = payment_status;
+
+      const { error } = await supabase
+        .from('orders')
+        .update(updates)
+        .eq('id', orderId);
+
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['order', variables.orderId] });
+      queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
+    },
+  });
+}

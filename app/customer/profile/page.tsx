@@ -1,14 +1,15 @@
 'use client';
 
-import { User, Settings, CreditCard, HelpCircle, LogOut } from 'lucide-react';
+import Link from 'next/link';
+import { User, Settings, CreditCard, HelpCircle, LogOut, Wallet } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function ProfilePage() {
   const menuItems = [
-    { icon: User, label: 'Edit Profil' },
-    { icon: CreditCard, label: 'Metode Pembayaran' },
-    { icon: Settings, label: 'Pengaturan' },
-    { icon: HelpCircle, label: 'Bantuan & Dukungan' },
+    { icon: User, label: 'Edit Profil', href: '/customer/profile/edit' },
+    { icon: Wallet, label: 'Dompet Saya', href: '/wallet' },
+    { icon: Settings, label: 'Pengaturan', href: '/customer/settings/notifications' },
+    { icon: HelpCircle, label: 'Bantuan & Dukungan', href: '/customer/help' },
   ];
 
   return (
@@ -27,9 +28,10 @@ export default function ProfilePage() {
         <Card className="rounded-xl border-none shadow-sm overflow-hidden">
           <CardContent className="p-0">
             {menuItems.map((item, index) => (
-              <div 
-                key={index} 
-                className={`flex items-center gap-4 p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+              <Link 
+                key={index}
+                href={item.href}
+                className={`flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors ${
                   index !== menuItems.length - 1 ? 'border-b border-gray-100' : ''
                 }`}
               >
@@ -37,7 +39,7 @@ export default function ProfilePage() {
                   <item.icon size={20} />
                 </div>
                 <span className="font-medium text-gray-700 flex-1">{item.label}</span>
-              </div>
+              </Link>
             ))}
           </CardContent>
         </Card>

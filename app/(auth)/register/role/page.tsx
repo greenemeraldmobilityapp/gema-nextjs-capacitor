@@ -21,20 +21,22 @@ export default function RoleSelectionPage() {
         </div>
 
         <div className="grid gap-4">
-          <Card 
-            className="cursor-pointer hover:border-emerald-500 transition-colors border-2 rounded-[24px]"
-            onClick={() => handleSelectRole('customer')}
-          >
-            <CardHeader className="flex flex-row items-center gap-4 py-6">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                <UserCircle size={28} />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Customer</CardTitle>
-                <CardDescription>I want to find and book services</CardDescription>
-              </div>
-            </CardHeader>
-          </Card>
+<Card 
+  className="cursor-pointer hover:border-emerald-500 transition-colors border-2 rounded-[24px]"
+  onClick={() => handleSelectRole('customer')}
+>
+  <CardHeader className="pb-4">
+    <div className="flex flex-row items-center gap-4">
+      <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+        <UserCircle size={28} />
+      </div>
+      <div>
+        <CardTitle className="text-xl">Customer</CardTitle>
+        <CardDescription>I want to find and book services</CardDescription>
+      </div>
+    </div>
+  </CardHeader>
+</Card>
 
           <Card 
             className="cursor-pointer hover:border-emerald-500 transition-colors border-2 rounded-[24px]"

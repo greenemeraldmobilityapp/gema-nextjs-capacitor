@@ -1,0 +1,55 @@
+import { useQuery } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
+
+const supabase = createClient();
+
+export type Wallet = {
+  id: string;
+  user_id: string;
+  balance: number;
+};
+
+export type WalletTransaction = {
+  id: string;
+  wallet_id: string;
+  type: string;
+  amount: number;
+  status: string;
+  created_at: string;
+};
+
+export function useWallet(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['wallet', userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) throw error;
+      return data as Wallet;
+    },
+    enabled: !!userId,
+  });
+}
+
+export function useWalletTransactions(walletId: string | undefined) {
+  return useQuery({
+    queryKey: ['wallet-transactions', walletId],
+    queryFn: async () => {
+      if (!walletId) return [];
+      const { data, error } = await supabase
+        .from('wallet_transactions')
+        .select('*')
+        .eq('wallet_id', walletId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as WalletTransaction[];
+    },
+    enabled: !!walletId,
+  });
+}

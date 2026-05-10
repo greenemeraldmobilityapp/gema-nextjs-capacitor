@@ -2,13 +2,14 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Wallet, CreditCard, Landmark, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useSearchParams } from 'next/navigation';
+import { ArrowLeft, Wallet, CreditCard, Landmark, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useOrder } from '@/lib/services/useOrders';
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-gray-50"><Loader2 size={24} className="animate-spin text-gray-400" /></div>}>
       <PaymentContent />
     </Suspense>
   );
@@ -16,10 +17,8 @@ export default function PaymentPage() {
 
 function PaymentContent() {
   const searchParams = useSearchParams();
-  const amount = searchParams.get('amount') || '155000';
-  const formatRupiah = (angka: string) => {
-    return 'Rp ' + Number(angka).toLocaleString('id-ID');
-  };
+  const orderId = searchParams.get('order_id') || '';
+  const { data: order, isLoading, error } = useOrder(orderId);
 
   const [selectedMethod, setSelectedMethod] = useState<string>('qris');
 
@@ -30,10 +29,28 @@ function PaymentContent() {
     { id: 'va_mandiri', title: 'Mandiri Virtual Account', icon: Landmark, subtitle: 'Otomatis terkonfirmasi' },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <Loader2 size={24} className="animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-red-400">
+        <AlertCircle size={48} className="mb-3 opacity-50" />
+        <p className="font-medium">Pesanan tidak ditemukan</p>
+        <Link href="/customer/orders" className="mt-2 text-sm text-emerald-600 font-medium">Kembali ke pesanan</Link>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-safe">
       <div className="bg-emerald-600 text-white p-4 pt-8 sticky top-0 z-10 shadow-sm flex items-center gap-3 shrink-0">
-        <Link href="/customer/booking" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
+        <Link href={`/customer/booking?service_id=${order.service_id}`} className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
           <ArrowLeft size={20} />
         </Link>
         <span className="font-bold text-lg">Pilih Pembayaran</span>
@@ -41,8 +58,9 @@ function PaymentContent() {
 
       <div className="p-4 space-y-6 flex-1">
         <div className="bg-white p-6 rounded-2xl shadow-sm text-center border border-emerald-100">
-          <p className="text-sm text-gray-500 mb-1">Total yang harus dibayar</p>
-          <h2 className="text-3xl font-bold text-emerald-600">{formatRupiah(amount)}</h2>
+          <p className="text-sm text-gray-500 mb-1">{order.service_name}</p>
+          <p className="text-xs text-gray-400 mb-3">{order.service_address}</p>
+          <h2 className="text-3xl font-bold text-emerald-600">Rp {order.total_amount.toLocaleString()}</h2>
         </div>
 
         <div className="space-y-3">
@@ -80,7 +98,7 @@ function PaymentContent() {
       </div>
 
       <div className="p-4 bg-white border-t shrink-0">
-        <Link href="/customer/payment/success" className="block w-full">
+        <Link href={`/customer/payment/success?order_id=${order.id}`} className="block w-full">
           <Button className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm">
             Bayar Sekarang
           </Button>

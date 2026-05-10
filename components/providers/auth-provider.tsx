@@ -1,8 +1,27 @@
 'use client';
 
 import { useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
+const supabase = createClient();
 import { useAuthStore } from '@/store/auth';
+
+async function ensureProfileExists(userId: string, email: string, userMetadata?: { full_name?: string; name?: string; role?: string }) {
+  const fullName = userMetadata?.full_name || userMetadata?.name || email.split('@')[0] || 'User';
+  const role = userMetadata?.role || 'customer';
+
+  const { error } = await supabase.from('users').insert({
+    id: userId,
+    full_name: fullName,
+    email: email,
+    role: role as 'customer' | 'vendor',
+  });
+
+  if (error && !error.message?.includes('duplicate')) {
+    console.error('[AuthProvider] Failed to create profile:', error);
+    return false;
+  }
+  return true;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { profile, setProfile, setLoading } = useAuthStore();
@@ -10,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    async function fetchProfile(userId: string, email: string) {
+    async function fetchProfile(userId: string, email: string, userMetadata?: Record<string, unknown>) {
       if (profile?.id === userId) {
         if (mounted) setLoading(false);
         return;
@@ -24,9 +43,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         if (error) {
-          // PGRST116 means no rows returned (profile not found)
           if (error.code === 'PGRST116') {
-            console.warn('Profile not found for user. Needs role selection fallback.');
+            // Profile belum ada. Coba insert manual dulu.
+            const inserted = await ensureProfileExists(
+              userId,
+              email,
+              userMetadata as { full_name?: string; name?: string; role?: string } | undefined,
+            );
+
+            if (inserted) {
+              // Coba fetch lagi setelah insert
+              const { data: retryData, error: retryError } = await supabase
+                .from('users')
+                .select('id, email, full_name, role')
+                .eq('id', userId)
+                .single();
+
+              if (!retryError && retryData && mounted) {
+                setProfile({
+                  id: retryData.id,
+                  email: retryData.email,
+                  full_name: retryData.full_name,
+                  role: retryData.role as 'customer' | 'vendor' | 'admin',
+                });
+                if (mounted) setLoading(false);
+                return;
+              }
+            }
           } else {
             console.error('Error fetching profile:', error);
           }
@@ -58,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false);
         }
       } else {
-        fetchProfile(session.user.id, session.user.email || '');
+        fetchProfile(session.user.id, session.user.email || '', session.user.user_metadata);
       }
     });
 
@@ -68,9 +111,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(true);
       }
       if (session) {
-        // Only re-fetch on SIGNED_IN or USER_UPDATED to avoid unnecessary requests
         if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
-          fetchProfile(session.user.id, session.user.email || '');
+          fetchProfile(session.user.id, session.user.email || '', session.user.user_metadata);
         } else {
            if (mounted) setLoading(false);
         }
@@ -87,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only on mount. UseAuthStore methods are stable.
+  }, []);
 
   return <>{children}</>;
 }

@@ -1,10 +1,33 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
-import { CheckCircle, ArrowRight } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { CheckCircle, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useOrder } from '@/lib/services/useOrders';
 
 export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-emerald-600"><Loader2 size={24} className="animate-spin text-white" /></div>}>
+      <PaymentSuccessContent />
+    </Suspense>
+  );
+}
+
+function PaymentSuccessContent() {
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('order_id') || '';
+  const { data: order, isLoading } = useOrder(orderId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-emerald-600">
+        <Loader2 size={24} className="animate-spin text-white" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-emerald-600 text-white">
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center mt-12">
@@ -19,8 +42,12 @@ export default function PaymentSuccessPage() {
 
         <div className="bg-white/10 rounded-2xl p-6 w-full max-w-xs text-left mb-12 border border-white/20">
           <div className="flex justify-between items-center mb-3">
+            <span className="text-emerald-100 text-sm">Layanan</span>
+            <span className="font-bold text-sm">{order?.service_name || '-'}</span>
+          </div>
+          <div className="flex justify-between items-center mb-3">
             <span className="text-emerald-100 text-sm">Nominal</span>
-            <span className="font-bold">Rp 155.000</span>
+            <span className="font-bold">Rp {(order?.total_amount || 0).toLocaleString()}</span>
           </div>
           <div className="flex justify-between items-center mb-3">
             <span className="text-emerald-100 text-sm">Metode</span>
@@ -34,7 +61,7 @@ export default function PaymentSuccessPage() {
       </div>
 
       <div className="p-4 pb-safe space-y-3 shrink-0">
-        <Link href="/customer/orders/detail?id=order-123" className="block w-full">
+        <Link href={`/customer/orders/detail?id=${orderId}`} className="block w-full">
           <Button className="w-full h-14 rounded-xl bg-white hover:bg-emerald-50 text-emerald-700 text-lg font-bold shadow-sm flex items-center justify-center gap-2">
             Lacak Pesanan
             <ArrowRight size={20} />

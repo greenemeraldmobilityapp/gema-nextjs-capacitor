@@ -1,0 +1,488 @@
+# UI_UX_ROADMAP.md
+GEMA (Green Emerald Mobility Apps)
+Frontend Development Roadmap
+Version 1.0
+
+---
+
+# 1. Objective
+
+Dokumen ini berfungsi sebagai roadmap implementasi frontend berdasarkan hasil design UI Stitch yang telah dibuat.
+
+Frontend GEMA harus:
+
+- mobile first
+- reusable component driven
+- scalable
+- compatible dengan Next.js static export
+- compatible dengan Capacitor mobile wrapper
+- mudah diintegrasikan ke Supabase backend
+
+Dokumen ini hanya fokus pada:
+
+- UI implementation
+- UX flow
+- component system
+- navigation structure
+- frontend milestone
+
+Dokumen ini TIDAK membahas backend infrastructure.
+
+---
+
+# 2. Frontend Architecture
+
+## Framework
+- [x] Next.js App Router
+- [x] TypeScript
+- [x] Tailwind CSS
+- [x] Shadcn/UI
+- [x] Lucide Icons
+- [ ] Framer Motion
+
+---
+
+## Folder Structure
+
+/src
+    /app
+        /(auth)
+        /customer
+        /vendor
+        /shared
+    /components
+        /ui
+        /shared
+        /customer
+        /vendor
+    /hooks
+    /lib
+    /store
+    /types
+
+---
+
+# 3. Design System Phase (UI Foundation)
+
+Sebelum membangun halaman:
+
+## Color System
+- [x] Primary: Emerald 500, Emerald 600
+- [x] Secondary: Gray scale, Success, Warning, Error
+
+## Typography
+- [x] Heading / Subheading / Body / Caption
+
+## Global Components
+
+### Navigation
+- [x] Bottom navbar
+- [x] Top navbar
+- [x] Back header
+- [ ] Drawer menu
+
+### Form Components
+- [x] Input
+- [ ] Select
+- [x] Textarea
+- [ ] File upload
+- [ ] OTP input
+
+### Card Components
+- [x] Vendor card
+- [x] Service card
+- [x] Portfolio card (via services table)
+- [x] Order card
+- [x] Wallet card
+
+### Feedback Components
+- [x] Toast (sonner)
+- [x] Modal
+- [ ] Alert dialog
+- [ ] Loading skeleton
+- [x] Empty states
+
+### Map Components
+- [ ] Vendor marker
+- [ ] Live tracking marker
+- [ ] Radius search indicator
+
+---
+
+# MILESTONE 1
+AUTHENTICATION FLOW
+
+Prioritas pertama karena semua flow bergantung auth.
+
+---
+
+## Screen 1 — Splash Screen
+- [x] UI: logo animation, loading state
+- [x] Route: `/` → redirect based on auth
+
+---
+
+## Screen 2 — Onboarding Discovery
+- [x] UI: swipe onboarding, CTA login/register
+- [x] Route: `/onboarding`
+
+---
+
+## Screen 3 — Role Selection
+- [x] UI: choose customer / choose vendor
+- [x] Route: `/register/role`
+
+---
+
+## Screen 4 — Register
+- [x] UI: email signup, google signup, validation
+- [x] Route: `/register`
+- [x] Connected to Supabase
+
+---
+
+## Screen 5 — Login
+- [x] UI: email login, google login, forgot password
+- [x] Route: `/login`
+- [x] Connected to Supabase
+
+---
+
+## Deliverables M1
+- [x] auth UI complete
+- [x] session persistence
+- [x] responsive tested
+
+---
+
+# MILESTONE 2
+CUSTOMER CORE FLOW
+
+Ini adalah core bisnis utama.
+
+---
+
+## Screen 6 — Customer Home
+- [ ] nearby vendor map (hanya icon MapPin, belum integrasi map)
+- [x] service categories
+- [x] search bar
+- [ ] promo banner
+- [ ] recommendations
+- [x] Route: `/customer/home`
+- [x] Connected to Supabase
+
+---
+
+## Screen 7 — Vendor Detail
+- [x] profile detail
+- [x] rating
+- [ ] portfolio
+- [x] service list
+- [x] CTA booking
+- [x] Route: `/customer/vendor`
+- [x] Connected to Supabase
+
+---
+
+## Screen 8 — Booking Summary
+- [x] service summary
+- [x] notes
+- [x] schedule (date picker + time slot selection 08:00-16:00)
+- [x] pricing breakdown
+- [x] Route: `/customer/booking`
+- [x] Connected to Supabase
+
+---
+
+## Screen 9 — Payment Method
+- [ ] QRIS
+- [ ] VA
+- [ ] wallet
+- [ ] promo voucher
+- [x] Route: `/customer/payment`
+- [x] Connected to Supabase (real order data)
+
+---
+
+## Screen 10 — Payment Success
+- [x] Route: `/customer/payment/success`
+- [x] Connected to Supabase (real order data)
+
+---
+
+## Screen 11 — Order Tracking
+- [ ] realtime status (masih statis)
+- [ ] map tracking
+- [ ] chat vendor
+- [x] show scheduled_date + scheduled_time
+- [x] Route: `/customer/orders/detail`
+- [x] Connected to Supabase
+
+---
+
+## Screen 12 — Order History
+- [x] daftar pesanan (tab Active / History)
+- [x] show scheduled_date + scheduled_time
+- [x] Route: `/customer/orders`
+- [x] Connected to Supabase
+
+---
+
+## Deliverables M2
+- [x] booking flow complete
+- [x] payment flow complete (UI + real data)
+- [ ] realtime tracking complete
+
+---
+
+# MILESTONE 3
+CUSTOMER ACCOUNT FLOW
+
+---
+
+## Profile
+- [x] Route: `/customer/profile`
+- [x] Connected to Supabase
+- [x] Link ke Dompet Saya
+
+## Edit Profile
+- [x] Route: `/customer/profile/edit`
+- [x] Connected to Supabase
+
+## Notification Settings
+- [x] Route: `/customer/settings/notifications`
+
+## Security Settings
+- [x] Route: `/customer/settings/security`
+
+## Help Center
+- [x] Route: `/customer/help`
+
+## FAQ
+- [x] Route: `/customer/help/faq`
+
+---
+
+## Deliverables M3
+- [x] account flow complete
+
+---
+
+# MILESTONE 4
+VENDOR ONBOARDING FLOW
+
+---
+
+## Verification Intro
+- [x] Route: `/vendor/verification`
+
+## KTP Verification
+- [x] Route: `/vendor/verification/ktp`
+
+## Professional Certification
+- [x] Route: `/vendor/verification/certification`
+
+## Verification Review
+- [x] Route: `/vendor/verification/review`
+
+---
+
+## Deliverables M4
+- [x] vendor onboarding complete
+
+---
+
+# MILESTONE 5
+VENDOR BUSINESS FLOW
+
+---
+
+## Vendor Dashboard
+- [x] order stats (real)
+- [x] earnings summary (real)
+- [ ] notifications
+- [x] Route: `/vendor/dashboard`
+- [x] Connected to Supabase
+
+## Vendor Profile
+- [x] Route: `/vendor/profile`
+- [x] Connected to Supabase
+
+## Edit Vendor Profile
+- [x] Route: `/vendor/profile/edit`
+- [x] Connected to Supabase
+
+## Portfolio Management
+- [x] Route: `/vendor/portfolio`
+- [x] Connected to Supabase (services table)
+- [x] Empty state / loading / error
+
+## Add Portfolio
+- [x] Route: `/vendor/portfolio/add`
+- [x] Form: title, category, price, description
+- [x] Submit ke Supabase + toast success
+
+## Vendor Chat
+- [x] Route: `/vendor/chat`
+- [x] Connected to Supabase (chats table + last message)
+- [x] Loading / error / empty state
+
+## Active Orders
+- [x] Route: `/vendor/orders`
+- [x] Connected to Supabase
+- [x] Loading / error / empty state
+
+## Order Detail
+- [x] Route: `/vendor/orders/detail`
+- [x] Connected to Supabase (real data)
+- [x] Tombol aksi real: Terima, Mulai, Selesaikan, Tolak
+- [x] Toast sukses/gagal + auto-refetch
+- [x] Show scheduled_date + scheduled_time
+
+## Earnings
+- [x] Route: `/vendor/earnings`
+- [x] Connected to Supabase
+
+---
+
+## Deliverables M5
+- [x] vendor UI complete
+- [x] vendor operations UI ready
+- [x] real action buttons (accept / start / complete)
+
+---
+
+# MILESTONE 6
+WALLET SYSTEM
+
+---
+
+## GemaPay Wallet
+- [x] Route: `/wallet`
+- [x] Balance from Supabase
+- [ ] Topup (UI only, button disabled)
+- [x] Transaction history from Supabase
+- [ ] Withdraw (UI only, button disabled)
+
+## Voucher History
+- [ ] Route: `/wallet/vouchers`
+
+## Promo Detail
+- [ ] Route: `/wallet/promo/[id]`
+
+---
+
+## Deliverables M6
+- [x] wallet UI + data read complete
+- [ ] topup / withdraw flow
+
+---
+
+# MILESTONE 7
+REALTIME UX
+
+Integrasi setelah UI stabil.
+
+## Features
+- [ ] live location updates
+- [ ] chat realtime
+- [ ] push notifications
+- [ ] online/offline vendor status
+- [ ] live order progress
+
+## Dependencies
+- [ ] Supabase realtime
+- [ ] Capacitor geolocation
+- [ ] push notifications
+
+---
+
+# MILESTONE 8
+ADMIN PANEL (future)
+
+Belum ada di design Stitch tapi wajib.
+
+## Admin Features
+- [ ] vendor approval
+- [ ] dispute management
+- [ ] fraud detection
+- [ ] payout approval
+- [ ] analytics dashboard
+
+---
+
+# 4. State Management Roadmap
+
+Gunakan:
+
+- [x] Zustand → UI state
+- [x] React Query / Tanstack Query → server state
+- [ ] Supabase realtime subscriptions
+
+---
+
+# 5. Performance Optimization
+
+Karena target low-mid Android devices:
+
+- [ ] lazy load map
+- [ ] lazy load images
+- [ ] skeleton loading
+- [ ] optimize bundle size
+- [ ] avoid unnecessary re-renders
+
+---
+
+# 6. UX Rules
+
+WAJIB:
+
+- [x] thumb friendly navigation
+- [x] minimum tap friction
+- [x] max 3 step checkout
+- [ ] clear payment status
+- [ ] clear verification progress
+- [ ] offline state handling
+
+---
+
+# 7. Frontend Development Priority
+
+Urutan build wajib:
+
+1. [x] Design system
+2. [x] Auth flow
+3. [x] Customer booking flow
+4. [x] Vendor onboarding
+5. [x] Vendor dashboard + operations
+6. [x] Wallet (UI + read)
+7. [ ] Realtime features
+8. [ ] Admin panel
+
+DILARANG lompat milestone.
+
+---
+
+# 8. Definition of Done
+
+Setiap milestone dianggap selesai jika:
+
+- [ ] responsive mobile
+- [ ] connected to real data
+- [ ] no broken navigation
+- [ ] reusable components
+- [ ] loading states available
+- [ ] empty states available
+- [ ] error handling available
+
+---
+
+# Final Frontend Goal
+
+Output akhir frontend harus menghasilkan:
+
+- [x] web app
+- [ ] android app via Capacitor
+- [ ] ios app via Capacitor
+
+dari satu codebase Next.js saja.
