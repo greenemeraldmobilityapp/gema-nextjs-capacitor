@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, Users, Store, ShoppingCart, TrendingUp, Scale, Clock, AlertCircle } from 'lucide-react';
+import { Loader2, User, Users, Store, ShoppingCart, TrendingUp, Scale, Clock, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { useAdminStats } from '@/lib/services/useAdmin';
@@ -28,8 +28,15 @@ export default function AdminDashboard() {
   return (
     <div className="flex flex-col h-full w-full bg-gray-50 pb-8">
       <div className="bg-emerald-600 text-white p-4 pt-8 pb-12 rounded-b-[32px] shadow-sm">
-        <h1 className="text-xl font-bold">Admin Dashboard</h1>
-        <p className="text-emerald-100 text-sm">Ringkasan platform</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">Admin Dashboard</h1>
+            <p className="text-emerald-100 text-sm">Ringkasan platform</p>
+          </div>
+          <Link href="/admin/profile" className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors shrink-0">
+            <User size={20} />
+          </Link>
+        </div>
       </div>
 
       <div className="px-4 -mt-8 space-y-4">

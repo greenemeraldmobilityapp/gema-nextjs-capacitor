@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, AlertTriangle, ShieldAlert, Search, CheckCircle, XCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Loader2, AlertTriangle, ShieldAlert, Search, CheckCircle, XCircle, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFraudAlerts, useUpdateFraudAlert } from '@/lib/services/useAdmin';
 import { useAuthStore } from '@/store/auth';
@@ -68,8 +69,15 @@ export default function AdminFraud() {
   return (
     <div className="flex flex-col h-full w-full bg-gray-50 min-h-screen">
       <div className="bg-emerald-600 text-white p-4 pt-8 pb-6 rounded-b-[32px] shadow-sm">
-        <h1 className="text-xl font-bold">Fraud Alerts</h1>
-        <p className="text-emerald-100 text-sm">Monitoring aktivitas mencurigakan</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">Fraud Alerts</h1>
+            <p className="text-emerald-100 text-sm">Monitoring aktivitas mencurigakan</p>
+          </div>
+          <Link href="/admin/profile" className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors shrink-0">
+            <User size={20} />
+          </Link>
+        </div>
       </div>
 
       <div className="px-4 -mt-4 space-y-4 pb-8">

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, AlertCircle, ArrowLeftRight, CheckCircle, XCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Loader2, AlertCircle, ArrowLeftRight, CheckCircle, XCircle, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAllTransactions, useApproveTransaction, useRejectTransaction } from '@/lib/services/useAdmin';
 import { toast } from 'sonner';
@@ -61,8 +62,15 @@ export default function AdminTransactions() {
   return (
     <div className="flex flex-col h-full w-full bg-gray-50 min-h-screen">
       <div className="bg-emerald-600 text-white p-4 pt-8 pb-6 rounded-b-[32px] shadow-sm">
-        <h1 className="text-xl font-bold">Transaksi</h1>
-        <p className="text-emerald-100 text-sm">Riwayat transaksi wallet</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">Transaksi</h1>
+            <p className="text-emerald-100 text-sm">Riwayat transaksi wallet</p>
+          </div>
+          <Link href="/admin/profile" className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors shrink-0">
+            <User size={20} />
+          </Link>
+        </div>
       </div>
 
       <div className="px-4 -mt-4 space-y-4 pb-8">

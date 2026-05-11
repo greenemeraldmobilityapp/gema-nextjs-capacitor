@@ -1077,3 +1077,33 @@ Migration ini membuat function `is_admin()` + semua RLS policies untuk admin.
 | 6 | Simpan button | `variant="pill"` `w-full` |
 | 7 | Success save | Toast "Alamat berhasil disimpan" |
 
+---
+
+### K.27 Admin — Profile & Sign-Out
+
+#### K.27.1. Admin Profile Page (`/admin/profile`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/admin/profile` | Header emerald dengan back button ke `/admin/dashboard` |
+| 2 | Info card | Avatar circle, nama admin, role badge "Admin" (rounded-full bg-emerald-100) |
+| 3 | Email row | Icon Mail w-10 h-10 rounded-full bg-blue-100, tampilkan email admin |
+| 4 | Role row | Icon Shield w-10 h-10 rounded-full bg-purple-100, "Administrator" |
+| 5 | "Keluar" button | Tombol `w-full h-12 rounded-xl` dengan LogOut icon, border-red-200 text-red-600 |
+| 6 | Tap "Keluar" | Sign out dari Supabase (`signOut`), redirect ke `/login` |
+| 7 | After logout | `useAuthStore.profile` = `null`, tidak bisa akses `/admin/*` (redirect spinner) |
+
+#### K.27.2. Admin Header — Profile Avatar Access
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/admin/dashboard` | Header emerald dengan icon User lingkaran di kanan |
+| 2 | Buka `/admin/orders` | Header dengan icon User lingkaran di kanan |
+| 3 | Buka `/admin/vendors` | Header dengan icon User lingkaran di kanan |
+| 4 | Buka `/admin/transactions` | Header dengan icon User lingkaran di kanan |
+| 5 | Buka `/admin/disputes` | Header dengan icon User lingkaran di kanan |
+| 6 | Buka `/admin/promos` | Header dengan icon User di samping tombol "Tambah" |
+| 7 | Buka `/admin/fraud` | Header dengan icon User lingkaran di kanan |
+| 8 | Tap icon User di header mana pun | Navigasi ke `/admin/profile` |
+| 9 | Avatar icon | `w-10 h-10 rounded-full bg-white/20` dengan `User` icon, `hover:bg-white/30` |
+

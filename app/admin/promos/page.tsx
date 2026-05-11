@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, AlertCircle, Gift, Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import Link from 'next/link';
+import { Loader2, AlertCircle, Gift, Plus, Trash2, ToggleLeft, ToggleRight, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAllPromos, useCreatePromo, useUpdatePromo, useDeletePromo } from '@/lib/services/useAdmin';
 import { toast } from 'sonner';
@@ -63,13 +64,18 @@ export default function AdminPromos() {
             <h1 className="text-xl font-bold">Promo</h1>
             <p className="text-emerald-100 text-sm">Kelola banner promo</p>
           </div>
-          <Button
-            className="bg-white text-emerald-600 hover:bg-emerald-50 h-9"
-            onClick={() => setShowForm(!showForm)}
-          >
-            <Plus size={16} />
-            {showForm ? 'Batal' : 'Tambah'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              className="bg-white text-emerald-600 hover:bg-emerald-50 h-9"
+              onClick={() => setShowForm(!showForm)}
+            >
+              <Plus size={16} />
+              {showForm ? 'Batal' : 'Tambah'}
+            </Button>
+            <Link href="/admin/profile" className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors shrink-0">
+              <User size={20} />
+            </Link>
+          </div>
         </div>
       </div>
 
