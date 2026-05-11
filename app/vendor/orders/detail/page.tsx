@@ -7,6 +7,8 @@ import { ArrowLeft, MapPin, Calendar, Clock, Phone, MessageSquare, Loader2, Aler
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
+import { useWallet, useAddTransaction } from '@/lib/services/useWallet';
+import { useAuthStore } from '@/store/auth';
 import { toast } from 'sonner';
 
 function OrderDetailContent() {
@@ -15,6 +17,9 @@ function OrderDetailContent() {
   const id = searchParams.get('id') || '';
   const { data: order, isLoading, error } = useOrder(id);
   const updateStatus = useUpdateOrderStatus();
+  const profile = useAuthStore((s) => s.profile);
+  const { data: vendorWallet } = useWallet(profile?.id);
+  const addTransaction = useAddTransaction();
 
   const statusSteps = [
     { key: 'pending', label: 'Pesanan Baru' },
@@ -32,7 +37,7 @@ function OrderDetailContent() {
       accept: { orderId: order.id, order_status: 'accepted', payment_status: 'escrow' },
       start: { orderId: order.id, order_status: 'in_progress' },
       complete: { orderId: order.id, order_status: 'completed', payment_status: 'released', completed_at: new Date().toISOString() },
-      decline: { orderId: order.id, order_status: 'cancelled', cancelled_at: new Date().toISOString() },
+      decline: { orderId: order.id, order_status: 'cancelled', cancelled_at: new Date().toISOString(), payment_status: order.payment_status === 'escrow' ? 'refunded' : undefined },
     };
 
     const labels: Record<string, string> = {
@@ -44,6 +49,16 @@ function OrderDetailContent() {
 
     try {
       await updateStatus.mutateAsync(mutations[action]);
+
+      if (action === 'decline' && order.payment_status === 'escrow' && vendorWallet?.id) {
+        await addTransaction.mutateAsync({
+          wallet_id: vendorWallet.id,
+          type: 'refund',
+          amount: -order.vendor_payout,
+          status: 'success',
+        });
+      }
+
       toast.success(labels[action]);
       router.refresh();
     } catch {

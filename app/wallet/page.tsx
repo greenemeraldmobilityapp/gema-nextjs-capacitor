@@ -3,16 +3,27 @@
 import Link from 'next/link';
 import { Wallet, ArrowUpRight, ArrowDownRight, CheckCircle2, Clock, Loader2, AlertCircle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
-import { useWallet, useWalletTransactions } from '@/lib/services/useWallet';
+import { useWallet, useWalletTransactions, useCreateWallet } from '@/lib/services/useWallet';
+import { useEffect } from 'react';
 
 export default function WalletPage() {
   const profile = useAuthStore((s) => s.profile);
   const { data: wallet, isLoading: walletLoading, error: walletError } = useWallet(profile?.id);
   const { data: transactions, isLoading: txLoading } = useWalletTransactions(wallet?.id);
+  const createWallet = useCreateWallet();
 
-  const isLoading = walletLoading;
+  useEffect(() => {
+    if (!walletLoading && !wallet && !walletError && profile?.id) {
+      createWallet.mutate(profile.id, {
+        onError: (err) => toast.error(err.message || 'Gagal membuat dompet'),
+      });
+    }
+  }, [walletLoading, wallet, walletError, profile?.id]);
+
+  const isLoading = walletLoading || createWallet.isPending;
   const error = walletError;
 
   const formattedDate = (d: string) =>

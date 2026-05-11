@@ -15,6 +15,13 @@
       "when": 1778449445932,
       "tag": "0001_legal_sheva_callister",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778454125820,
+      "tag": "0002_salty_sandman",
+      "breakpoints": true
     }
   ]
 }

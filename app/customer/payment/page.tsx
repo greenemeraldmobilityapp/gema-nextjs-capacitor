@@ -2,10 +2,12 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Wallet, CreditCard, Landmark, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useOrder } from '@/lib/services/useOrders';
+import { toast } from 'sonner';
+import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
+import { createClient } from '@/lib/supabase/client';
 
 export default function PaymentPage() {
   return (
@@ -17,10 +19,13 @@ export default function PaymentPage() {
 
 function PaymentContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const orderId = searchParams.get('order_id') || '';
   const { data: order, isLoading, error } = useOrder(orderId);
+  const updatePayment = useUpdateOrderStatus();
 
   const [selectedMethod, setSelectedMethod] = useState<string>('qris');
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
 
   const methods = [
     { id: 'qris', title: 'QRIS', icon: CreditCard, subtitle: 'Bayar dengan aplikasi apa saja' },
@@ -98,11 +103,47 @@ function PaymentContent() {
       </div>
 
       <div className="p-4 bg-white border-t shrink-0">
-        <Link href={`/customer/payment/success?order_id=${order.id}`} className="block w-full">
-          <Button className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm">
-            Bayar Sekarang
-          </Button>
-        </Link>
+        <Button
+          disabled={updatePayment.isPending || isCreatingInvoice}
+          onClick={async () => {
+            setIsCreatingInvoice(true);
+            try {
+              const supabase = createClient();
+              const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-invoice`;
+              const { data: { session } } = await supabase.auth.getSession();
+              const res = await fetch(functionUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+                },
+                body: JSON.stringify({ order_id: order.id }),
+              });
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error || 'Gagal membuat invoice');
+              window.location.href = data.invoice_url;
+            } catch (err: any) {
+              toast.error(err.message || 'Gagal menghubungi payment gateway');
+              updatePayment.mutate(
+                { orderId: order.id, payment_status: 'escrow' },
+                {
+                  onSuccess: () => {
+                    toast.success('Pembayaran berhasil');
+                    router.push(`/customer/payment/success?order_id=${order.id}`);
+                  },
+                  onError: (e: any) => {
+                    toast.error(e.message || 'Gagal memproses pembayaran');
+                  },
+                }
+              );
+            } finally {
+              setIsCreatingInvoice(false);
+            }
+          }}
+          className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm"
+        >
+          {isCreatingInvoice ? 'Mengarahkan ke pembayaran...' : updatePayment.isPending ? 'Memproses...' : 'Bayar Sekarang'}
+        </Button>
       </div>
     </div>
   );

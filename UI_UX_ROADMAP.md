@@ -163,60 +163,35 @@ Ini adalah core bisnis utama.
 ---
 
 ## Screen 6 — Customer Home
-- [ ] nearby vendor map (hanya icon MapPin, belum integrasi map)
+- [x] nearby vendor map (Leaflet map with vendor markers + geolocation)
 - [x] service categories
 - [x] search bar
-- [ ] promo banner
-- [ ] recommendations
+- [x] promo banner (dynamic from Supabase promos table)
+- [x] recommendations (Vendor Terbaik section sorted by rating)
+- [x] Vendor Terdekat section (sorted by distance from user location)
+- [x] Toggle list/map view
 - [x] Route: `/customer/home`
 - [x] Connected to Supabase
 
 ---
 
-## Screen 7 — Vendor Detail
-- [x] profile detail
-- [x] rating
-- [ ] portfolio
-- [x] service list
-- [x] CTA booking
-- [x] Route: `/customer/vendor`
-- [x] Connected to Supabase
-
----
-
-## Screen 8 — Booking Summary
-- [x] service summary
-- [x] notes
-- [x] schedule (date picker + time slot selection 08:00-16:00)
-- [x] pricing breakdown
-- [x] Route: `/customer/booking`
-- [x] Connected to Supabase
-
----
-
-## Screen 9 — Payment Method
-- [ ] QRIS
-- [ ] VA
-- [ ] wallet
-- [ ] promo voucher
-- [x] Route: `/customer/payment`
-- [x] Connected to Supabase (real order data)
-
----
-
-## Screen 10 — Payment Success
-- [x] Route: `/customer/payment/success`
-- [x] Connected to Supabase (real order data)
+## Screen 6b — Search
+- [x] Route: `/customer/search`
+- [x] Connected to Supabase (real vendor data, no more mock)
+- [x] Category filter from URL params
+- [x] Loading/empty/no-results states
 
 ---
 
 ## Screen 11 — Order Tracking
-- [ ] realtime status (masih statis)
+- [x] realtime status (data real dari Supabase, milestones by order_status)
 - [ ] map tracking
-- [ ] chat vendor
+- [x] chat vendor (link ke `/customer/chat?order_id=...`)
 - [x] show scheduled_date + scheduled_time
+- [x] show service info, location, pricing from Supabase
+- [x] cancel button (pending only)
 - [x] Route: `/customer/orders/detail`
-- [x] Connected to Supabase
+- [x] Connected to Supabase (real data, no mock)
 
 ---
 
@@ -229,8 +204,11 @@ Ini adalah core bisnis utama.
 ---
 
 ## Deliverables M2
-- [x] booking flow complete
+- [x] booking flow complete (end-to-end: createOrder → payment → escrow)
 - [x] payment flow complete (UI + real data)
+- [x] review system (customer review form + vendor detail display)
+- [x] promo banner + recommendations on home
+- [x] nearby vendors with distance + Leaflet map
 - [ ] realtime tracking complete
 
 ---
@@ -311,6 +289,7 @@ VENDOR BUSINESS FLOW
 ## Edit Vendor Profile
 - [x] Route: `/vendor/profile/edit`
 - [x] Connected to Supabase
+- [x] Location picker (Leaflet draggable pin + geolocation button → users.lat/lng)
 
 ## Portfolio Management
 - [x] Route: `/vendor/portfolio`
@@ -326,6 +305,7 @@ VENDOR BUSINESS FLOW
 - [x] Route: `/vendor/chat`
 - [x] Connected to Supabase (chats table + last message)
 - [x] Loading / error / empty state
+- [x] Realtime subscription (Supabase postgres_changes for instant message delivery)
 
 ## Active Orders
 - [x] Route: `/vendor/orders`
@@ -349,6 +329,10 @@ VENDOR BUSINESS FLOW
 - [x] vendor UI complete
 - [x] vendor operations UI ready
 - [x] real action buttons (accept / start / complete)
+- [x] vendor reviews visible on vendor detail page
+- [x] refund status visible on customer order detail ("Dana Telah Dikembalikan")
+- [x] refund stats visible on vendor earnings page
+- [x] Xendit payment gateway (Edge Function + frontend integration, pending deployment)
 
 ---
 
@@ -374,6 +358,7 @@ WALLET SYSTEM
 
 ## Deliverables M6
 - [x] wallet UI + data read complete
+- [x] wallet transaction on payment via webhook
 - [ ] topup / withdraw flow
 
 ---
@@ -385,14 +370,14 @@ Integrasi setelah UI stabil.
 
 ## Features
 - [ ] live location updates
-- [ ] chat realtime
+- [x] chat realtime (Supabase Realtime subscriptions + polling fallback)
 - [ ] push notifications
 - [ ] online/offline vendor status
 - [ ] live order progress
 
 ## Dependencies
-- [ ] Supabase realtime
-- [ ] Capacitor geolocation
+- [x] Supabase realtime (subscriptions implemented for messages table)
+- [x] Capacitor geolocation (navigator.geolocation for nearby vendors)
 - [ ] push notifications
 
 ---

@@ -19,6 +19,9 @@ export default function VendorEarningsPage() {
   const pendingAmount = (orders || [])
     .filter(o => o.payment_status === 'escrow')
     .reduce((sum, o) => sum + o.vendor_payout, 0);
+  const refundedAmount = (orders || [])
+    .filter(o => o.payment_status === 'refunded')
+    .reduce((sum, o) => sum + o.vendor_payout, 0);
   const completedJobs = completedOrders.length;
 
   const formattedDate = (d: string) =>
@@ -102,6 +105,16 @@ export default function VendorEarningsPage() {
                   <p className="text-xs text-gray-400 mt-0.5">Menunggu escrow</p>
                 </div>
               </div>
+              {refundedAmount > 0 && (
+                <div className="bg-red-50 rounded-xl p-3">
+                  <div className="flex items-center gap-1.5 text-red-600 mb-1">
+                    <ArrowUpRight size={16} />
+                    <span className="text-xs font-medium">Refund</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900">-Rp {refundedAmount.toLocaleString()}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Total refund</p>
+                </div>
+              )}
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border">

@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, User, Camera, Loader2, AlertCircle } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { ArrowLeft, User, Camera, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
 import { createClient } from '@/lib/supabase/client';
+
+const LocationPicker = dynamic(() => import('@/components/shared/LocationPicker'), { ssr: false });
 
 const supabase = createClient();
 
@@ -23,6 +26,7 @@ export default function VendorEditProfilePage() {
     specialization: '',
     bio: '',
   });
+  const [location, setLocation] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -35,6 +39,10 @@ export default function VendorEditProfilePage() {
         phone: vendor.users?.phone || '',
         specialization: vendor.specialization || '',
         bio: vendor.bio || '',
+      });
+      setLocation({
+        lat: vendor.users?.lat ?? null,
+        lng: vendor.users?.lng ?? null,
       });
     }
   }, [vendor, profile]);
@@ -52,6 +60,8 @@ export default function VendorEditProfilePage() {
           full_name: formData.fullName,
           email: formData.email,
           phone: formData.phone || null,
+          lat: location.lat,
+          lng: location.lng,
         })
         .eq('id', profile.id);
 
@@ -169,6 +179,14 @@ export default function VendorEditProfilePage() {
               className="w-full h-24 bg-gray-50 border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-5 shadow-sm border">
+          <LocationPicker
+            lat={location.lat}
+            lng={location.lng}
+            onChange={(lat, lng) => setLocation({ lat, lng })}
+          />
         </div>
 
         <Button

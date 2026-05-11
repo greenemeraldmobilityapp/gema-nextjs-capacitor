@@ -79,6 +79,47 @@ export function useOrder(orderId: string | undefined) {
   });
 }
 
+export function useCreateOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (order: {
+      customer_id: string;
+      vendor_id: string;
+      service_id: string;
+      service_category: string;
+      service_name: string;
+      scheduled_date: string;
+      scheduled_time: string | null;
+      service_address: string;
+      notes: string | null;
+      base_amount: number;
+      platform_fee: number;
+      vendor_payout: number;
+      total_amount: number;
+    }) => {
+      const { data, error } = await supabase
+        .from('orders')
+        .insert({
+          ...order,
+          payment_status: 'unpaid',
+          order_status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await supabase.from('chats').insert({ order_id: data.id });
+
+      return data as Order;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
+    },
+  });
+}
+
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
 
@@ -91,12 +132,13 @@ export function useUpdateOrderStatus() {
       payment_status,
     }: {
       orderId: string;
-      order_status: Order['order_status'];
+      order_status?: Order['order_status'];
       completed_at?: string | null;
       cancelled_at?: string | null;
       payment_status?: Order['payment_status'];
     }) => {
-      const updates: Record<string, unknown> = { order_status };
+      const updates: Record<string, unknown> = {};
+      if (order_status !== undefined) updates.order_status = order_status;
       if (completed_at !== undefined) updates.completed_at = completed_at;
       if (cancelled_at !== undefined) updates.cancelled_at = cancelled_at;
       if (payment_status !== undefined) updates.payment_status = payment_status;

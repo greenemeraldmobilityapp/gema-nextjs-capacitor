@@ -97,6 +97,16 @@ export const walletTransactions = pgTable('wallet_transactions', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+export const promos = pgTable('promos', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  discount: integer('discount').notNull(),
+  imageUrl: text('image_url'),
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 export const disputes = pgTable('disputes', {
   id: uuid('id').primaryKey().defaultRandom(),
   orderId: uuid('order_id').references(() => orders.id).notNull(),

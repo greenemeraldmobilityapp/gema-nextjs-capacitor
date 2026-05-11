@@ -2,11 +2,12 @@
 
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Star, MapPin, CheckCircle, ShieldCheck, Clock, Loader2 } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, CheckCircle, ShieldCheck, Clock, Loader2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSearchParams } from 'next/navigation';
 import { useVendor, useVendorServices } from '@/lib/services/useVendors';
+import { useVendorReviews } from '@/lib/services/useReviews';
 
 export default function VendorDetailPage() {
   return (
@@ -26,6 +27,7 @@ function VendorDetailContent() {
   
   const { data: vendor, isLoading: vendorLoading, error: vendorError } = useVendor(id);
   const { data: services, isLoading: servicesLoading } = useVendorServices(id);
+  const { data: reviews, isLoading: reviewsLoading } = useVendorReviews(id);
 
   if (vendorLoading) {
     return (
@@ -140,6 +142,55 @@ function VendorDetailContent() {
             ))}
           </div>
         )}
+
+        <div className="mt-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Ulasan Pelanggan</h2>
+
+          {reviewsLoading && (
+            <div className="flex items-center justify-center py-8 text-gray-400">
+              <Loader2 size={20} className="animate-spin mr-2" />
+              <span className="text-sm">Memuat ulasan...</span>
+            </div>
+          )}
+
+          {!reviewsLoading && (!reviews || reviews.length === 0) && (
+            <div className="text-center py-8 text-gray-400">
+              <MessageSquare size={32} className="mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Belum ada ulasan</p>
+            </div>
+          )}
+
+          {!reviewsLoading && reviews && reviews.length > 0 && (
+            <div className="space-y-3">
+              {reviews.slice(0, 10).map((review) => (
+                <Card key={review.id} className="rounded-xl border-gray-100 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="font-medium text-gray-900 text-sm">
+                        {review.customer?.full_name || 'Pelanggan'}
+                      </p>
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star
+                            key={s}
+                            size={14}
+                            className={s <= review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {review.review_text && (
+                      <p className="text-sm text-gray-600">{review.review_text}</p>
+                    )}
+                    <p className="text-xs text-gray-400 mt-2">
+                      {new Date(review.created_at).toLocaleDateString('id-ID')}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

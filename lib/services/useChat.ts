@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 
 const supabase = createClient();
@@ -19,6 +20,14 @@ export type ChatWithOrder = {
     created_at: string;
     sender_id: string;
   } | null;
+};
+
+export type ChatMessage = {
+  id: string;
+  chat_id: string;
+  sender_id: string;
+  message: string;
+  created_at: string;
 };
 
 export function useVendorChats(vendorId: string | undefined) {
@@ -64,5 +73,132 @@ export function useVendorChats(vendorId: string | undefined) {
       return chatsWithMessages;
     },
     enabled: !!vendorId,
+    refetchInterval: 5000,
+  });
+}
+
+export function useCustomerChats(customerId: string | undefined) {
+  return useQuery({
+    queryKey: ['customer-chats', customerId],
+    queryFn: async () => {
+      if (!customerId) return [];
+
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('customer_id', customerId);
+
+      if (ordersError) throw ordersError;
+      if (!orders.length) return [];
+
+      const orderIds = orders.map(o => o.id);
+
+      const { data: chats, error: chatsError } = await supabase
+        .from('chats')
+        .select('*')
+        .in('order_id', orderIds)
+        .order('created_at', { ascending: false });
+
+      if (chatsError) throw chatsError;
+
+      return chats as { id: string; order_id: string; created_at: string }[];
+    },
+    enabled: !!customerId,
+    refetchInterval: 5000,
+  });
+}
+
+export function useChatByOrder(orderId: string | undefined) {
+  return useQuery({
+    queryKey: ['chat-by-order', orderId],
+    queryFn: async () => {
+      if (!orderId) return null;
+      const { data, error } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('order_id', orderId)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { id: string; order_id: string; created_at: string } | null;
+    },
+    enabled: !!orderId,
+  });
+}
+
+export function useChatMessages(chatId: string | undefined) {
+  return useQuery({
+    queryKey: ['chat-messages', chatId],
+    queryFn: async () => {
+      if (!chatId) return [];
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('chat_id', chatId)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return data as ChatMessage[];
+    },
+    enabled: !!chatId,
+    refetchInterval: 5000,
+  });
+}
+
+export function useRealtimeMessages(chatId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!chatId) return;
+
+    const channel = supabase
+      .channel(`messages:${chatId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `chat_id=eq.${chatId}`,
+        },
+        (payload) => {
+          queryClient.setQueryData(['chat-messages', chatId], (old: ChatMessage[] | undefined) => {
+            if (!old) return [payload.new as ChatMessage];
+            if (old.some((m) => m.id === payload.new.id)) return old;
+            return [...old, payload.new as ChatMessage];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [chatId, queryClient]);
+}
+
+export function useSendMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      chatId,
+      senderId,
+      message,
+    }: {
+      chatId: string;
+      senderId: string;
+      message: string;
+    }) => {
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          chat_id: chatId,
+          sender_id: senderId,
+          message,
+        });
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['chat-messages', variables.chatId] });
+    },
   });
 }

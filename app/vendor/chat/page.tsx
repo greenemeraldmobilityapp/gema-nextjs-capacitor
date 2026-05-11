@@ -70,7 +70,7 @@ export default function VendorChatPage() {
               return (
                 <Link
                   key={chat.id}
-                  href={`/customer/chat?id=${chat.id}`}
+                  href={`/customer/chat?order_id=${chat.order_id}`}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
                 >
                   <div className="relative shrink-0">

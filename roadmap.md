@@ -81,12 +81,12 @@ PHASE 4 — Customer Marketplace MVP
 
 Tasks
 
-- [x] Home discovery
-- [ ] Maps (real map integration)
-- [x] Vendor search
-- [x] Booking flow
-- [x] Order history
-- [ ] Review system
+- [x] Home discovery (dynamic promo + vendor terbaik + map view + nearby distance)
+- [x] Maps (Leaflet map with vendor markers + geolocation)
+- [x] Vendor search (real Supabase data + category filter)
+- [x] Booking flow (end-to-end: booking → createOrder → payment → escrow)
+- [x] Order history (real data from Supabase)
+- [x] Review system (create + display reviews, auto-update vendor rating)
 
 Output
 
@@ -103,6 +103,7 @@ Tasks
 - [x] Vendor dashboard
 - [x] Order management
 - [x] Earnings dashboard
+- [x] Location picker (Leaflet draggable pin on profile edit → users.lat/lng)
 
 Output
 
@@ -114,10 +115,10 @@ PHASE 6 — Realtime Layer
 
 Tasks
 
-- [ ] Realtime chat
+- [x] Realtime chat (polling-based, vendor + customer)
 - [ ] Live location tracking
 - [ ] Push notification
-- [ ] Order status sync
+- [ ] Order status sync (polling via React Query)
 
 Output
 
@@ -129,10 +130,11 @@ PHASE 7 — Payment Escrow
 
 Tasks
 
-- [ ] Xendit integration
-- [ ] Escrow flow
-- [ ] Refund logic
-- [x] Wallet ledger (UI + read)
+- [x] Xendit integration (Edge Functions created, frontend updated, pending deployment)
+- [x] Escrow flow (payment_status: unpaid → escrow → released via vendor actions)
+- [x] Refund logic
+- [x] Wallet ledger (UI + read + auto-create wallet)
+- [x] Wallet transaction (insert on payment escrow)
 
 Output
 

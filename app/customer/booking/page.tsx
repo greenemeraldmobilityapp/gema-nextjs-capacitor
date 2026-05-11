@@ -2,13 +2,16 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Clock, MapPin, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useCreateOrder } from '@/lib/services/useOrders';
+import { useAuthStore } from '@/store/auth';
 
 const supabase = createClient();
 
@@ -19,8 +22,11 @@ const TIME_SLOTS = [
 
 function BookingContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const vendorId = searchParams.get('vendorId') || '';
   const serviceId = searchParams.get('serviceId') || '';
+  const profile = useAuthStore((s) => s.profile);
+  const createOrder = useCreateOrder();
   const [notes, setNotes] = useState('');
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0]
@@ -57,11 +63,6 @@ function BookingContent() {
 
   const platformFee = service ? Math.round(service.price * 0.05) : 5000;
   const totalAmount = service ? service.price + platformFee : 155000;
-
-  const paymentParams = new URLSearchParams();
-  paymentParams.set('amount', String(totalAmount));
-  paymentParams.set('scheduled_date', selectedDate);
-  if (selectedTime) paymentParams.set('scheduled_time', selectedTime);
 
   const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -185,11 +186,43 @@ function BookingContent() {
       </div>
 
       <div className="p-4 bg-white border-t space-y-3 shrink-0">
-        <Link href={`/customer/payment?${paymentParams.toString()}`} className="block w-full">
-          <Button disabled={!selectedTime} className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm disabled:opacity-50">
-            Lanjut ke Pembayaran
-          </Button>
-        </Link>
+        <Button
+          disabled={!selectedTime || createOrder.isPending}
+          onClick={async () => {
+            if (!service || !profile) return;
+            const platformFee = Math.round(service.price * 0.05);
+            const totalAmount = service.price + platformFee;
+            createOrder.mutate(
+              {
+                customer_id: profile.id,
+                vendor_id: vendorId,
+                service_id: service.id,
+                service_category: service.category,
+                service_name: service.title,
+                scheduled_date: selectedDate,
+                scheduled_time: selectedTime || null,
+                service_address: 'Jl. Sudirman No 123, Jakarta Selatan (Patokan depan minimarket)',
+                notes: notes || null,
+                base_amount: service.price,
+                platform_fee: platformFee,
+                vendor_payout: service.price - platformFee,
+                total_amount: totalAmount,
+              },
+              {
+                onSuccess: (order) => {
+                  toast.success('Pesanan berhasil dibuat');
+                  router.push(`/customer/payment?order_id=${order.id}`);
+                },
+                onError: (err) => {
+                  toast.error(err.message || 'Gagal membuat pesanan');
+                },
+              }
+            );
+          }}
+          className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm disabled:opacity-50"
+        >
+          {createOrder.isPending ? 'Memproses...' : 'Lanjut ke Pembayaran'}
+        </Button>
       </div>
     </div>
   );

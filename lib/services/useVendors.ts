@@ -79,6 +79,57 @@ export function useVendorServices(vendorId: string | undefined) {
   });
 }
 
+export function haversineDistance(
+  lat1: number, lng1: number,
+  lat2: number, lng2: number
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+export type VendorWithDistance = VendorProfile & { distance?: number };
+
+export function useNearbyVendors(lat?: number, lng?: number) {
+  return useQuery({
+    queryKey: ['vendors-nearby', lat, lng],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('vendor_profiles')
+        .select('*, users(full_name, email, phone, lat, lng)')
+        .eq('is_verified', true);
+
+      if (error) throw error;
+
+      let vendors = data as VendorWithDistance[];
+
+      if (lat !== undefined && lng !== undefined) {
+        vendors = vendors
+          .map((v) => {
+            if (v.users?.lat && v.users?.lng) {
+              return {
+                ...v,
+                distance: haversineDistance(lat, lng, v.users.lat, v.users.lng),
+              };
+            }
+            return v;
+          })
+          .sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
+      }
+
+      return vendors;
+    },
+  });
+}
+
 export function useCreateService() {
   const queryClient = useQueryClient();
 
