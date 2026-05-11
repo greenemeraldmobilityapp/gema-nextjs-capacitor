@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, ClipboardList, User } from 'lucide-react';
+import { Home, Search, ClipboardList, MessageCircle, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function CustomerBottomNav() {
@@ -12,6 +12,7 @@ export function CustomerBottomNav() {
     { icon: Home, label: 'Home', href: '/customer/home' },
     { icon: Search, label: 'Search', href: '/customer/search' },
     { icon: ClipboardList, label: 'Orders', href: '/customer/orders' },
+    { icon: MessageCircle, label: 'Chat', href: '/customer/chat' },
     { icon: User, label: 'Profile', href: '/customer/profile' },
   ];
 
@@ -28,7 +29,7 @@ export function CustomerBottomNav() {
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 transition-colors",
                 isActive
-                  ? "bg-emerald-100 text-emerald-700 rounded-full px-4 py-1"
+                  ? "bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-700 rounded-full px-4 py-1 shadow-sm"
                   : "text-gray-500 hover:text-emerald-500 px-4 py-1"
               )}
             >

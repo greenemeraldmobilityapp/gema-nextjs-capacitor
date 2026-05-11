@@ -123,3 +123,106 @@ DATABASE_URL=          # for drizzle-kit only
 - Shadcn button: `className="h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700"`
 - Toast notifications via `sonner` (`import { toast } from 'sonner'`)
 - All pages wrapped in `<Suspense>` when using `useSearchParams`
+
+## UI/UX Design Workflow
+
+Setiap request UI/UX (design, build, create, implement, review, fix, improve), **WAJIB** gunakan skill ini.
+
+### Skill Location
+
+`skills/ui-ux-pro-max/` — Comprehensive design guide dengan 67 styles, 96 color palettes, 57 font pairings, 99 UX guidelines.
+
+### Prerequisite
+
+Pastikan Python3 terinstall:
+
+```bash
+python3 --version
+```
+
+Jika belum, install sesuai OS (brew/apt/winget).
+
+### Mandatory Workflow
+
+**Step 1: Analyze Requirements**
+- Product type: SaaS, e-commerce, marketplace, service, etc.
+- Style keywords: minimal, professional, elegant, dark mode, etc.
+- Industry: beauty, fintech, healthcare, service (marketplace)
+- Stack: **shadcn** (default untuk proyek ini)
+
+**Step 2: Generate Design System (REQUIRED)**
+
+Selalu mulai dengan `--design-system` untuk dapat rekomendasi lengkap:
+
+```bash
+python3 skills/ui-ux-pro-max/scripts/search.py "<product_type> <industry> <keywords>" --design-system -p "GEMA"
+```
+
+Ini mengembalikan: pattern, style, colors, typography, effects, dan anti-patterns.
+
+**Step 2b: Persist Design System (Optional)**
+
+Simpan sebagai file untuk hierarchical retrieval:
+
+```bash
+python3 skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "GEMA" --page "<page_name>"
+```
+
+Ini membuat:
+- `design-system/MASTER.md` — Global Source of Truth
+- `design-system/pages/<page_name>.md` — Page-specific overrides
+
+**Step 3: Supplement Searches (as needed)**
+
+| Need | Domain | Example |
+|------|--------|---------|
+| More style options | `style` | `--domain style "glassmorphism minimal"` |
+| UX best practices | `ux` | `--domain ux "animation accessibility"` |
+| Typography options | `typography` | `--domain typography "elegant modern"` |
+| Color palettes | `color` | `--domain color "saas service"` |
+| Landing structure | `landing` | `--domain landing "hero social-proof"` |
+
+**Step 4: Stack Guidelines**
+
+```bash
+python3 skills/ui-ux-pro-max/scripts/search.py "<keywords>" --stack shadcn
+```
+
+### Common Rules
+
+| Rule | Do | Don't |
+|------|----|-------|
+| **No emoji icons** | Use SVG icons (Heroicons, Lucide) | Use emojis sebagai UI icons |
+| **Cursor pointer** | Tambah `cursor-pointer` di semua clickable cards | Biarkan default cursor |
+| **Hover feedback** | Color/shadow/border transitions | No visual feedback |
+| **Smooth transitions** | `transition-colors duration-200` | Instant atau >500ms |
+| **Text contrast** | `#0F172A` (slate-900) untuk body text | `#94A3B8` (slate-400) |
+| **Glass card light** | `bg-white/80` atau higher opacity | `bg-white/10` (terlalu transparan) |
+| **Border visibility** | `border-gray-200` in light mode | `border-white/10` |
+| **Floating navbar** | `top-4 left-4 right-4` spacing | `top-0 left-0 right-0` |
+
+### Pre-Delivery Checklist
+
+**Visual:**
+- No emojis used as icons
+- All icons from consistent icon set (Lucide)
+- Hover states don't cause layout shift
+
+**Interaction:**
+- All clickable elements have `cursor-pointer`
+- Hover states provide clear visual feedback
+- Transitions are smooth (150-300ms)
+
+**Layout:**
+- Floating elements have proper spacing from edges
+- No content hidden behind fixed navbars
+- Responsive at 375px, 768px, 1024px
+
+**Accessibility:**
+- All images have alt text
+- Form inputs have labels
+- Color is not the only indicator
+
+### Stack Guidelines
+
+Gunakan `--stack shadcn` untuk proyek ini. Available stacks: `html-tailwind`, `react`, `nextjs`, `shadcn`, `swiftui`, `react-native`, dll.

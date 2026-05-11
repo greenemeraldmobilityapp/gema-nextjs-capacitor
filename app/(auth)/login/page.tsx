@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/lib/supabase/client';
@@ -16,11 +16,37 @@ export default function LoginPage() {
     email: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+
+  const validateEmail = (email: string) => {
+    if (!email) return 'Email wajib diisi';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Format email tidak valid';
+    return undefined;
+  };
+
+  const validatePassword = (password: string) => {
+    if (!password) return 'Kata sandi wajib diisi';
+    return undefined;
+  };
+
+  const handleBlurEmail = () => {
+    setFieldErrors(prev => ({ ...prev, email: validateEmail(formData.email) }));
+  };
+
+  const handleBlurPassword = () => {
+    setFieldErrors(prev => ({ ...prev, password: validatePassword(formData.password) }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const emailErr = validateEmail(formData.email);
+    const passwordErr = validatePassword(formData.password);
+    setFieldErrors({ email: emailErr, password: passwordErr });
+    if (emailErr || passwordErr) return;
+
     setIsLoading(true);
     setError(null);
 
@@ -47,7 +73,7 @@ export default function LoginPage() {
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: typeof window !== 'undefined' ? window.location.origin + '/login' : undefined,
+          redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
         },
       });
 
@@ -60,14 +86,24 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-safe">
-      <div className="p-4 pt-8 sticky top-0 z-10 bg-gray-50">
-        <Link href="/onboarding" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm text-gray-700 hover:bg-gray-100 transition-colors">
+      <header className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 px-4 py-4 relative flex items-center justify-center shadow-lg shadow-emerald-900/20">
+        <Link
+          href="/onboarding"
+          className="absolute left-4 w-10 h-10 rounded-full flex items-center justify-center text-white bg-white/15 backdrop-blur-sm border border-white/20 hover:bg-white/25 transition-all"
+          aria-label="Kembali"
+        >
           <ArrowLeft size={20} />
         </Link>
-      </div>
+        <h1 className="font-heading text-xl font-bold text-white tracking-[0.15em]">GEMA</h1>
+      </header>
 
-      <div className="flex-1 p-6 flex flex-col pt-8">
-        <div className="mb-8">
+      <div className="flex-1 p-6 flex flex-col">
+        <div className="mb-8 text-center">
+          <img
+            src="/images/gema-logo.png"
+            alt="GEMA Logo"
+            className="w-14 h-14 mx-auto mb-4"
+          />
           <h1 className="font-heading text-3xl font-bold text-gray-900 mb-2">Selamat Datang!</h1>
           <p className="text-gray-500">Masuk ke akun GEMA Anda untuk melanjutkan.</p>
         </div>
@@ -80,26 +116,34 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5 flex-1">
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">Email</label>
+            <label className="text-sm font-semibold text-gray-700" htmlFor="login-email">Email</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                 <Mail size={18} className="text-gray-400" />
               </div>
               <Input
+                id="login-email"
                 required
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onBlur={handleBlurEmail}
                 placeholder="nama@email.com"
-                className="pl-10 h-12 bg-white border-transparent focus:border-emerald-500 rounded-xl shadow-sm"
+                autoComplete="email"
+                className={`pl-10 h-12 bg-white border-transparent focus:border-emerald-500 rounded-xl shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 ${
+                  fieldErrors.email ? 'border-red-400 focus:border-red-500' : ''
+                }`}
               />
             </div>
+            {fieldErrors.email && (
+              <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-gray-700">Kata Sandi</label>
-              <Link href="#" className="text-xs font-semibold text-emerald-600 hover:underline">
+              <label className="text-sm font-semibold text-gray-700" htmlFor="login-password">Kata Sandi</label>
+              <Link href="/forgot-password" className="text-xs font-semibold text-emerald-600 hover:underline">
                 Lupa Sandi?
               </Link>
             </div>
@@ -108,14 +152,31 @@ export default function LoginPage() {
                 <Lock size={18} className="text-gray-400" />
               </div>
               <Input
+                id="login-password"
                 required
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                onBlur={handleBlurPassword}
                 placeholder="Masukkan kata sandi"
-                className="pl-10 h-12 bg-white border-transparent focus:border-emerald-500 rounded-xl shadow-sm"
+                autoComplete="current-password"
+                className={`pl-10 pr-12 h-12 bg-white border-transparent focus:border-emerald-500 rounded-xl shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 ${
+                  fieldErrors.password ? 'border-red-400 focus:border-red-500' : ''
+                }`}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
+            {fieldErrors.password && (
+              <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>
+            )}
           </div>
 
           <div className="pt-4">
@@ -124,9 +185,16 @@ export default function LoginPage() {
               disabled={isLoading}
               variant="pill"
               size="lg"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 shadow-lg shadow-emerald-900/20 hover:brightness-105 active:brightness-95 transition-all"
             >
-              {isLoading ? 'Memproses...' : 'Masuk'}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 size={18} className="animate-spin" />
+                  Masuk
+                </span>
+              ) : (
+                'Masuk'
+              )}
             </Button>
           </div>
           
