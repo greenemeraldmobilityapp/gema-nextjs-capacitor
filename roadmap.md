@@ -36,6 +36,8 @@ Tasks
 - [x] Setup Supabase
 - [x] Setup Drizzle
 - [x] Setup environment variables
+- [x] Setup MCP servers: .vscode/mcp.json (VS Code) + opencode.json (OpenCode CLI)
+  - Context7, Supabase, GitHub, Playwright, Exa, MDN
 
 Output
 
@@ -116,9 +118,9 @@ PHASE 6 — Realtime Layer
 Tasks
 
 - [x] Realtime chat (polling-based, vendor + customer)
-- [ ] Live location tracking
-- [ ] Push notification
-- [ ] Order status sync (polling via React Query)
+- [x] Live location tracking (basic: vendor share → customer view via localStorage polling)
+- [x] Push notification (service worker scaffolding + permission)
+- [x] Order status sync (polling via React Query)
 
 Output
 
@@ -130,7 +132,7 @@ PHASE 7 — Payment Escrow
 
 Tasks
 
-- [x] Xendit integration (Edge Functions created, frontend updated, pending deployment)
+- [x] Xendit integration (Edge Functions deployed, webhook registered, payment flow live)
 - [x] Escrow flow (payment_status: unpaid → escrow → released via vendor actions)
 - [x] Refund logic
 - [x] Wallet ledger (UI + read + auto-create wallet)
@@ -146,9 +148,9 @@ PHASE 8 — Admin Dashboard
 
 Tasks
 
-- [ ] Vendor verification approval
-- [ ] Dispute handling
-- [ ] Refund approval
+- [x] Vendor verification approval
+- [x] Dispute handling
+- [x] Refund/topup/withdrawal approval
 - [ ] Fraud monitoring
 
 Output

@@ -5,11 +5,13 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, MapPin, Calendar, Clock, Phone, MessageSquare, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
 import { useWallet, useAddTransaction } from '@/lib/services/useWallet';
 import { useAuthStore } from '@/store/auth';
 import { toast } from 'sonner';
+import { VendorLocationSharer } from '@/components/shared/LiveTracker';
 
 function OrderDetailContent() {
   const searchParams = useSearchParams();
@@ -68,8 +70,16 @@ function OrderDetailContent() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <Loader2 size={24} className="animate-spin text-gray-400" />
+      <div className="min-h-screen bg-gray-50 p-4 space-y-4">
+        <Skeleton className="h-6 w-1/3" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-5/6" />
+        <div className="flex gap-2 pt-2">
+          <Skeleton className="h-12 flex-1 rounded-xl" />
+          <Skeleton className="h-12 flex-1 rounded-xl" />
+        </div>
       </div>
     );
   }
@@ -191,6 +201,12 @@ function OrderDetailContent() {
             </div>
           </div>
         </div>
+
+        {order.order_status === 'in_progress' && (
+          <div className="px-4">
+            <VendorLocationSharer orderId={order.id} />
+          </div>
+        )}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex gap-3">
@@ -254,7 +270,7 @@ function OrderDetailContent() {
 
 export default function VendorOrderDetailPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-gray-50"><Loader2 size={24} className="animate-spin text-gray-400" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 p-4 space-y-4"><Skeleton className="h-6 w-1/3" /><Skeleton className="h-24 w-full rounded-xl" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-5/6" /></div>}>
       <OrderDetailContent />
     </Suspense>
   );

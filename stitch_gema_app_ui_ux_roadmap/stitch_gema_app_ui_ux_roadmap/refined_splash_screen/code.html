@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GEMA - Splash</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#eef6ee",
+                        "on-primary-fixed-variant": "#005236",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#161d19",
+                        "outline": "#6c7a71",
+                        "inverse-surface": "#2b322d",
+                        "on-tertiary-container": "#711419",
+                        "on-surface-variant": "#3c4a42",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#fc7c78",
+                        "on-secondary-container": "#3c6c54",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#4edea3",
+                        "on-tertiary-fixed": "#410005",
+                        "background": "#f4fbf4",
+                        "surface-dim": "#d4dcd5",
+                        "on-secondary-fixed": "#002113",
+                        "tertiary": "#a43a3a",
+                        "surface-container-high": "#e3eae3",
+                        "inverse-on-surface": "#ebf3eb",
+                        "surface-container-highest": "#dde4dd",
+                        "primary-container": "#10b981",
+                        "secondary-container": "#b7ebce",
+                        "surface-container": "#e8f0e9",
+                        "secondary-fixed": "#baeed1",
+                        "primary-fixed-dim": "#4edea3",
+                        "surface-bright": "#f4fbf4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#00422b",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#bbcabf",
+                        "on-tertiary-fixed-variant": "#842225",
+                        "secondary": "#376850",
+                        "tertiary-fixed-dim": "#ffb3af",
+                        "secondary-fixed-dim": "#9ed2b5",
+                        "on-error": "#ffffff",
+                        "surface": "#f4fbf4",
+                        "surface-tint": "#006c49",
+                        "on-background": "#161d19",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#ffdad7",
+                        "on-primary-fixed": "#002113",
+                        "on-secondary-fixed-variant": "#1e4f3a",
+                        "primary": "#006c49",
+                        "primary-fixed": "#6ffbbe",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#dde4dd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "container-padding": "16px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "2xl": "48px",
+                        "gutter": "12px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Inter"],
+                        "title-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "title-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#10B981] flex flex-col items-center justify-center m-0 p-0 overflow-hidden relative"><div class="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+<svg class="absolute -top-[10%] -left-[10%] w-[120%] h-[120%]" preserveaspectratio="none" viewbox="0 0 100 100">
+<defs>
+<radialgradient cx="50%" cy="50%" fx="50%" fy="50%" id="grad1" r="50%">
+<stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.1"></stop>
+<stop offset="100%" style="stop-color:#000000;stop-opacity:0.05"></stop>
+</radialgradient>
+</defs>
+<circle cx="20" cy="20" fill="url(#grad1)" r="40"></circle>
+<circle cx="80" cy="70" fill="url(#grad1)" r="50"></circle>
+</svg>
+</div>
+<!-- Main Canvas: Splash Screen Content -->
+<main class="flex-1 w-full flex flex-col items-center justify-center p-container-padding">
+<!-- GEMA Wordmark -->
+<h1 class="font-display-lg text-[64px] font-black text-white tracking-[0.1em] transform transition-transform duration-700 hover:scale-105 drop-shadow-sm select-none z-10">
+    GEMA
+</h1>
+</main>
+</body></html>

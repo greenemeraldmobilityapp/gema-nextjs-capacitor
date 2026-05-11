@@ -75,6 +75,8 @@ export function useCreateWallet() {
 }
 
 export function useAddTransaction() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (tx: {
       wallet_id: string;
@@ -87,6 +89,77 @@ export function useAddTransaction() {
         .insert(tx);
 
       if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['wallet-transactions', variables.wallet_id] });
+    },
+  });
+}
+
+export function useRequestTopup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      walletId,
+      amount,
+    }: {
+      walletId: string;
+      amount: number;
+    }) => {
+      const { data, error } = await supabase
+        .from('wallet_transactions')
+        .insert({
+          wallet_id: walletId,
+          type: 'topup',
+          amount,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as WalletTransaction;
+    },
+    onSuccess: (_data) => {
+      queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] });
+    },
+  });
+}
+
+export function useRequestWithdraw() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      walletId,
+      amount,
+      bankName,
+      accountNumber,
+      accountHolder,
+    }: {
+      walletId: string;
+      amount: number;
+      bankName: string;
+      accountNumber: string;
+      accountHolder: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('wallet_transactions')
+        .insert({
+          wallet_id: walletId,
+          type: 'withdrawal',
+          amount: -amount,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as WalletTransaction;
+    },
+    onSuccess: (_data) => {
+      queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] });
     },
   });
 }

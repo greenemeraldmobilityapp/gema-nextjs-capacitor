@@ -1,0 +1,49 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "upstash": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/mcp-server@latest"],
+      "enabled": true,
+      "environment": {
+        "UPSTASH_EMAIL": "green.emerald.mobility.app@gmail.com",
+        "UPSTASH_API_KEY": "a3f0edb0-0f75-4031-ac43-efcf760d03a6"
+      }
+    },
+    "supabase": {
+      "type": "remote",
+      "url": "https://mcp.supabase.com/mcp?project_ref=ajteskgdggxwefcrncuu",
+      "enabled": true,
+      "oauth": false,
+      "headers": {
+        "Authorization": "Bearer sbp_13b23c3c9f1a4c1da0a953e16bb1a980a965955c"
+      }
+    },
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "enabled": true,
+      "environment": {
+        "GITHUB_TOKEN": "{env:GH_TOKEN}"
+      }
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "@playwright/mcp@latest"],
+      "enabled": true
+    },
+    "exa": {
+      "type": "local",
+      "command": ["npx", "-y", "exa-mcp-server"],
+      "enabled": true,
+      "environment": {
+        "EXA_API_KEY": "{env:EXA_API_KEY}"
+      }
+    },
+    "mdn": {
+      "type": "local",
+      "command": ["npx", "-y", "mdn-mcp"],
+      "enabled": true
+    }
+  }
+}

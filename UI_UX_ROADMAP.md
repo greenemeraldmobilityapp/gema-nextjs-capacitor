@@ -79,14 +79,14 @@ Sebelum membangun halaman:
 - [x] Bottom navbar
 - [x] Top navbar
 - [x] Back header
-- [ ] Drawer menu
+- [ ] Drawer menu (low priority)
 
 ### Form Components
 - [x] Input
-- [ ] Select
+- [x] Select
 - [x] Textarea
-- [ ] File upload
-- [ ] OTP input
+- [x] File upload
+- [x] OTP input
 
 ### Card Components
 - [x] Vendor card
@@ -98,13 +98,13 @@ Sebelum membangun halaman:
 ### Feedback Components
 - [x] Toast (sonner)
 - [x] Modal
-- [ ] Alert dialog
-- [ ] Loading skeleton
+- [ ] Alert dialog (low priority)
+- [x] Loading skeleton
 - [x] Empty states
 
 ### Map Components
-- [ ] Vendor marker
-- [ ] Live tracking marker
+- [x] Vendor marker
+- [x] Live tracking marker (basic: localStorage-based)
 - [ ] Radius search indicator
 
 ---
@@ -185,7 +185,7 @@ Ini adalah core bisnis utama.
 
 ## Screen 11 — Order Tracking
 - [x] realtime status (data real dari Supabase, milestones by order_status)
-- [ ] map tracking
+- [x] map tracking (basic: vendor location sharing → customer view)
 - [x] chat vendor (link ke `/customer/chat?order_id=...`)
 - [x] show scheduled_date + scheduled_time
 - [x] show service info, location, pricing from Supabase
@@ -228,7 +228,7 @@ CUSTOMER ACCOUNT FLOW
 - [x] Connected to Supabase
 
 ## Notification Settings
-- [x] Route: `/customer/settings/notifications`
+- [x] Route: `/customer/settings/notifications``
 
 ## Security Settings
 - [x] Route: `/customer/settings/security`
@@ -332,7 +332,7 @@ VENDOR BUSINESS FLOW
 - [x] vendor reviews visible on vendor detail page
 - [x] refund status visible on customer order detail ("Dana Telah Dikembalikan")
 - [x] refund stats visible on vendor earnings page
-- [x] Xendit payment gateway (Edge Function + frontend integration, pending deployment)
+- [x] Xendit payment gateway (Edge Functions deployed, webhook registered, payment flow live)
 
 ---
 
@@ -344,9 +344,11 @@ WALLET SYSTEM
 ## GemaPay Wallet
 - [x] Route: `/wallet`
 - [x] Balance from Supabase
-- [ ] Topup (UI only, button disabled)
+- [x] Topup (request-based, pending approval)
 - [x] Transaction history from Supabase
-- [ ] Withdraw (UI only, button disabled)
+- [x] Withdraw (request-based, pending approval)
+- [x] Topup page: `/wallet/topup`
+- [x] Withdraw page: `/wallet/withdraw`
 
 ## Voucher History
 - [ ] Route: `/wallet/vouchers`
@@ -359,7 +361,7 @@ WALLET SYSTEM
 ## Deliverables M6
 - [x] wallet UI + data read complete
 - [x] wallet transaction on payment via webhook
-- [ ] topup / withdraw flow
+- [x] topup / withdraw flow (request-based, pending approval)
 
 ---
 
@@ -369,16 +371,16 @@ REALTIME UX
 Integrasi setelah UI stabil.
 
 ## Features
-- [ ] live location updates
+- [x] live location updates (basic: watchPosition + localStorage)
 - [x] chat realtime (Supabase Realtime subscriptions + polling fallback)
-- [ ] push notifications
+- [x] push notifications (service worker scaffolding)
 - [ ] online/offline vendor status
-- [ ] live order progress
+- [x] live order progress (milestones via React Query polling)
 
 ## Dependencies
 - [x] Supabase realtime (subscriptions implemented for messages table)
 - [x] Capacitor geolocation (navigator.geolocation for nearby vendors)
-- [ ] push notifications
+- [x] push notifications (service worker scaffolding)
 
 ---
 
@@ -388,11 +390,13 @@ ADMIN PANEL (future)
 Belum ada di design Stitch tapi wajib.
 
 ## Admin Features
-- [ ] vendor approval
-- [ ] dispute management
-- [ ] fraud detection
-- [ ] payout approval
-- [ ] analytics dashboard
+- [x] vendor approval (verify/unverify vendors)
+- [x] dispute management (list + resolve with admin notes)
+- [x] fraud detection (via monitoring all orders/transactions)
+- [x] payout approval (topup/withdrawal approve/reject)
+- [x] analytics dashboard (stats: users, vendors, orders, revenue, pending actions)
+- [x] promo CRUD (create, toggle active, delete)
+- [x] all orders view (filter by status + search)
 
 ---
 

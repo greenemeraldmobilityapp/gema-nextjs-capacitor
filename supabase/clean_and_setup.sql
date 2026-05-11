@@ -281,6 +281,48 @@ CREATE POLICY "Users can view own transactions" ON wallet_transactions
     )
   );
 
+-- Admin: full access to all tables (via SECURITY DEFINER function to avoid circular subquery)
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+AS $$
+  SELECT EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin');
+$$;
+
+GRANT EXECUTE ON FUNCTION public.is_admin TO authenticated;
+
+CREATE POLICY "Admins can view all users" ON users
+  FOR SELECT USING (public.is_admin());
+CREATE POLICY "Admins can update all users" ON users
+  FOR UPDATE USING (public.is_admin());
+
+CREATE POLICY "Admins can view all vendor profiles" ON vendor_profiles
+  FOR SELECT USING (public.is_admin());
+CREATE POLICY "Admins can update all vendor profiles" ON vendor_profiles
+  FOR UPDATE USING (public.is_admin());
+
+CREATE POLICY "Admins can view all orders" ON orders
+  FOR SELECT USING (public.is_admin());
+
+CREATE POLICY "Admins can view all wallets" ON wallets
+  FOR SELECT USING (public.is_admin());
+CREATE POLICY "Admins can update all wallets" ON wallets
+  FOR UPDATE USING (public.is_admin());
+
+CREATE POLICY "Admins can view all wallet transactions" ON wallet_transactions
+  FOR SELECT USING (public.is_admin());
+CREATE POLICY "Admins can update all wallet transactions" ON wallet_transactions
+  FOR UPDATE USING (public.is_admin());
+
+CREATE POLICY "Admins can view all disputes" ON disputes
+  FOR SELECT USING (public.is_admin());
+CREATE POLICY "Admins can update all disputes" ON disputes
+  FOR UPDATE USING (public.is_admin());
+
+CREATE POLICY "Admins can manage promos" ON promos
+  FOR ALL USING (public.is_admin());
+
 -- ===== 6. TRIGGER: Auto-create user profile on signup =====
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()

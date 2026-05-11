@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowLeft, MessageSquare, MapPin, Clock, Star, CheckCircle2, XCircle, Loader2, AlertCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { useSearchParams } from 'next/navigation';
 import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
 import { useChatByOrder } from '@/lib/services/useChat';
 import { useOrderReview } from '@/lib/services/useReviews';
+import { CustomerLocationViewer } from '@/components/shared/LiveTracker';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   pending: { label: 'Menunggu Konfirmasi', color: 'text-orange-600', bg: 'bg-orange-50 border-orange-200' },
@@ -52,8 +54,13 @@ function OrderTrackingContent() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <Loader2 size={24} className="animate-spin text-gray-400" />
+      <div className="min-h-screen bg-gray-50 p-4 space-y-4">
+        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="h-12 w-full rounded-xl" />
       </div>
     );
   }
@@ -131,6 +138,10 @@ function OrderTrackingContent() {
               <p className="text-sm text-gray-500">{order.notes}</p>
             </CardContent>
           </Card>
+        )}
+
+        {order.order_status === 'in_progress' && (
+          <CustomerLocationViewer orderId={order.id} />
         )}
 
         <Card className="rounded-2xl border-none shadow-sm">

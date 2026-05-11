@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vendor Verification</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#842225",
+                      "on-secondary-container": "#3c6c54",
+                      "tertiary-fixed": "#ffdad7",
+                      "on-tertiary-container": "#711419",
+                      "on-secondary-fixed-variant": "#1e4f3a",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-on-surface": "#ebf3eb",
+                      "surface-container-highest": "#dde4dd",
+                      "secondary-fixed-dim": "#9ed2b5",
+                      "outline": "#6c7a71",
+                      "on-primary-fixed-variant": "#005236",
+                      "on-primary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "error": "#ba1a1a",
+                      "surface": "#f4fbf4",
+                      "error-container": "#ffdad6",
+                      "surface-bright": "#f4fbf4",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#dde4dd",
+                      "on-error": "#ffffff",
+                      "background": "#f4fbf4",
+                      "primary": "#006c49",
+                      "surface-dim": "#d4dcd5",
+                      "tertiary-container": "#fc7c78",
+                      "primary-container": "#10b981",
+                      "tertiary": "#a43a3a",
+                      "primary-fixed-dim": "#4edea3",
+                      "surface-tint": "#006c49",
+                      "on-secondary-fixed": "#002113",
+                      "inverse-primary": "#4edea3",
+                      "surface-container-high": "#e3eae3",
+                      "on-surface-variant": "#3c4a42",
+                      "on-secondary": "#ffffff",
+                      "on-primary-container": "#00422b",
+                      "tertiary-fixed-dim": "#ffb3af",
+                      "secondary-fixed": "#baeed1",
+                      "outline-variant": "#bbcabf",
+                      "secondary-container": "#b7ebce",
+                      "on-tertiary-fixed": "#410005",
+                      "on-surface": "#161d19",
+                      "on-primary-fixed": "#002113",
+                      "on-background": "#161d19",
+                      "surface-container": "#e8f0e9",
+                      "inverse-surface": "#2b322d",
+                      "secondary": "#376850",
+                      "primary-fixed": "#6ffbbe",
+                      "surface-container-low": "#eef6ee"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "md": "16px",
+                      "container-padding": "16px",
+                      "2xl": "48px",
+                      "sm": "8px",
+                      "base": "4px",
+                      "gutter": "12px",
+                      "xs": "4px",
+                      "xl": "32px"
+              },
+              "fontFamily": {
+                      "title-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "title-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col font-body-md antialiased pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-surface dark:bg-surface-dim transition-colors duration-200 ease-in-out">
+<div class="flex items-center justify-between px-md py-sm w-full max-w-7xl mx-auto">
+<button aria-label="Go back" class="p-2 rounded-full hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors duration-200 ease-in-out text-on-surface-variant dark:text-outline-variant">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim">Vendor Verification</h1>
+<div class="w-10"></div> <!-- Placeholder for balance -->
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col px-md lg:px-lg max-w-2xl mx-auto w-full pt-md pb-2xl">
+<!-- Illustration Section -->
+<div class="w-full aspect-square md:aspect-video rounded-DEFAULT overflow-hidden mb-xl relative shadow-sm">
+<img alt="Verification illustration" class="w-full h-full object-cover" data-alt="A stylized, modern, flat-design 3D illustration of a glowing verification badge and a checklist, floating in a clean, soft white space. The color palette primarily features soft emerald greens, bright whites, and subtle silver accents to communicate trust and completion. The lighting is soft and ambient, creating a premium, modern-tech aesthetic that aligns with a trustworthy service platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTB0V1MzY9OluK4cziuRXn6_EaTXF42YbxYrPw9COUfjqobUa8dVtIId0nXVX_oSYqXmEjsnq1mLvaEtfJHR6-0nFQEZi7PaS1s-3BFoWegaCisfUn6Bo386OEop7WBaK48jvoT1thyWnKYqVPQhHVsIhJfve8HA54yxYfK6xQTspwN5sbiaEAdenTuURXGpvah0X8qrZ0APR6b2__uSbewUzWFja7KSE1bOSGz_gxM4OllO7k98FIgcV0mk57mK8IyETGbneSbbs"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface/80 to-transparent"></div>
+</div>
+<!-- Headline & Subtitle -->
+<div class="text-center mb-xl">
+<h2 class="font-display-lg text-display-lg text-primary mb-md">Verifikasi Akun Vendor</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto">
+                Verifikasi identitas dan sertifikasi Anda untuk membuka lebih banyak peluang kerja dan membangun kepercayaan dengan pelanggan.
+            </p>
+</div>
+<!-- Steps List (Bento Grid inspired) -->
+<div class="grid grid-cols-1 gap-md mb-2xl">
+<!-- Step 1 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT p-md shadow-sm flex items-start gap-md border border-surface-container-high">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined fill text-on-secondary-container">badge</span>
+</div>
+<div class="pt-1">
+<h3 class="font-title-sm text-title-sm text-on-surface mb-xs">1. Identitas Diri (KTP)</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Unggah foto KTP resmi Anda untuk memverifikasi identitas dan domisili.</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT p-md shadow-sm flex items-start gap-md border border-surface-container-high">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined fill text-on-secondary-container">workspace_premium</span>
+</div>
+<div class="pt-1">
+<h3 class="font-title-sm text-title-sm text-on-surface mb-xs">2. Sertifikasi Profesi</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Lampirkan sertifikat keahlian atau portfolio yang relevan dengan layanan Anda.</p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT p-md shadow-sm flex items-start gap-md border border-surface-container-high">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined fill text-on-secondary-container">verified</span>
+</div>
+<div class="pt-1">
+<h3 class="font-title-sm text-title-sm text-on-surface mb-xs">3. Peninjauan Akhir</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Tim kami akan meninjau dokumen Anda dalam waktu 1x24 jam hari kerja.</p>
+</div>
+</div>
+</div>
+<!-- Call to Action -->
+<div class="mt-auto pt-md pb-safe w-full">
+<button class="w-full bg-primary text-on-primary py-4 px-lg rounded-full font-title-sm text-title-sm shadow-md hover:bg-surface-tint transition-colors active:scale-95 duration-150">
+                Mulai Verifikasi
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on MD up, visible on mobile) -->
+<!-- Suppressed: This is a transactional/onboarding flow where the global nav is inappropriate -->
+</body></html>

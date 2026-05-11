@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>GEMA - Booking Summary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#a43a3a",
+                        "surface-container-high": "#e3eae3",
+                        "on-secondary-fixed": "#002113",
+                        "surface-dim": "#d4dcd5",
+                        "background": "#f4fbf4",
+                        "on-tertiary-fixed": "#410005",
+                        "inverse-primary": "#4edea3",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#3c6c54",
+                        "surface-container": "#e8f0e9",
+                        "secondary-container": "#b7ebce",
+                        "primary-container": "#10b981",
+                        "surface-container-highest": "#dde4dd",
+                        "inverse-on-surface": "#ebf3eb",
+                        "inverse-surface": "#2b322d",
+                        "outline": "#6c7a71",
+                        "on-surface": "#161d19",
+                        "surface-container-low": "#eef6ee",
+                        "on-primary-fixed-variant": "#005236",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#fc7c78",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#3c4a42",
+                        "on-tertiary-container": "#711419",
+                        "on-secondary-fixed-variant": "#1e4f3a",
+                        "on-primary-fixed": "#002113",
+                        "tertiary-fixed": "#ffdad7",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#006c49",
+                        "on-background": "#161d19",
+                        "surface": "#f4fbf4",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#9ed2b5",
+                        "surface-variant": "#dde4dd",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#6ffbbe",
+                        "primary": "#006c49",
+                        "on-primary-container": "#00422b",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f4fbf4",
+                        "primary-fixed-dim": "#4edea3",
+                        "secondary-fixed": "#baeed1",
+                        "tertiary-fixed-dim": "#ffb3af",
+                        "secondary": "#376850",
+                        "outline-variant": "#bbcabf",
+                        "on-tertiary-fixed-variant": "#842225"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "container-padding": "16px",
+                        "base": "4px",
+                        "gutter": "12px",
+                        "2xl": "48px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Inter"],
+                        "title-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "title-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background antialiased pb-32">
+<!-- Top Navigation (Custom for flow, not TopAppBar) -->
+<header class="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-outline-variant/20 pt-safe">
+<div class="flex items-center px-container-padding py-md">
+<button class="p-2 -ml-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="flex-1 text-center font-headline-md text-headline-md text-on-surface mr-8">
+                Booking Summary
+            </h1>
+</div>
+</header>
+<main class="px-container-padding py-lg flex flex-col gap-lg max-w-lg mx-auto"><!-- Service Details Card -->
+<section class="bg-surface-container-lowest rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-surface-variant/30 p-md flex flex-col gap-md">
+<div class="flex gap-md items-start">
+<div class="w-16 h-16 rounded-DEFAULT overflow-hidden flex-shrink-0 bg-surface-variant">
+<img alt="Vendor" class="w-full h-full object-cover" data-alt="A professional cleaning service worker in a neat emerald green uniform, smiling warmly while holding cleaning supplies in a bright, modern minimalist home. Soft natural light highlights the clean, trustworthy atmosphere. High resolution, crisp details." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSewKsVR6f6GOnzOMfbwWdHYMqXp_MSy4ZkmxIuoqiToj1PSV_J3AbGygw8UPeNvxyZsoGULESoXb16GYJmhFFHRZm8P87AaI_2S_joAArN0A2_QjDiR29wvBU8brefk0E-h74NjPqs-MWsh2kv7pCEdi_4V0hrqLCM46KDuBHH5I-PNKa6gYiD8PoZIdX9BfcNTIIBeGGY8GP5pCYCE_N12aQ1F4M0WtXBVpquYc8MjOS1_XM6PHJtT2vYn-5XIXEwVE1tdwXSN8"/>
+</div>
+<div class="flex-1">
+<h2 class="font-title-sm text-title-sm text-on-surface mb-xs">CleanPro Services</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Deep Home Cleaning</p>
+<div class="flex items-center gap-xs mt-sm text-primary">
+<span class="material-symbols-outlined text-[16px] fill">star</span>
+<span class="font-label-md text-label-md text-on-surface-variant">4.9 (120 reviews)</span>
+</div>
+</div>
+</div>
+<div class="h-px bg-outline-variant/20 w-full"></div>
+<div class="grid grid-cols-2 gap-md">
+<div class="flex gap-sm items-center">
+<div class="w-10 h-10 rounded-full bg-secondary-container/50 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-outline uppercase tracking-wider">Date</p>
+<p class="font-body-md text-body-md text-on-surface font-semibold">15 Oct 2023</p>
+</div>
+</div>
+<div class="flex gap-sm items-center">
+<div class="w-10 h-10 rounded-full bg-secondary-container/50 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-outline uppercase tracking-wider">Time</p>
+<p class="font-body-md text-body-md text-on-surface font-semibold">09:00 - 12:00</p>
+</div>
+</div>
+</div>
+<div class="flex gap-sm items-center">
+<div class="w-10 h-10 rounded-full bg-secondary-container/50 flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">location_on</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-outline uppercase tracking-wider">Location</p>
+<p class="font-body-md text-body-md text-on-surface font-semibold line-clamp-1">Jl. Sudirman Kav 52-53, Jakarta Selatan</p>
+</div>
+</div>
+</section>
+<!-- Payment Method Selection -->
+<section>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-md px-1">Pilih Metode Pembayaran</h3>
+<div class="bg-surface-container-lowest rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-surface-variant/30 overflow-hidden">
+<button class="w-full p-md flex items-center justify-between hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-12 h-8 bg-surface-variant/30 rounded flex items-center justify-center text-primary font-bold text-[10px] tracking-tighter border border-outline-variant/30">
+                    G-PAY
+                </div>
+<div>
+<p class="font-body-lg text-body-lg text-on-surface font-semibold">GEMA Pay</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Saldo: Rp 500.000</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Cost Breakdown -->
+<section class="bg-surface-container-lowest rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-surface-variant/30 p-md">
+<h3 class="font-title-sm text-title-sm text-on-surface mb-lg px-1">Rincian Pembayaran</h3>
+<div class="flex flex-col gap-md mb-lg">
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Biaya Layanan</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Rp 300.000</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Biaya Platform</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Rp 5.000</span>
+</div>
+<div class="flex justify-between items-center text-primary bg-primary/5 -mx-md px-md py-2">
+<span class="font-body-md text-body-md flex items-center gap-xs font-medium">
+<span class="material-symbols-outlined text-[18px]">local_offer</span>
+                Promo GEMA
+            </span>
+<span class="font-body-md text-body-md font-bold">-Rp 25.000</span>
+</div>
+</div>
+<div class="h-px bg-outline-variant/20 w-full mb-lg"></div>
+<div class="flex justify-between items-end">
+<span class="font-title-sm text-title-sm text-on-surface">Total Pembayaran</span>
+<span class="font-display-lg text-headline-md text-primary">Rp 280.000</span>
+</div>
+</section></main>
+<!-- Fixed Bottom Action -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest shadow-[0_-4px_12px_rgba(0,0,0,0.05)] p-container-padding pb-safe z-50">
+<div class="max-w-lg mx-auto flex gap-md items-center"><div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-1">Total Tagihan</p>
+<p class="font-headline-md text-headline-md text-on-surface">Rp 280.000</p>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-on-primary font-title-sm text-title-sm py-4 px-8 rounded-full shadow-md transition-all active:scale-95 whitespace-nowrap">
+    Konfirmasi Pesanan
+</button></div>
+</div>
+</body></html>

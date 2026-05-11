@@ -7,6 +7,7 @@ import { AuthProvider } from "@/components/providers/auth-provider";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { NotificationInit } from "@/components/shared/NotificationInit";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
           </AuthProvider>
         </QueryProvider>
         <Toaster />
+        <NotificationInit />
       </body>
     </html>
   );

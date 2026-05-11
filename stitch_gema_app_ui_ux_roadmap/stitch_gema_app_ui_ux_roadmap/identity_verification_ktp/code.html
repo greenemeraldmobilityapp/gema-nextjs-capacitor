@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Vendor Verification - Identity</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#842225",
+                      "on-secondary-container": "#3c6c54",
+                      "tertiary-fixed": "#ffdad7",
+                      "on-tertiary-container": "#711419",
+                      "on-secondary-fixed-variant": "#1e4f3a",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-on-surface": "#ebf3eb",
+                      "surface-container-highest": "#dde4dd",
+                      "secondary-fixed-dim": "#9ed2b5",
+                      "outline": "#6c7a71",
+                      "on-primary-fixed-variant": "#005236",
+                      "on-primary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "error": "#ba1a1a",
+                      "surface": "#f4fbf4",
+                      "error-container": "#ffdad6",
+                      "surface-bright": "#f4fbf4",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#dde4dd",
+                      "on-error": "#ffffff",
+                      "background": "#f4fbf4",
+                      "primary": "#006c49",
+                      "surface-dim": "#d4dcd5",
+                      "tertiary-container": "#fc7c78",
+                      "primary-container": "#10b981",
+                      "tertiary": "#a43a3a",
+                      "primary-fixed-dim": "#4edea3",
+                      "surface-tint": "#006c49",
+                      "on-secondary-fixed": "#002113",
+                      "inverse-primary": "#4edea3",
+                      "surface-container-high": "#e3eae3",
+                      "on-surface-variant": "#3c4a42",
+                      "on-secondary": "#ffffff",
+                      "on-primary-container": "#00422b",
+                      "tertiary-fixed-dim": "#ffb3af",
+                      "secondary-fixed": "#baeed1",
+                      "outline-variant": "#bbcabf",
+                      "secondary-container": "#b7ebce",
+                      "on-tertiary-fixed": "#410005",
+                      "on-surface": "#161d19",
+                      "on-primary-fixed": "#002113",
+                      "on-background": "#161d19",
+                      "surface-container": "#e8f0e9",
+                      "inverse-surface": "#2b322d",
+                      "secondary": "#376850",
+                      "primary-fixed": "#6ffbbe",
+                      "surface-container-low": "#eef6ee"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "md": "16px",
+                      "container-padding": "16px",
+                      "2xl": "48px",
+                      "sm": "8px",
+                      "base": "4px",
+                      "gutter": "12px",
+                      "xs": "4px",
+                      "xl": "32px"
+              },
+              "fontFamily": {
+                      "title-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "title-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-surface dark:bg-surface-dim transition-colors duration-200 ease-in-out">
+<div class="flex items-center justify-between px-md py-sm w-full max-w-7xl mx-auto">
+<button aria-label="Go back" class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest p-2 rounded-full transition-colors duration-200 ease-in-out flex items-center justify-center">
+<span aria-hidden="true" class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-title-sm text-title-sm font-bold text-primary dark:text-primary-fixed-dim flex-1 text-center pr-10">Vendor Verification</h1>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 w-full max-w-2xl mx-auto px-md py-lg flex flex-col gap-lg pb-32">
+<!-- Progress Indicator -->
+<div class="flex flex-col gap-sm">
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md text-primary">Step 1 of 3</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Identity Verification</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-2 overflow-hidden flex">
+<div class="bg-primary w-1/3 h-full rounded-full"></div>
+</div>
+</div>
+<!-- Header Content -->
+<div class="flex flex-col gap-sm mt-md">
+<h2 class="font-headline-md text-headline-md text-on-surface">Upload Identity Document</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Please upload a clear photo of your KTP (Indonesian ID card) to verify your identity. This helps us ensure a secure marketplace.</p>
+</div>
+<!-- Upload Area -->
+<div class="relative mt-sm w-full bg-surface-container-lowest rounded-lg border-2 border-dashed border-outline-variant hover:border-primary hover:bg-surface-container-low transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center p-xl gap-md group shadow-sm">
+<input accept="image/*" aria-label="Upload KTP photo" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" type="file"/>
+<div class="bg-secondary-container/30 p-md rounded-full text-primary group-hover:bg-secondary-container/50 transition-colors">
+<span aria-hidden="true" class="material-symbols-outlined text-display-lg" style="font-size: 48px;">id_card</span>
+</div>
+<div class="text-center flex flex-col gap-xs">
+<span class="font-title-sm text-title-sm text-on-surface">Tap to upload KTP</span>
+<span class="font-body-md text-body-md text-on-surface-variant">PNG, JPG up to 10MB</span>
+</div>
+</div>
+<!-- Guidelines Bento Grid -->
+<div class="mt-md">
+<h3 class="font-title-sm text-title-sm text-on-surface mb-md">Photo Guidelines</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Guideline 1 -->
+<div class="bg-surface-container-lowest rounded-lg p-md shadow-sm border border-surface-variant flex items-start gap-md">
+<div class="bg-primary/10 p-sm rounded-full text-primary flex-shrink-0">
+<span aria-hidden="true" class="material-symbols-outlined">crop</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-xs">All Edges Visible</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Ensure all four corners of the ID card are visible in the frame.</p>
+</div>
+</div>
+<!-- Guideline 2 -->
+<div class="bg-surface-container-lowest rounded-lg p-md shadow-sm border border-surface-variant flex items-start gap-md">
+<div class="bg-primary/10 p-sm rounded-full text-primary flex-shrink-0">
+<span aria-hidden="true" class="material-symbols-outlined">wb_incandescent</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-xs">No Glare</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Avoid reflections from flash or bright lights that obscure details.</p>
+</div>
+</div>
+<!-- Guideline 3 -->
+<div class="bg-surface-container-lowest rounded-lg p-md shadow-sm border border-surface-variant flex items-start gap-md">
+<div class="bg-primary/10 p-sm rounded-full text-primary flex-shrink-0">
+<span aria-hidden="true" class="material-symbols-outlined">match_case</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-xs">Text Readable</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Make sure all text, especially NIK and name, is clear and sharp.</p>
+</div>
+</div>
+<!-- Guideline 4 -->
+<div class="bg-surface-container-lowest rounded-lg p-md shadow-sm border border-surface-variant flex items-start gap-md">
+<div class="bg-primary/10 p-sm rounded-full text-primary flex-shrink-0">
+<span aria-hidden="true" class="material-symbols-outlined">credit_card</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-xs">Original Card</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Upload a photo of the original physical card, not a photocopy or screenshot.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Action Area -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-md border-t border-surface-variant px-lg py-md pb-safe z-40">
+<div class="max-w-2xl mx-auto flex items-center justify-center">
+<!-- Disabled Primary Button -->
+<button class="w-full py-md px-lg rounded-full font-title-sm text-title-sm bg-surface-variant text-on-surface-variant opacity-70 cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-none" disabled="">
+                Lanjut
+            </button>
+</div>
+</div>
+</body></html>

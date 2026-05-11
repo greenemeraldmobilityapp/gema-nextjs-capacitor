@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vendor Dashboard - GEMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;900&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f4fbf4",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#9ed2b5",
+                        "on-secondary-fixed-variant": "#1e4f3a",
+                        "on-primary-fixed": "#002113",
+                        "tertiary-fixed": "#ffdad7",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#006c49",
+                        "on-background": "#161d19",
+                        "primary-fixed": "#6ffbbe",
+                        "primary": "#006c49",
+                        "surface-variant": "#dde4dd",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#baeed1",
+                        "on-primary-container": "#00422b",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f4fbf4",
+                        "primary-fixed-dim": "#4edea3",
+                        "outline-variant": "#bbcabf",
+                        "on-tertiary-fixed-variant": "#842225",
+                        "tertiary-fixed-dim": "#ffb3af",
+                        "secondary": "#376850",
+                        "on-tertiary-fixed": "#410005",
+                        "inverse-primary": "#4edea3",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#3c6c54",
+                        "tertiary": "#a43a3a",
+                        "surface-container-high": "#e3eae3",
+                        "on-secondary-fixed": "#002113",
+                        "surface-dim": "#d4dcd5",
+                        "background": "#f4fbf4",
+                        "primary-container": "#10b981",
+                        "surface-container-highest": "#dde4dd",
+                        "inverse-on-surface": "#ebf3eb",
+                        "surface-container": "#e8f0e9",
+                        "secondary-container": "#b7ebce",
+                        "outline": "#6c7a71",
+                        "on-surface": "#161d19",
+                        "surface-container-low": "#eef6ee",
+                        "on-primary-fixed-variant": "#005236",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#2b322d",
+                        "on-surface-variant": "#3c4a42",
+                        "on-tertiary-container": "#711419",
+                        "tertiary-container": "#fc7c78",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "container-padding": "16px",
+                        "base": "4px",
+                        "gutter": "12px",
+                        "2xl": "48px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Plus Jakarta Sans"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "display-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pb-[80px] md:pb-0 pt-[72px]">
+<!-- TopAppBar -->
+<header class="bg-surface shadow-sm fixed top-0 w-full z-50 flex justify-between items-center px-container-padding py-sm">
+<div class="flex items-center gap-sm cursor-pointer active:scale-95 duration-200 ease-in-out">
+<img alt="User Profile" class="w-10 h-10 rounded-full object-cover" data-alt="A close-up portrait of a professional male vendor smiling warmly, set against a soft, well-lit background. The lighting is clean and bright, reflecting a modern, trustworthy brand aesthetic with subtle emerald green tones in the background. The mood is confident and inviting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0nFWnfiWXV8X-0bIj6s_ORaOXfVrU9IIMLrzcKq5t-ke5kUyzDHmY3kGIzQvo6bn1tiCcy5p6st_nbxKZZn-le_-MOt7U-X3sDR9T0gP4v-1eJ7FGk_qWsXTeiPME79LxSMN8ZUBrgAWrsY0l97FbHduimNEyE0GPzfKxZkYPFJ_ctAcvcZTtjFHybnfOwA0ZaJ9uZmMz_p6jH5so2FcUoCfNW2aeHn2dqLEF-vZwbtFxURBV4eVtob7Lq8ZxZoiWSbBNvLUBZCY"/>
+<span class="font-headline-md text-headline-md font-bold text-primary">GEMA</span>
+</div>
+<div class="font-headline-md text-headline-md text-primary">Vendor Panel</div>
+<button class="text-primary cursor-pointer active:scale-95 duration-200 ease-in-out hover:bg-surface-container-high p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="flex-grow flex flex-col px-container-padding md:px-lg max-w-7xl mx-auto w-full gap-xl py-lg">
+<!-- Online Toggle -->
+<section class="flex justify-between items-center bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm">
+<div>
+<h2 class="font-title-sm text-title-sm text-on-surface">Status Aktivitas</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Terima pesanan baru saat online</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+<span class="ms-3 font-label-md text-label-md text-primary font-bold">Online</span>
+</label>
+</section>
+<!-- Wallet Card -->
+<section class="bg-gradient-to-br from-primary to-surface-tint rounded-lg shadow-md p-lg text-white">
+<div class="flex justify-between items-start mb-md">
+<div>
+<p class="font-body-md text-body-md opacity-80">Pendapatan Hari Ini</p>
+<h3 class="font-display-lg text-display-lg">Rp 450.000</h3>
+</div>
+<span class="material-symbols-outlined text-4xl opacity-50" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<div class="border-t border-white/20 pt-md flex justify-between items-center">
+<div>
+<p class="font-body-md text-body-md opacity-80">Total Saldo GemaPay</p>
+<p class="font-title-sm text-title-sm">Rp 1.250.000</p>
+</div>
+<button class="bg-white text-primary font-label-md text-label-md px-4 py-2 rounded-full shadow-sm hover:bg-surface transition-colors">Tarik Dana</button>
+</div>
+</section>
+<!-- Performance Stats -->
+<section class="grid grid-cols-3 gap-gutter">
+<div class="bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary-container text-3xl mb-sm" data-icon="add_circle">add_circle</span>
+<span class="font-title-sm text-title-sm text-on-surface">5</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Pesanan Baru</span>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-secondary text-3xl mb-sm" data-icon="check_circle">check_circle</span>
+<span class="font-title-sm text-title-sm text-on-surface">12</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Selesai</span>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-yellow-500 text-3xl mb-sm fill" data-icon="star" data-weight="fill">star</span>
+<span class="font-title-sm text-title-sm text-on-surface">4.9</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Rating</span>
+</div>
+</section>
+<!-- Job Requests -->
+<section>
+<h2 class="font-title-sm text-title-sm text-on-surface mb-md">Permintaan Jasa Terbaru</h2>
+<div class="flex flex-col gap-md">
+<!-- Request Card 1 -->
+<div class="bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm text-on-surface">Budi Santoso</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Perbaikan Pipa Bocor</p>
+</div>
+</div>
+<span class="bg-secondary-container text-on-secondary-container font-label-md text-label-md px-2 py-1 rounded-full">Baru</span>
+</div>
+<div class="flex items-center gap-xs text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+<span>2.5 km • Jl. Sudirman No. 45</span>
+</div>
+<div class="flex gap-sm mt-sm">
+<button class="flex-1 bg-surface-variant text-on-surface-variant font-label-md text-label-md py-3 rounded-full hover:bg-surface-dim transition-colors">Tolak</button>
+<button class="flex-1 bg-primary-container text-white font-label-md text-label-md py-3 rounded-full shadow-sm hover:opacity-90 transition-opacity">Terima</button>
+</div>
+</div>
+<!-- Request Card 2 -->
+<div class="bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm text-on-surface">Siti Aminah</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Instalasi Listrik Baru</p>
+</div>
+</div>
+<span class="bg-secondary-container text-on-secondary-container font-label-md text-label-md px-2 py-1 rounded-full">Baru</span>
+</div>
+<div class="flex items-center gap-xs text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+<span>4.1 km • Perumahan Hijau Blok C</span>
+</div>
+<div class="flex gap-sm mt-sm">
+<button class="flex-1 bg-surface-variant text-on-surface-variant font-label-md text-label-md py-3 rounded-full hover:bg-surface-dim transition-colors">Tolak</button>
+<button class="flex-1 bg-primary-container text-white font-label-md text-label-md py-3 rounded-full shadow-sm hover:opacity-90 transition-opacity">Terima</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pt-2 bg-surface-container-lowest shadow-md rounded-t-lg">
+<!-- Active Tab: Home -->
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 duration-150 transform hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined fill" data-icon="home" data-weight="fill">home</span>
+<span class="font-label-md text-label-md mt-1">Home</span>
+</a>
+<!-- Inactive Tabs -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 duration-150 transform hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-md text-label-md mt-1">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 duration-150 transform hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-md text-label-md mt-1">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 duration-150 transform hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

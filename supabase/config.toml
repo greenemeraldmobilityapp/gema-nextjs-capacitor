@@ -1,3 +1,4 @@
 [functions]
 [functions.create-invoice]
 [functions.xendit-webhook]
+verify_jwt = false

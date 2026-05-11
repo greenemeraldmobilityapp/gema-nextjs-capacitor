@@ -99,7 +99,7 @@ function SearchContent() {
         ) : (
           <div className="text-center text-gray-500 mt-20">
             <SearchIcon size={48} className="mx-auto mb-4 text-gray-300" />
-            <p>Tidak ada hasil untuk "{query}"</p>
+            <p>Tidak ada hasil untuk &ldquo;{query}&rdquo;</p>
           </div>
         )}
       </div>

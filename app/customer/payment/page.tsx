@@ -111,31 +111,22 @@ function PaymentContent() {
               const supabase = createClient();
               const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-invoice`;
               const { data: { session } } = await supabase.auth.getSession();
+              const token = session?.access_token;
+              if (!token) throw new Error('Sesi tidak ditemukan. Silakan login ulang.');
               const res = await fetch(functionUrl, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+                  'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({ order_id: order.id }),
               });
               const data = await res.json();
               if (!res.ok) throw new Error(data.error || 'Gagal membuat invoice');
               window.location.href = data.invoice_url;
-            } catch (err: any) {
-              toast.error(err.message || 'Gagal menghubungi payment gateway');
-              updatePayment.mutate(
-                { orderId: order.id, payment_status: 'escrow' },
-                {
-                  onSuccess: () => {
-                    toast.success('Pembayaran berhasil');
-                    router.push(`/customer/payment/success?order_id=${order.id}`);
-                  },
-                  onError: (e: any) => {
-                    toast.error(e.message || 'Gagal memproses pembayaran');
-                  },
-                }
-              );
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : 'Gagal menghubungi payment gateway';
+              toast.error(msg);
             } finally {
               setIsCreatingInvoice(false);
             }

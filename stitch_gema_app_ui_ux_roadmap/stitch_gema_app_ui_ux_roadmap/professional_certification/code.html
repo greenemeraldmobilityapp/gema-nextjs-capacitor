@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Vendor Verification - Step 2</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#842225",
+                    "on-secondary-container": "#3c6c54",
+                    "tertiary-fixed": "#ffdad7",
+                    "on-tertiary-container": "#711419",
+                    "on-secondary-fixed-variant": "#1e4f3a",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#ebf3eb",
+                    "surface-container-highest": "#dde4dd",
+                    "secondary-fixed-dim": "#9ed2b5",
+                    "outline": "#6c7a71",
+                    "on-primary-fixed-variant": "#005236",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "error": "#ba1a1a",
+                    "surface": "#f4fbf4",
+                    "error-container": "#ffdad6",
+                    "surface-bright": "#f4fbf4",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#dde4dd",
+                    "on-error": "#ffffff",
+                    "background": "#f4fbf4",
+                    "primary": "#006c49",
+                    "surface-dim": "#d4dcd5",
+                    "tertiary-container": "#fc7c78",
+                    "primary-container": "#10b981",
+                    "tertiary": "#a43a3a",
+                    "primary-fixed-dim": "#4edea3",
+                    "surface-tint": "#006c49",
+                    "on-secondary-fixed": "#002113",
+                    "inverse-primary": "#4edea3",
+                    "surface-container-high": "#e3eae3",
+                    "on-surface-variant": "#3c4a42",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#00422b",
+                    "tertiary-fixed-dim": "#ffb3af",
+                    "secondary-fixed": "#baeed1",
+                    "outline-variant": "#bbcabf",
+                    "secondary-container": "#b7ebce",
+                    "on-tertiary-fixed": "#410005",
+                    "on-surface": "#161d19",
+                    "on-primary-fixed": "#002113",
+                    "on-background": "#161d19",
+                    "surface-container": "#e8f0e9",
+                    "inverse-surface": "#2b322d",
+                    "secondary": "#376850",
+                    "primary-fixed": "#6ffbbe",
+                    "surface-container-low": "#eef6ee"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "md": "16px",
+                    "container-padding": "16px",
+                    "2xl": "48px",
+                    "sm": "8px",
+                    "base": "4px",
+                    "gutter": "12px",
+                    "xs": "4px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "title-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "title-sm": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.4",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-md": [
+                            "12px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-lg": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-surface dark:bg-surface-dim transition-colors duration-200 ease-in-out">
+<div class="flex items-center justify-between px-md py-sm w-full max-w-7xl mx-auto">
+<button aria-label="Go back" class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest p-2 rounded-full transition-colors duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-title-sm text-title-sm font-bold text-primary dark:text-primary-fixed-dim">Vendor Verification</h1>
+<div class="w-10"></div> <!-- Spacer for balance -->
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow px-lg py-xl max-w-3xl mx-auto w-full pb-32">
+<!-- Progress Indicator -->
+<div class="mb-lg">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Step 2 of 3</span>
+<span class="font-label-md text-label-md text-primary font-bold">66%</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-2 overflow-hidden">
+<div class="bg-primary h-2 rounded-full" style="width: 66%;"></div>
+</div>
+</div>
+<!-- Header -->
+<div class="mb-xl">
+<h2 class="font-display-lg text-display-lg text-on-surface mb-sm">Professional Certification</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Upload relevant certificates, licenses, or diplomas that prove your expertise to increase trust with clients.</p>
+</div>
+<!-- Upload Area (Glassmorphism inspired card) -->
+<div class="bg-surface-container-lowest shadow-sm rounded-lg p-lg mb-xl border border-surface-variant relative overflow-hidden group hover:shadow-md transition-shadow duration-300 cursor-pointer">
+<div class="absolute inset-0 bg-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="flex flex-col items-center justify-center text-center py-xl relative z-10">
+<div class="bg-secondary-container/30 p-md rounded-full mb-md text-primary">
+<span class="material-symbols-outlined !text-[48px]" data-icon="upload_file" style="font-variation-settings: 'FILL' 1;">upload_file</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-xs">Add Certificate</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Tap to browse files or take a photo</p>
+<button class="bg-primary text-on-primary font-label-md text-label-md py-sm px-lg rounded-full shadow-sm hover:bg-surface-tint transition-colors">
+                    Browse Files
+                </button>
+</div>
+</div>
+<!-- Uploaded Files List -->
+<div>
+<h4 class="font-title-sm text-title-sm text-on-surface mb-md">Uploaded Documents</h4>
+<div class="space-y-md">
+<!-- File Item 1 -->
+<div class="flex items-center justify-between p-md bg-surface-container-lowest shadow-sm rounded-[16px] border border-surface-variant">
+<div class="flex items-center space-x-md">
+<div class="bg-surface-variant p-sm rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-semibold truncate max-w-[200px]">plumbing_license_2023.pdf</p>
+<p class="font-label-md text-label-md text-on-surface-variant">1.2 MB • PDF</p>
+</div>
+</div>
+<button aria-label="Remove file" class="text-error hover:bg-error-container p-sm rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- File Item 2 -->
+<div class="flex items-center justify-between p-md bg-surface-container-lowest shadow-sm rounded-[16px] border border-surface-variant">
+<div class="flex items-center space-x-md">
+<div class="bg-surface-variant p-sm rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="image">image</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-semibold truncate max-w-[200px]">certification_photo.jpg</p>
+<p class="font-label-md text-label-md text-on-surface-variant">3.4 MB • JPG</p>
+</div>
+</div>
+<button aria-label="Remove file" class="text-error hover:bg-error-container p-sm rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Action Bar (Fixed) -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-surface-variant px-lg py-md pb-safe shadow-[0_-4px_12px_rgba(0,0,0,0.05)] z-40">
+<div class="max-w-3xl mx-auto flex flex-col space-y-md">
+<button class="w-full bg-primary text-on-primary font-title-sm text-title-sm py-md rounded-full shadow-md hover:bg-surface-tint transition-colors text-center">
+                Lanjut
+            </button>
+<button class="w-full bg-transparent text-primary font-body-md text-body-md py-sm rounded-full hover:bg-primary-container/10 transition-colors text-center">
+                Lewati
+            </button>
+</div>
+</div>
+</body></html>

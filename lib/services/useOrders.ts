@@ -116,6 +116,7 @@ export function useCreateOrder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
     },
   });
 }
@@ -153,6 +154,7 @@ export function useUpdateOrderStatus() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['order', variables.orderId] });
       queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
     },
   });
 }

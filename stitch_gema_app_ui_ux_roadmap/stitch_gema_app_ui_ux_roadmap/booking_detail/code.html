@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Booking Status - GEMA</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@600;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#a43a3a",
+                        "surface-container-high": "#e3eae3",
+                        "on-secondary-fixed": "#002113",
+                        "surface-dim": "#d4dcd5",
+                        "background": "#f4fbf4",
+                        "on-tertiary-fixed": "#410005",
+                        "inverse-primary": "#4edea3",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#3c6c54",
+                        "surface-container": "#e8f0e9",
+                        "secondary-container": "#b7ebce",
+                        "primary-container": "#10b981",
+                        "surface-container-highest": "#dde4dd",
+                        "inverse-on-surface": "#ebf3eb",
+                        "inverse-surface": "#2b322d",
+                        "outline": "#6c7a71",
+                        "on-surface": "#161d19",
+                        "surface-container-low": "#eef6ee",
+                        "on-primary-fixed-variant": "#005236",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#fc7c78",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#3c4a42",
+                        "on-tertiary-container": "#711419",
+                        "on-secondary-fixed-variant": "#1e4f3a",
+                        "on-primary-fixed": "#002113",
+                        "tertiary-fixed": "#ffdad7",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#006c49",
+                        "on-background": "#161d19",
+                        "surface": "#f4fbf4",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#9ed2b5",
+                        "surface-variant": "#dde4dd",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#6ffbbe",
+                        "primary": "#006c49",
+                        "on-primary-container": "#00422b",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f4fbf4",
+                        "primary-fixed-dim": "#4edea3",
+                        "secondary-fixed": "#baeed1",
+                        "tertiary-fixed-dim": "#ffb3af",
+                        "secondary": "#376850",
+                        "outline-variant": "#bbcabf",
+                        "on-tertiary-fixed-variant": "#842225"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "container-padding": "16px",
+                        "base": "4px",
+                        "gutter": "12px",
+                        "2xl": "48px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Inter"],
+                        "title-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "title-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-display-lg, .font-headline-md, .font-title-sm { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 flex justify-between items-center w-full px-container-padding py-sm bg-surface shadow-sm">
+<!-- Leading Avatar -->
+<div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border-2 border-surface-container-highest">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A close-up portrait of a user in a well-lit environment, showcasing a bright, modern aesthetic typical of premium app profiles. The image relies on a soft, natural color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHSR_eXrTTkhkAZBjdjB3VOHU0xyujvohdV2_zt4PYnP3WCDVp6wwLhT3EXfXs-UX--UeVNm9zwiQIluLyKumyKuEgWdjn7CRM69-nKuPItPp8xxgRZN-0G8or-yKK9ayh9VN9WnGuowI2A_M0dCmZ5Odwu9C5GsgaARt8XR6tlg0MXKsKdYeiM75Mbjx5BIbvm-_Rrd-g63HHbktRZ8Dan7PY5kw_U47fiYgjEuSzHHt4TT40EmYWemDyxtAgRzV9ATeY6TBGCj4"/>
+</div>
+<!-- Headline -->
+<h1 class="font-display-lg text-display-lg font-black text-primary text-center flex-1 tracking-tight">GEMA</h1>
+<!-- Trailing Icon -->
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-200 ease-in-out text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+</header>
+<main class="pb-2xl">
+<!-- Map Header Section -->
+<div class="relative w-full h-[280px] bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover opacity-90" data-alt="A top-down, slightly angled view of a modern city map interface with a clean, high-end aesthetic. The map features subtle emerald green accents indicating routes and zones, contrasting beautifully against a pristine, light-gray minimal base. Soft ambient lighting creates a premium, trustworthy navigational feel." data-location="Jakarta, Indonesia" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCn8fJARMon6UCzssL18bUH0APwKMmYfZDL29rMFG1o62vKU4-LQiRsyD2B9UjcUIa88caRXTm7_GL3uLPYllzsu0J0ZFdkWbw88DLvC8TsL6sF3MX0wBLN_M-Xonn53PuS84SAcZ960oF9AoG_can58zFlgavAH3Vpmfo_JhS41f2i2ZwLEO_1PblfUymOQknkLeXgg75lw-J6uQJwuKPScM3NQS5_5deHVSHxiHuPn9OMDB1UWy5d69m3DlDmxVsjZVskDrrXWRQ"/>
+<!-- Map Overlay Gradient -->
+<div class="absolute inset-0 bg-gradient-to-b from-transparent to-surface/80"></div>
+<!-- Location Pin (Vendor/Target) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+<div class="relative flex items-center justify-center w-12 h-12 bg-primary text-on-primary rounded-full shadow-md z-10">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">person_pin_circle</span>
+<!-- Pulse effect -->
+<div class="absolute inset-0 rounded-full bg-primary animate-ping opacity-30"></div>
+</div>
+</div>
+</div>
+<!-- Content Canvas (Bento Grid Style) -->
+<div class="relative z-20 px-md -mt-lg flex flex-col gap-md pb-xl">
+<!-- Status Card -->
+<section class="bg-surface-container-lowest rounded-DEFAULT shadow-sm p-md flex items-center gap-md border border-surface-container">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">hourglass_top</span>
+</div>
+<div class="flex-1">
+<h2 class="font-title-sm text-title-sm text-on-surface mb-base">Menunggu Vendor</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Sistem sedang mencarikan teknisi terbaik di sekitar Anda.</p>
+</div>
+</section>
+<!-- Vendor Preview Card -->
+<section class="bg-surface-container-lowest rounded-DEFAULT shadow-sm p-md flex flex-col gap-md border border-surface-container">
+<div class="flex justify-between items-center">
+<h3 class="font-label-md text-label-md text-primary">KANDIDAT VENDOR</h3>
+<span class="bg-surface-container-highest text-on-surface-variant font-label-md text-label-md px-3 py-1 rounded-full">Pro</span>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 rounded-full bg-surface-container-high overflow-hidden shrink-0 border border-outline-variant">
+<img alt="Vendor" class="w-full h-full object-cover" data-alt="A professional headshot of a service technician wearing a neat, dark green uniform. The lighting is bright studio light, casting soft shadows, fitting a premium service platform's aesthetic. The mood conveys trust, efficiency, and expert capability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYWCdRquwQ1e9pSlDJ-olqIeLmN2yzut-JBZZ42jfevy1pyUgxT5cN0ZW2MpAXKvrlnK-z4Rjx7CPcdjfAQTMgdq0TxlpYmMcLFQ_03vntP8deLHoFGwzQ8Kx3q0pMuA_RvSvMMwwXcVBzSCnMCaFHOel8eK2VA5mxF8XKdstlQ837WRiIMJcOdup3Ra-md0Um728NODXrOZWZfqvqo4eAuPvWCSfVlH_5IK8_DU9yVf4AgCz-vvSoLrTY0d5VXwXCujD5oOqTDO8"/>
+</div>
+<div class="flex-1">
+<h4 class="font-title-sm text-title-sm text-on-surface">Budi Teknik Jaya</h4>
+<div class="flex items-center gap-xs mt-base text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined text-[#F59E0B] text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.9 (120 Ulasan)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Service Details Bento -->
+<section class="bg-surface-container-lowest rounded-DEFAULT shadow-sm p-md flex flex-col gap-md border border-surface-container">
+<h3 class="font-label-md text-label-md text-primary mb-xs">DETAIL LAYANAN</h3>
+<div class="flex items-start gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined">ac_unit</span>
+</div>
+<div class="flex-1 pt-1">
+<div class="font-title-sm text-title-sm text-on-surface">Servis AC Split (Cuci &amp; Freon)</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-base">2 Unit AC (1 PK)</div>
+</div>
+</div>
+<div class="h-px bg-surface-container-highest w-full my-base"></div>
+<div class="flex items-start gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined">calendar_clock</span>
+</div>
+<div class="flex-1 pt-1">
+<div class="font-body-md text-body-md text-on-surface-variant">Jadwal Kedatangan</div>
+<div class="font-title-sm text-title-sm text-on-surface mt-base">Senin, 15 Okt • 14:00 - 16:00</div>
+</div>
+</div>
+<div class="h-px bg-surface-container-highest w-full my-base"></div>
+<div class="flex items-start gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div class="flex-1 pt-1">
+<div class="font-body-md text-body-md text-on-surface-variant">Lokasi Layanan</div>
+<div class="font-title-sm text-title-sm text-on-surface mt-base">Apartemen Sudirman Park, Tower A 1502</div>
+<div class="font-body-md text-body-md text-outline mt-base">Jl. KH. Mas Mansyur Kav. 35, Jakarta Pusat</div>
+</div>
+</div>
+</section>
+<!-- Payment Summary -->
+<section class="bg-surface-container-lowest rounded-DEFAULT shadow-sm p-md flex flex-col gap-md border border-surface-container">
+<h3 class="font-label-md text-label-md text-primary">RINCIAN PEMBAYARAN</h3>
+<div class="flex justify-between items-center font-body-md text-body-md text-on-surface-variant">
+<span>Metode Pembayaran</span>
+<span class="font-title-sm text-title-sm text-on-surface">GEMA Pay</span>
+</div>
+<div class="flex justify-between items-center font-body-md text-body-md text-on-surface-variant mt-xs">
+<span>Estimasi Biaya</span>
+<span class="font-title-sm text-title-sm text-primary">Rp 150.000</span>
+</div>
+</section>
+</div>
+</main>
+<!-- Contextual Floating Action Button -->
+<div class="fixed bottom-0 left-0 w-full px-md pb-lg pt-xl bg-gradient-to-t from-surface via-surface to-transparent z-50">
+<button class="w-full bg-primary text-on-primary rounded-full py-md px-lg shadow-md flex items-center justify-center gap-sm active:scale-95 duration-200 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+<span class="font-title-sm text-title-sm">Chat dengan Vendor</span>
+</button>
+</div>
+</body></html>

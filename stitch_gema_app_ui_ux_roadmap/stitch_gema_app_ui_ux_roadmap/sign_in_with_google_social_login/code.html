@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GEMA - Masuk</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#eef6ee",
+                        "on-primary-fixed-variant": "#005236",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#161d19",
+                        "outline": "#6c7a71",
+                        "inverse-surface": "#2b322d",
+                        "on-tertiary-container": "#711419",
+                        "on-surface-variant": "#3c4a42",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#fc7c78",
+                        "on-secondary-container": "#3c6c54",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#4edea3",
+                        "on-tertiary-fixed": "#410005",
+                        "background": "#f4fbf4",
+                        "surface-dim": "#d4dcd5",
+                        "on-secondary-fixed": "#002113",
+                        "tertiary": "#a43a3a",
+                        "surface-container-high": "#e3eae3",
+                        "inverse-on-surface": "#ebf3eb",
+                        "surface-container-highest": "#dde4dd",
+                        "primary-container": "#10b981",
+                        "secondary-container": "#b7ebce",
+                        "surface-container": "#e8f0e9",
+                        "secondary-fixed": "#baeed1",
+                        "primary-fixed-dim": "#4edea3",
+                        "surface-bright": "#f4fbf4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#00422b",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#bbcabf",
+                        "on-tertiary-fixed-variant": "#842225",
+                        "secondary": "#376850",
+                        "tertiary-fixed-dim": "#ffb3af",
+                        "secondary-fixed-dim": "#9ed2b5",
+                        "on-error": "#ffffff",
+                        "surface": "#f4fbf4",
+                        "surface-tint": "#006c49",
+                        "on-background": "#161d19",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#ffdad7",
+                        "on-primary-fixed": "#002113",
+                        "on-secondary-fixed-variant": "#1e4f3a",
+                        "primary": "#006c49",
+                        "primary-fixed": "#6ffbbe",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#dde4dd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "container-padding": "16px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "2xl": "48px",
+                        "gutter": "12px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Inter"],
+                        "title-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "title-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest min-h-screen flex flex-col justify-center items-center px-container-padding antialiased">
+<main class="w-full max-w-sm flex flex-col items-center">
+<!-- Logo Header -->
+<div class="mb-2xl font-display-lg text-display-lg font-black text-primary tracking-tighter">
+            GEMA
+        </div>
+<!-- Welcome Text -->
+<div class="w-full mb-xl text-center">
+<h1 class="font-headline-md text-headline-md text-on-surface mb-sm">Selamat datang kembali</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Silakan masuk ke akun Anda untuk melanjutkan</p>
+</div>
+<!-- Login Form -->
+<form action="#" class="w-full flex flex-col gap-lg" method="POST">
+<!-- Email Field -->
+<div class="flex flex-col gap-sm">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="email">Email</label>
+<div class="relative">
+<input class="w-full px-md py-3 border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-shadow shadow-sm rounded-full" id="email" placeholder="Masukkan alamat email" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-sm">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="password">Password</label>
+<div class="relative">
+<input class="w-full pl-md pr-12 py-3 border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-shadow shadow-sm rounded-full" id="password" placeholder="Masukkan password" required="" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors flex items-center justify-center" type="button">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">visibility</span>
+</button>
+</div>
+<div class="w-full flex justify-end mt-xs">
+<a class="font-label-md text-label-md text-primary hover:text-surface-tint transition-colors" href="#">Lupa password?</a>
+</div>
+</div>
+<!-- Submit Action -->
+<div class="mt-sm">
+<button class="w-full flex items-center justify-center py-4 bg-primary-container text-on-primary font-title-sm text-title-sm rounded-full hover:bg-primary transition-all active:scale-95 shadow-md" type="submit">
+                    Masuk
+                </button>
+</div><div class="flex items-center gap-md my-md">
+<div class="flex-grow h-px bg-outline-variant"></div>
+<span class="font-label-md text-label-md text-on-surface-variant whitespace-nowrap">atau masuk dengan</span>
+<div class="flex-grow h-px bg-outline-variant"></div>
+</div><button class="w-full flex items-center justify-center gap-sm py-3 border border-outline-variant bg-surface-container-lowest text-on-surface font-title-sm text-title-sm rounded-full hover:bg-surface-container-low transition-all active:scale-95 shadow-sm" type="button">
+<svg class="w-5 h-5" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+    Google
+</button>
+</form>
+<!-- Sign Up Link -->
+<div class="mt-xl font-body-md text-body-md text-on-surface-variant">
+            Belum punya akun? 
+            <a class="text-primary font-bold hover:text-surface-tint transition-colors ml-1" href="#">Daftar</a>
+</div>
+</main>
+</body></html>

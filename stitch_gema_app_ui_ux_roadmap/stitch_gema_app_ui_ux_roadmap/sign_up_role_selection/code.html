@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GEMA - Pilih Peran</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#002113",
+                        "inverse-on-surface": "#ebf3eb",
+                        "primary-fixed-dim": "#4edea3",
+                        "primary": "#006c49",
+                        "outline": "#6c7a71",
+                        "on-tertiary-container": "#711419",
+                        "surface-container": "#e8f0e9",
+                        "surface": "#f4fbf4",
+                        "on-primary-container": "#00422b",
+                        "inverse-surface": "#2b322d",
+                        "on-tertiary-fixed": "#410005",
+                        "secondary-container": "#b7ebce",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#fc7c78",
+                        "primary-fixed": "#6ffbbe",
+                        "surface-dim": "#d4dcd5",
+                        "outline-variant": "#bbcabf",
+                        "on-secondary-fixed-variant": "#1e4f3a",
+                        "on-secondary-container": "#3c6c54",
+                        "tertiary-fixed": "#ffdad7",
+                        "secondary-fixed-dim": "#9ed2b5",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#006c49",
+                        "surface-container-highest": "#dde4dd",
+                        "on-surface": "#161d19",
+                        "surface-container-low": "#eef6ee",
+                        "inverse-primary": "#4edea3",
+                        "background": "#f4fbf4",
+                        "surface-variant": "#dde4dd",
+                        "on-secondary-fixed": "#002113",
+                        "primary-container": "#10b981",
+                        "tertiary": "#a43a3a",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#baeed1",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb3af",
+                        "on-background": "#161d19",
+                        "secondary": "#376850",
+                        "on-surface-variant": "#3c4a42",
+                        "surface-container-high": "#e3eae3",
+                        "on-primary-fixed-variant": "#005236",
+                        "on-tertiary-fixed-variant": "#842225",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f4fbf4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "gutter": "12px",
+                        "sm": "8px",
+                        "container-padding": "16px",
+                        "md": "16px",
+                        "base": "4px",
+                        "2xl": "48px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "title-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "display-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "title-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col font-body-md text-body-md bg-background">
+<!-- Top App Bar (Custom for Transactional Flow) -->
+<header class="docked full-width top-0 bg-surface flex justify-between items-center w-full px-container-padding py-sm shadow-sm z-50 sticky">
+<div class="flex items-center gap-md">
+<button aria-label="Go Back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-on-surface active:scale-95 duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+</div>
+<div class="absolute left-1/2 -translate-x-1/2">
+<span class="font-display-lg text-display-lg font-black text-primary">GEMA</span>
+</div>
+<div class="w-10 h-10"></div> <!-- Placeholder for balance -->
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col px-container-padding py-xl max-w-md mx-auto w-full gap-xl">
+<!-- Header Section -->
+<div class="flex flex-col gap-sm">
+<h1 class="font-headline-md text-headline-md text-on-surface">Pilih Peran Anda</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Pilih bagaimana Anda ingin menggunakan aplikasi GEMA hari ini.</p>
+</div>
+<!-- Role Selection Cards -->
+<div class="flex flex-col gap-md">
+<!-- Customer Card (Inactive State Example) -->
+<label class="cursor-pointer group relative">
+<input class="peer sr-only" name="role" type="radio" value="customer"/>
+<div class="flex items-center p-lg rounded-xl border border-surface-variant bg-surface transition-all duration-200 shadow-sm peer-checked:border-primary-container peer-checked:bg-secondary-container peer-checked:shadow-md hover:border-outline-variant">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary group-hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-display-lg" data-icon="person">person</span>
+</div>
+<div class="ml-md flex-grow">
+<h2 class="font-title-sm text-title-sm text-on-surface">Customer</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Saya butuh jasa (Customer)</p>
+</div>
+<div class="w-6 h-6 rounded-full border-2 border-outline-variant flex items-center justify-center peer-checked:border-primary peer-checked:bg-primary transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-primary opacity-0 peer-checked:opacity-100" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</div>
+</label>
+<!-- Vendor Card (Active State Example for demonstration, usually JS handles this) -->
+<label class="cursor-pointer group relative">
+<input checked="" class="peer sr-only" name="role" type="radio" value="vendor"/>
+<div class="flex items-center p-lg rounded-xl border border-surface-variant bg-surface transition-all duration-200 shadow-sm peer-checked:border-primary-container peer-checked:bg-secondary-container peer-checked:shadow-md hover:border-outline-variant">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary group-hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-display-lg" data-icon="handyman">handyman</span>
+</div>
+<div class="ml-md flex-grow">
+<h2 class="font-title-sm text-title-sm text-on-surface">Vendor</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Saya penyedia jasa (Vendor)</p>
+</div>
+<div class="w-6 h-6 rounded-full border-2 border-outline-variant flex items-center justify-center peer-checked:border-primary peer-checked:bg-primary transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-primary opacity-0 peer-checked:opacity-100" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</div>
+</label>
+</div>
+<div class="mt-auto pt-xl pb-lg">
+<button class="w-full py-md rounded-full font-label-md text-label-md flex justify-center items-center transition-colors shadow-md bg-primary text-on-primary hover:bg-primary-container active:scale-95 duration-150 transform" type="button">
+                Lanjutkan
+            </button>
+<!-- Disabled state example (hidden for demo visual completeness) -->
+<!-- <button class="w-full py-md rounded-full font-label-md text-label-md flex justify-center items-center transition-colors bg-surface-variant text-on-surface-variant opacity-50 cursor-not-allowed" type="button" disabled>
+                Lanjutkan
+            </button> -->
+</div>
+</main>
+</body></html>

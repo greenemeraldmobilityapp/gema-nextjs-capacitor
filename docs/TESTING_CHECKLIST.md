@@ -438,29 +438,246 @@ SELECT id, scheduled_date FROM orders WHERE scheduled_time IS NULL LIMIT 5;
 
 ---
 
-### K.15. Setup Webhook Xendit (Sekali Saja)
+### K.15. Register Webhook di Xendit Dashboard (Sekali Saja)
 
-> Langkah-langkah ini hanya perlu dilakukan **sekali** di dashboard Xendit agar webhook bisa menerima notifikasi pembayaran.
+> Langkah-langkah ini hanya perlu dilakukan **sekali** di dashboard Xendit agar webhook bisa menerima notifikasi pembayaran. Webhook Edge Function (`xendit-webhook`) sudah di-deploy ke Supabase dan semua secrets sudah diset.
 
-**Di Dashboard Xendit:**
-1. Login ke [Xendit Dashboard](https://dashboard.xendit.co) → Settings → Webhooks
-2. Klik **"+ Add Webhook"**
-3. Isi:
-   - **Webhook URL**: `https://ajteskgdggxwefcrncuu.supabase.co/functions/v1/xendit-webhook`
-   - **Callback Token**: `gema_webhook_token_2026`
-   - **Events**: centang `invoice.paid` (dan opsional `invoice.expired`)
-4. Klik **Save**
+#### Prasyarat — Verifikasi Edge Function & Secrets
 
-**Verifikasi Webhook:**
+Jalankan di terminal proyek:
+
+```bash
+# Cek status Edge Function
+npx supabase functions list | grep xendit-webhook
+
+# Cek secrets sudah diset
+npx supabase secrets list | grep -E 'XENDIT_WEBHOOK_TOKEN|SUPABASE_URL|SUPABASE_SERVICE_ROLE_KEY'
+```
+
+Expected: fungsi berstatus `ACTIVE` dan ketiga secrets muncul.
+
+#### Langkah-langkah di Dashboard Xendit
+
+| Langkah | Aksi | Detail |
+|---------|------|--------|
+| 1 | Login | Buka [Xendit Dashboard](https://dashboard.xendit.co) |
+| 2 | Navigasi | Settings → Webhooks |
+| 3 | Add Webhook | Klik **"+ Add Webhook"** |
+| 4 | Isi Webhook URL | `https://ajteskgdggxwefcrncuu.supabase.co/functions/v1/xendit-webhook` |
+| 5 | Pilih Category | **Payments** |
+| 6 | Callback Token | **Otomatis** oleh Xendit (tidak ada input field manual). `XENDIT_WEBHOOK_TOKEN` di Supabase secrets harus diisi dengan token dari halaman webhook detail di Xendit Dashboard |
+| 7 | Pilih Events | Centang **`invoice.paid`** (wajib) + opsional **`invoice.expired`** |
+| 8 | Simpan | Klik **Save** |
+
+> **Catatan:** Xendit dashboard tidak lagi menyediakan input field untuk Callback Token. Token di-generate otomatis. Ambil token dari halaman detail webhook setelah webhook tersimpan, lalu setel ke Supabase:
+> ```bash
+> npx supabase secrets set XENDIT_WEBHOOK_TOKEN="<token_dari_xendit>"
+> ```
+
+> **Penting — `verify_jwt`:** Function `xendit-webhook` harus punya `verify_jwt = false` di `supabase/config.toml` karena Xendit tidak mengirim Supabase JWT. Tanpa ini webhook akan return 401 `UNAUTHORIZED_NO_AUTH_HEADER`.
+
+#### Verifikasi Webhook
+
+Buat pembayaran test melalui aplikasi:
+
+1. Login sebagai Customer → booking service → tap "Bayar Sekarang"
+2. Redirect ke halaman Xendit → selesaikan pembayaran (sandbox: `BNI` → `4515111111` PIN `12345`)
+3. Cek Supabase:
+
 ```sql
--- Cek di Supabase apakah webhook sudah memproses transaksi
+-- Cek wallet_transactions dari webhook
 SELECT * FROM wallet_transactions WHERE type = 'payment' ORDER BY created_at DESC LIMIT 5;
 
 -- Cek order yang statusnya berubah via webhook
 SELECT id, payment_status, order_status FROM orders WHERE payment_status = 'escrow' ORDER BY updated_at DESC LIMIT 5;
 ```
 
-**Troubleshooting:**
-- Jika webhook gagal, cek logs di Supabase Dashboard → Edge Functions → `xendit-webhook` → Logs
-- Pastikan `XENDIT_WEBHOOK_TOKEN` di Supabase secrets (`gema_webhook_token_2026`) cocok dengan Callback Token di dashboard Xendit
-- Webhook URL harus bisa diakses publik (URL Supabase Edge Function sudah publik secara default)```
+Atau cek logs realtime:
+
+```bash
+npx supabase functions logs xendit-webhook --tail
+```
+
+##### Hasil Test Webhook (11 Mei 2026)
+
+| Test | Status | Catatan |
+|------|--------|---------|
+| Invoice paid | ✅ `200 OK` | Webhook function menerima & proses escrow + wallet |
+| Invoice expired | ✅ `200 OK` (expected) | Function log "Invoice expired" tanpa action |
+| Payment session expired | ❌ `400 Missing external_id` | **Bukan event invoice** — `payment_session` punya struktur payload berbeda (`event.data.reference_id` vs `external_id`). Event ini tidak perlu di-handle |
+
+#### Troubleshooting
+
+| Masalah | Solusi |
+|---------|--------|
+| Webhook gagal (401) | Pastikan `verify_jwt = false` di `supabase/config.toml` untuk `xendit-webhook`, lalu redeploy |
+| Webhook gagal (401) setelah fix JWT | Cek `XENDIT_WEBHOOK_TOKEN` di Supabase secrets cocok dengan token dari halaman detail webhook Xendit |
+| Webhook URL tidak reachable | Pastikan URL adalah Supabase Edge Function URL (publik secara default) |
+| Order tidak terupdate | Cek logs di Supabase Dashboard → Edge Functions → `xendit-webhook` → Logs |
+| Wallet tidak terisi | Pastikan vendor punya wallet row (auto-create di `/wallet` page) |
+
+---
+
+### K.16. Wallet Topup & Withdraw
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/wallet` | Tombol "Top Up" dan "Tarik" aktif (tidak disabled) |
+| 2 | Tap "Top Up" | Redirect ke `/wallet/topup` |
+| 3 | Tap nominal Rp 50.000 | Input terisi otomatis |
+| 4 | Tap "Top Up Rp 50.000" | Loading "Memproses..." lalu toast sukses |
+| 5 | Redirect ke `/wallet` | Transaksi baru muncul di riwayat dengan status "Tertunda" |
+| 6 | Tap "Tarik" | Redirect ke `/wallet/withdraw` |
+| 7 | Isi jumlah, pilih bank, isi rekening, isi nama | Tombol "Tarik" aktif |
+| 8 | Tap "Tarik" | Toast sukses, transaksi "Tertunda" muncul |
+| 9 | Cek validasi: jumlah > saldo | Error "Melebihi saldo tersedia" |
+| 10 | Cek validasi: jumlah < Rp 10.000 | Tombol disabled |
+
+### K.17. Loading Skeleton Components
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/wallet` saat koneksi lambat | Skeleton card + list muncul (bukan spinner) |
+| 2 | Buka `/vendor/orders/detail?id=...` | Skeleton detail muncul saat loading |
+| 3 | Buka `/customer/orders/detail?id=...` | Skeleton detail muncul saat loading |
+
+### K.18. Live Location Tracking
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Login sebagai Vendor, buka order detail dengan status `in_progress` | Tombol "Bagikan Lokasi Saya" muncul |
+| 2 | Tap "Bagikan Lokasi Saya" | Tombol berubah jadi "Berhenti Bagikan Lokasi" dengan animasi pulse |
+| 3 | Login sebagai Customer, buka order detail yang sama | Section "Lokasi Vendor" muncul dengan koordinat |
+| 4 | Vendor tap "Berhenti Bagikan Lokasi" | Sharing berhenti |
+| 5 | Cek customer page | Lokasi terakhir masih tampil |
+
+### K.19. Push Notification (Scaffolding)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka aplikasi | Service worker terdaftar (cek di DevTools → Application → Service Workers) |
+| 2 | Cek `public/sw.js` | File exist dengan event listeners untuk push, notificationclick |
+| 3 | Notifikasi | Push notification siap diintegrasikan dengan FCM/Capacitor nanti |
+
+---
+
+### K.20. Admin Dashboard
+
+> Admin pages are protected — only users with `role = 'admin'` can access them. Non-admin users get redirected.
+
+#### K.20.1. Admin Login & Protection
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Login sebagai Customer, akses `/admin/dashboard` langsung | Redirect ke `/customer/home` (admin layout protection) |
+| 2 | Login sebagai Vendor, akses `/admin/dashboard` langsung | Redirect ke `/vendor/dashboard` |
+| 3 | Login sebagai Admin | Redirect ke `/admin/dashboard` |
+| 4 | Buka `/admin` | Redirect ke `/admin/dashboard` |
+
+#### K.20.2. Dashboard Overview
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/admin/dashboard` | 6 stat cards muncul: Total User, Vendor, Pesanan, Pendapatan, Verifikasi Tertunda, Sengketa Aktif |
+| 2 | Cek stat "Verifikasi Tertunda" | Angka sesuai jumlah vendor dengan `is_verified = false` |
+| 3 | Cek stat "Sengketa Aktif" | Angka sesuai jumlah dispute dengan `status = 'open'` |
+| 4 | Jika ada transaksi pending (topup/withdraw) | Card "Transaksi Tertunda" muncul dengan jumlah |
+| 5 | Tap salah satu stat card | Navigasi ke halaman terkait |
+| 6 | **Error state:** Koneksi bermasalah | Muncul "Gagal memuat data dashboard" alert |
+
+#### K.20.3. Vendor Verification
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/admin/vendors` | Daftar semua vendor muncul |
+| 2 | Tab filter: Semua / Tertunda / Terverifikasi | Filter bekerja sesuai status |
+| 3 | Search vendor | Filter by name & specialization |
+| 4 | Tap **"Setujui"** pada vendor tertunda | Toast "Vendor berhasil diverifikasi", badge berubah jadi Aktif |
+| 5 | Tap **"Nonaktifkan"** pada vendor aktif | Toast "Vendor dinonaktifkan", badge berubah jadi Tertunda |
+| 6 | **Empty state:** Tidak ada vendor | Tampil "Belum ada vendor" |
+| 7 | **Empty state:** Semua vendor sudah terverifikasi di tab Tertunda | Tampil "Semua vendor sudah terverifikasi" |
+
+#### K.20.4. Dispute Management
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/admin/disputes` | Daftar semua sengketa muncul |
+| 2 | Tab filter: Semua / Aktif / Selesai | Filter bekerja sesuai status |
+| 3 | Sengketa aktif tampil | Nama layanan, pembuka sengketa, tanggal, nominal tampil |
+| 4 | Isi catatan resolusi, tap **"Selesaikan Sengketa"** | Toast sukses, status berubah jadi Selesai |
+| 5 | Sengketa selesai tampil | Catatan resolusi tampil di card |
+| 6 | **Validation:** Tap "Selesaikan Sengketa" tanpa catatan | Toast "Harap isi catatan resolusi" |
+| 7 | **Empty state:** Tidak ada sengketa | Tampil "Tidak ada sengketa" |
+
+#### K.20.5. All Orders
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/admin/orders` | Daftar semua pesanan platform muncul |
+| 2 | Filter by status (Semua/Tertunda/Diterima/Berjalan/Selesai/Dibatalkan) | Filter bekerja |
+| 3 | Search by service name atau customer name | Filter bekerja |
+| 4 | Setiap order card | Tampil nama layanan, kategori, customer, nominal, status badge, payment badge, tanggal |
+| 5 | **Empty state:** Tidak ada pesanan dengan filter | Tampil "Tidak ada pesanan" |
+
+#### K.20.6. Promo Management
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/admin/promos` | Daftar promo yang ada |
+| 2 | Tap **"Tambah"** | Form tambah promo muncul |
+| 3 | Isi judul, deskripsi, diskon, tap "Simpan Promo" | Toast sukses, promo baru muncul di list |
+| 4 | **Validation:** Submit form kosong | Toast "Harap isi semua field" |
+| 5 | Tap toggle aktif/nonaktif | Status berubah, toast sesuai |
+| 6 | Tap **"Hapus"** | Promo dihapus, toast sukses |
+| 7 | **Empty state:** Belum ada promo | Tampil "Belum ada promo" |
+
+#### K.20.7. Wallet Transactions Approval
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/admin/transactions` | Daftar semua transaksi wallet |
+| 2 | Filter: Semua / Tertunda / Berhasil / Gagal | Filter bekerja |
+| 3 | Transaksi pending (topup/withdraw) | Tombol Setujui + Tolak muncul |
+| 4 | Tap **"Setujui"** | Toast sukses, status berubah jadi Berhasil, balance wallet terupdate |
+| 5 | Tap **"Tolak"** | Toast sukses, status berubah jadi Gagal |
+| 6 | Transaksi non-pending | Tidak ada tombol aksi |
+| 7 | **Empty state:** Tidak ada transaksi | Tampil "Tidak ada transaksi" |
+
+#### K.20.8. Admin Bottom Nav
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Bottom nav muncul | 6 tab: Dashboard, Vendor, Sengketa, Pesanan, Promo, Transaksi |
+| 2 | Tap setiap tab | Navigasi ke halaman yang sesuai, tab aktif berwarna emerald |
+
+### K.20.9. Membuat Akun Admin
+
+> Admin **tidak bisa register** dari UI aplikasi (hanya customer/vendor). Harus dibuat manual.
+
+#### Prasyarat — Jalankan Migration RLS
+
+Jalankan SQL migration di Supabase SQL Editor sebelum buat admin:
+
+```sql
+-- File: supabase/migrations/0003_bright_admin.sql
+-- Copy-paste seluruh isi file ke Supabase SQL Editor, lalu RUN
+```
+
+Migration ini membuat function `is_admin()` + semua RLS policies untuk admin.
+
+#### Langkah Buat Admin
+
+| Langkah | Aksi | Detail |
+|---------|------|--------|
+| 1 | Buka Supabase Dashboard | Authentication → Add User |
+| 2 | Input email & password | Email: `admin@gema.com`, Password: `admin123` |
+| 3 | Auto-confirm user | Centang **"Auto Confirm User"** agar langsung aktif |
+| 4 | Dapatkan UUID | Buka SQL Editor, jalankan: `SELECT id, email FROM auth.users WHERE email = 'admin@gema.com';` |
+| 5 | Update role | `UPDATE users SET role = 'admin' WHERE email = 'admin@gema.com';` |
+| 6 | Login ke app | Buka app → login dengan `admin@gema.com` / `admin123` |
+| 7 | Verifikasi | Redirect ke `/admin/dashboard`, bottom nav 6 tab muncul |
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Bottom nav muncul | 6 tab: Dashboard, Vendor, Sengketa, Pesanan, Promo, Transaksi |
+| 2 | Tap setiap tab | Navigasi ke halaman yang sesuai, tab aktif berwarna emerald |

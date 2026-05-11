@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pengaturan Notifikasi - GEMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#b7ebce",
+                        "surface-container-highest": "#dde4dd",
+                        "on-tertiary-fixed": "#410005",
+                        "on-tertiary-container": "#711419",
+                        "outline-variant": "#bbcabf",
+                        "primary-fixed": "#6ffbbe",
+                        "on-primary-fixed-variant": "#005236",
+                        "surface-bright": "#f4fbf4",
+                        "tertiary": "#a43a3a",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#002113",
+                        "primary-container": "#10b981",
+                        "on-background": "#161d19",
+                        "primary": "#006c49",
+                        "surface-container-high": "#e3eae3",
+                        "on-secondary-container": "#3c6c54",
+                        "surface-tint": "#006c49",
+                        "background": "#f4fbf4",
+                        "secondary-fixed": "#baeed1",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d4dcd5",
+                        "secondary-fixed-dim": "#9ed2b5",
+                        "on-primary-container": "#00422b",
+                        "inverse-on-surface": "#ebf3eb",
+                        "on-tertiary-fixed-variant": "#842225",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#eef6ee",
+                        "surface-container": "#e8f0e9",
+                        "outline": "#6c7a71",
+                        "tertiary-container": "#fc7c78",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#3c4a42",
+                        "surface-variant": "#dde4dd",
+                        "on-surface": "#161d19",
+                        "tertiary-fixed": "#ffdad7",
+                        "on-secondary-fixed-variant": "#1e4f3a",
+                        "on-secondary-fixed": "#002113",
+                        "tertiary-fixed-dim": "#ffb3af",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#4edea3",
+                        "error-container": "#ffdad6",
+                        "surface": "#f4fbf4",
+                        "inverse-primary": "#4edea3",
+                        "secondary": "#376850",
+                        "inverse-surface": "#2b322d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "2xl": "48px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "md": "16px",
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "container-padding": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "title-sm": ["Plus Jakarta Sans"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Custom Toggle Switch Styles */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10b981; /* primary-container approx, using hex for exact match to prompt req if needed, but will use tailwind classes below */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #10b981; /* primary-container */
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(100%);
+            border-color: white;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased min-h-screen pb-2xl">
+<!-- TopAppBar (Transactional - Nav Shell Suppressed per Semantic Shell Mandate) -->
+<header class="bg-surface shadow-sm sticky top-0 z-50 px-container-padding py-sm flex items-center h-16">
+<button aria-label="Back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors text-primary active:scale-95 duration-200 ease-in-out mr-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary font-bold flex-1">Pengaturan Notifikasi</h1>
+<!-- Trailing space to balance if needed, left empty -->
+</header>
+<!-- Main Content Canvas -->
+<main class="px-container-padding py-md max-w-2xl mx-auto space-y-md">
+<!-- Section: Transaksi & Pesanan -->
+<section class="bg-surface-container-lowest rounded-lg shadow-sm p-lg">
+<div class="flex items-center gap-sm mb-md pb-sm border-b border-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<h2 class="font-title-sm text-title-sm text-on-surface">Transaksi &amp; Pesanan</h2>
+</div>
+<div class="space-y-sm">
+<!-- Toggle Item: Push -->
+<div class="flex items-center justify-between py-xs">
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Push Notification</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Pembaruan status pesanan di dalam aplikasi.</p>
+</div>
+<div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-200 ease-in-out checked:translate-x-6 checked:border-primary-container" id="tx_push" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200 ease-in-out" for="tx_push"></label>
+</div>
+</div>
+<!-- Toggle Item: Email -->
+<div class="flex items-center justify-between py-xs">
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Email</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Bukti pembayaran dan faktur digital.</p>
+</div>
+<div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-200 ease-in-out checked:translate-x-6 checked:border-primary-container" id="tx_email" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200 ease-in-out" for="tx_email"></label>
+</div>
+</div>
+<!-- Toggle Item: SMS -->
+<div class="flex items-center justify-between py-xs">
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">SMS</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Notifikasi mendesak saat offline.</p>
+</div>
+<div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-200 ease-in-out checked:translate-x-6 checked:border-primary-container" id="tx_sms" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200 ease-in-out" for="tx_sms"></label>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Promosi & Penawaran -->
+<section class="bg-surface-container-lowest rounded-lg shadow-sm p-lg">
+<div class="flex items-center gap-sm mb-md pb-sm border-b border-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">sell</span>
+<h2 class="font-title-sm text-title-sm text-on-surface">Promosi &amp; Penawaran</h2>
+</div>
+<div class="space-y-sm">
+<!-- Toggle Item: Push -->
+<div class="flex items-center justify-between py-xs">
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Push Notification</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Promo kilat dan penawaran khusus.</p>
+</div>
+<div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-200 ease-in-out checked:translate-x-6 checked:border-primary-container" id="promo_push" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200 ease-in-out" for="promo_push"></label>
+</div>
+</div>
+<!-- Toggle Item: Email -->
+<div class="flex items-center justify-between py-xs">
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Email</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Newsletter dan promosi mingguan.</p>
+</div>
+<div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-200 ease-in-out checked:translate-x-6 checked:border-primary-container" id="promo_email" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200 ease-in-out" for="promo_email"></label>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Pesan dari Vendor -->
+<section class="bg-surface-container-lowest rounded-lg shadow-sm p-lg">
+<div class="flex items-center gap-sm mb-md pb-sm border-b border-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">chat</span>
+<h2 class="font-title-sm text-title-sm text-on-surface">Pesan dari Vendor</h2>
+</div>
+<div class="space-y-sm">
+<!-- Toggle Item: Push -->
+<div class="flex items-center justify-between py-xs">
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Push Notification</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Pesan baru dari penyedia layanan.</p>
+</div>
+<div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-200 ease-in-out checked:translate-x-6 checked:border-primary-container" id="vendor_push" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200 ease-in-out" for="vendor_push"></label>
+</div>
+</div>
+<!-- Toggle Item: SMS -->
+<div class="flex items-center justify-between py-xs">
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">SMS</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Pengingat pesan yang belum dibaca.</p>
+</div>
+<div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-200 ease-in-out checked:translate-x-6 checked:border-primary-container" id="vendor_sms" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200 ease-in-out" for="vendor_sms"></label>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Info Akun -->
+<section class="bg-surface-container-lowest rounded-lg shadow-sm p-lg">
+<div class="flex items-center gap-sm mb-md pb-sm border-b border-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+<h2 class="font-title-sm text-title-sm text-on-surface">Info Akun</h2>
+</div>
+<div class="space-y-sm">
+<!-- Toggle Item: Email Security -->
+<div class="flex items-center justify-between py-xs">
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Keamanan Akun (Email)</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Peringatan login baru dan perubahan sandi.</p>
+</div>
+<div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+<!-- Security alerts are usually forced on, but structured as requested -->
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-200 ease-in-out checked:translate-x-6 checked:border-primary-container" disabled="" id="account_email" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200 ease-in-out opacity-80" for="account_email"></label>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

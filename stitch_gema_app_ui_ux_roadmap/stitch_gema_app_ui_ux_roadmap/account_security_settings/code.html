@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Account Security</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "inverse-primary": "#4edea3",
+                            "surface-container": "#e8f0e9",
+                            "surface-bright": "#f4fbf4",
+                            "secondary-fixed": "#baeed1",
+                            "surface": "#f4fbf4",
+                            "on-tertiary-fixed": "#410005",
+                            "on-tertiary-fixed-variant": "#842225",
+                            "on-surface": "#161d19",
+                            "background": "#f4fbf4",
+                            "primary-container": "#10b981",
+                            "secondary": "#376850",
+                            "secondary-fixed-dim": "#9ed2b5",
+                            "primary": "#006c49",
+                            "outline": "#6c7a71",
+                            "primary-fixed-dim": "#4edea3",
+                            "tertiary-fixed": "#ffdad7",
+                            "tertiary-fixed-dim": "#ffb3af",
+                            "on-primary": "#ffffff",
+                            "on-secondary-fixed-variant": "#1e4f3a",
+                            "on-secondary-container": "#3c6c54",
+                            "on-tertiary-container": "#711419",
+                            "on-secondary-fixed": "#002113",
+                            "inverse-on-surface": "#ebf3eb",
+                            "on-surface-variant": "#3c4a42",
+                            "error": "#ba1a1a",
+                            "outline-variant": "#bbcabf",
+                            "on-primary-fixed": "#002113",
+                            "surface-container-highest": "#dde4dd",
+                            "on-primary-fixed-variant": "#005236",
+                            "on-error-container": "#93000a",
+                            "error-container": "#ffdad6",
+                            "primary-fixed": "#6ffbbe",
+                            "tertiary": "#a43a3a",
+                            "on-primary-container": "#00422b",
+                            "surface-container-high": "#e3eae3",
+                            "surface-dim": "#d4dcd5",
+                            "surface-container-lowest": "#ffffff",
+                            "inverse-surface": "#2b322d",
+                            "surface-variant": "#dde4dd",
+                            "on-background": "#161d19",
+                            "surface-tint": "#006c49",
+                            "secondary-container": "#b7ebce",
+                            "on-secondary": "#ffffff",
+                            "tertiary-container": "#fc7c78",
+                            "on-error": "#ffffff",
+                            "surface-container-low": "#eef6ee",
+                            "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "1rem",
+                            "lg": "2rem",
+                            "xl": "3rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "sm": "8px",
+                            "md": "16px",
+                            "xl": "32px",
+                            "base": "4px",
+                            "gutter": "12px",
+                            "container-padding": "16px",
+                            "2xl": "48px",
+                            "xs": "4px",
+                            "lg": "24px"
+                    },
+                    "fontFamily": {
+                            "display-lg": [
+                                    "Plus Jakarta Sans"
+                            ],
+                            "body-lg": [
+                                    "Inter"
+                            ],
+                            "title-sm": [
+                                    "Plus Jakarta Sans"
+                            ],
+                            "headline-md": [
+                                    "Plus Jakarta Sans"
+                            ],
+                            "label-md": [
+                                    "Inter"
+                            ],
+                            "body-md": [
+                                    "Inter"
+                            ]
+                    },
+                    "fontSize": {
+                            "display-lg": [
+                                    "32px",
+                                    {
+                                            "lineHeight": "1.2",
+                                            "letterSpacing": "-0.02em",
+                                            "fontWeight": "700"
+                                    }
+                            ],
+                            "body-lg": [
+                                    "16px",
+                                    {
+                                            "lineHeight": "1.6",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "title-sm": [
+                                    "18px",
+                                    {
+                                            "lineHeight": "1.4",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "headline-md": [
+                                    "24px",
+                                    {
+                                            "lineHeight": "1.3",
+                                            "letterSpacing": "-0.01em",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "label-md": [
+                                    "12px",
+                                    {
+                                            "lineHeight": "1.2",
+                                            "letterSpacing": "0.05em",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "body-md": [
+                                    "14px",
+                                    {
+                                            "lineHeight": "1.5",
+                                            "fontWeight": "400"
+                                    }
+                            ]
+                    }
+            },
+                },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md antialiased pb-safe min-h-screen">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-md h-16 bg-surface dark:bg-on-surface text-primary dark:text-primary-fixed-dim font-headline-md text-headline-md docked full-width top-0 sticky z-50">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<h1 class="flex-1 text-center font-bold text-on-surface">Account Security</h1>
+<button aria-label="Information" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-on-surface">info</span>
+</button>
+</header>
+<main class="px-md py-lg space-y-xl max-w-2xl mx-auto">
+<!-- Security Status Card -->
+<section class="bg-surface-container-lowest rounded-lg p-md shadow-sm border border-surface-variant flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined fill text-primary text-2xl">verified_user</span>
+</div>
+<div>
+<h2 class="font-title-sm text-title-sm text-on-surface">Account Secure</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Your security settings look good.</p>
+</div>
+</section>
+<!-- Login & Security Section -->
+<section class="space-y-sm">
+<h3 class="font-title-sm text-title-sm text-on-surface px-sm">Login &amp; Security</h3>
+<div class="bg-surface-container-lowest rounded-lg shadow-sm divide-y divide-surface-variant overflow-hidden">
+<!-- Change Password -->
+<a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">key</span>
+</div>
+<div>
+<p class="font-title-sm text-title-sm text-on-surface">Ubah Kata Sandi</p>
+<p class="font-label-md text-label-md text-on-surface-variant mt-xs">Update your password regularly</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</a>
+<!-- Biometric Security -->
+<div class="flex items-center justify-between p-md">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">fingerprint</span>
+</div>
+<div>
+<p class="font-title-sm text-title-sm text-on-surface">Keamanan Biometrik</p>
+<p class="font-label-md text-label-md text-on-surface-variant mt-xs">Login with FaceID or Fingerprint</p>
+</div>
+</div>
+<!-- Toggle Switch -->
+<button aria-checked="true" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-primary-container focus:ring-offset-2" role="switch">
+<span aria-hidden="true" class="pointer-events-none absolute h-full w-full rounded-md bg-transparent"></span>
+<span aria-hidden="true" class="pointer-events-none absolute mx-auto h-4 w-9 rounded-full bg-primary-container transition-colors duration-200 ease-in-out"></span>
+<span aria-hidden="true" class="pointer-events-none absolute left-0 inline-block h-5 w-5 translate-x-5 transform rounded-full border border-gray-200 bg-white shadow ring-0 transition-transform duration-200 ease-in-out"></span>
+</button>
+</div>
+<!-- 2FA -->
+<a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">phonelink_lock</span>
+</div>
+<div>
+<p class="font-title-sm text-title-sm text-on-surface">Autentikasi Dua Faktor</p>
+<div class="flex items-center gap-xs mt-xs">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<p class="font-label-md text-label-md text-primary">Active</p>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</a>
+</div>
+</section>
+<!-- Activity Section -->
+<section class="space-y-sm">
+<h3 class="font-title-sm text-title-sm text-on-surface px-sm">Activity</h3>
+<div class="bg-surface-container-lowest rounded-lg shadow-sm divide-y divide-surface-variant overflow-hidden">
+<!-- Registered Devices -->
+<a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">devices</span>
+</div>
+<div>
+<p class="font-title-sm text-title-sm text-on-surface">Perangkat Terdaftar</p>
+<p class="font-label-md text-label-md text-on-surface-variant mt-xs">2 Active devices</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</a>
+<!-- Last Login Activity -->
+<a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">history</span>
+</div>
+<div>
+<p class="font-title-sm text-title-sm text-on-surface">Aktivitas Login Terakhir</p>
+<p class="font-label-md text-label-md text-on-surface-variant mt-xs">Jakarta, Indonesia • Today, 10:42 AM</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</a>
+</div>
+</section>
+</main>
+</body></html>

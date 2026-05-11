@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Promo History</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed": "#baeed1",
+                      "outline-variant": "#bbcabf",
+                      "on-tertiary-fixed-variant": "#842225",
+                      "on-primary-fixed-variant": "#005236",
+                      "surface-tint": "#006c49",
+                      "on-error": "#ffffff",
+                      "secondary": "#376850",
+                      "primary": "#006c49",
+                      "on-secondary-container": "#3c6c54",
+                      "tertiary": "#a43a3a",
+                      "outline": "#6c7a71",
+                      "surface-variant": "#dde4dd",
+                      "surface-container-low": "#eef6ee",
+                      "primary-container": "#10b981",
+                      "background": "#f4fbf4",
+                      "on-secondary-fixed-variant": "#1e4f3a",
+                      "on-primary": "#ffffff",
+                      "inverse-surface": "#2b322d",
+                      "primary-fixed-dim": "#4edea3",
+                      "on-primary-fixed": "#002113",
+                      "surface": "#f4fbf4",
+                      "on-secondary": "#ffffff",
+                      "tertiary-container": "#fc7c78",
+                      "surface-bright": "#f4fbf4",
+                      "primary-fixed": "#6ffbbe",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#ffb3af",
+                      "on-tertiary-fixed": "#410005",
+                      "secondary-fixed-dim": "#9ed2b5",
+                      "on-error-container": "#93000a",
+                      "surface-container-high": "#e3eae3",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#dde4dd",
+                      "tertiary-fixed": "#ffdad7",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed": "#002113",
+                      "on-surface-variant": "#3c4a42",
+                      "on-tertiary": "#ffffff",
+                      "surface-container": "#e8f0e9",
+                      "inverse-primary": "#4edea3",
+                      "on-background": "#161d19",
+                      "on-surface": "#161d19",
+                      "on-primary-container": "#00422b",
+                      "inverse-on-surface": "#ebf3eb",
+                      "on-tertiary-container": "#711419",
+                      "surface-dim": "#d4dcd5",
+                      "secondary-container": "#b7ebce"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "2xl": "48px",
+                      "md": "16px",
+                      "container-padding": "16px",
+                      "sm": "8px",
+                      "base": "4px",
+                      "gutter": "12px",
+                      "xs": "4px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "title-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "title-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col font-body-md">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky shadow-sm bg-surface dark:bg-surface-dim z-40 transition-colors duration-200">
+<div class="flex items-center px-md h-16 w-full max-w-screen-xl mx-auto">
+<button class="mr-sm p-sm rounded-full hover:bg-surface-variant/50 text-primary dark:text-primary-fixed-dim transition-colors duration-200 active:opacity-70 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim flex-1 truncate">
+                Promo History
+            </h1>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 w-full max-w-screen-xl mx-auto pb-24">
+<!-- Tabs -->
+<div class="flex border-b border-surface-variant">
+<button class="flex-1 py-md font-title-sm text-title-sm text-primary border-b-2 border-primary text-center">
+                Sudah Digunakan
+            </button>
+<button class="flex-1 py-md font-title-sm text-title-sm text-on-surface-variant text-center hover:bg-surface-variant/20 transition-colors duration-200">
+                Kadaluwarsa
+            </button>
+</div>
+<div class="p-md space-y-md">
+<!-- Used Promo Card 1 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT shadow-sm p-md border border-surface-variant flex flex-col gap-sm opacity-70 grayscale-[50%] transition-opacity duration-200">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined fill text-[20px]" data-icon="local_mall">local_mall</span>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface">Diskon Ongkir Rp15.000</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Min. belanja Rp50.000</p>
+</div>
+</div>
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-surface-variant text-on-surface-variant font-label-md text-label-md">
+                        Sudah Digunakan
+                    </span>
+</div>
+<div class="pt-sm border-t border-surface-variant flex justify-between items-center mt-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Digunakan pada: 12 Okt 2023, 14:30</span>
+<button class="text-primary font-label-md text-label-md hover:underline">Lihat Transaksi</button>
+</div>
+</div>
+<!-- Used Promo Card 2 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT shadow-sm p-md border border-surface-variant flex flex-col gap-sm opacity-70 grayscale-[50%] transition-opacity duration-200">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined fill text-[20px]" data-icon="restaurant">restaurant</span>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface">Cashback 20% s/d Rp20rb</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Kategori Makanan &amp; Minuman</p>
+</div>
+</div>
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-surface-variant text-on-surface-variant font-label-md text-label-md">
+                        Sudah Digunakan
+                    </span>
+</div>
+<div class="pt-sm border-t border-surface-variant flex justify-between items-center mt-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Digunakan pada: 05 Okt 2023, 19:15</span>
+<button class="text-primary font-label-md text-label-md hover:underline">Lihat Transaksi</button>
+</div>
+</div>
+<!-- Expired Promo Card 1 (Hidden by default based on tab, but showing for example) -->
+<div class="bg-surface-container-lowest rounded-DEFAULT shadow-sm p-md border border-surface-variant flex flex-col gap-sm opacity-50 grayscale transition-opacity duration-200">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined fill text-[20px]" data-icon="directions_car">directions_car</span>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface">Potongan Rp10.000 Ride</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Tanpa min. transaksi</p>
+</div>
+</div>
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-error-container text-on-error-container font-label-md text-label-md">
+                        Kadaluwarsa
+                    </span>
+</div>
+<div class="pt-sm border-t border-surface-variant flex justify-between items-center mt-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Berakhir pada: 30 Sep 2023</span>
+</div>
+</div>
+</div>
+<div class="px-md mt-lg">
+<button class="w-full py-md rounded-full bg-primary-container/10 text-primary font-title-sm text-title-sm text-center flex items-center justify-center gap-sm hover:bg-primary-container/20 transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+                Gunakan Voucher Lain
+            </button>
+</div>
+</main>
+<!-- BottomNavBar is omitted due to Linear/Task-focused screen logic (Back button present) -->
+</body></html>

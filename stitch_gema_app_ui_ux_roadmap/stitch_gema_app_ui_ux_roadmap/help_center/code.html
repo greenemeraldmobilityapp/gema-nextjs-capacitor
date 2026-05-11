@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>GEMA - Help Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2b322d",
+                        "tertiary-container": "#fc7c78",
+                        "on-secondary-fixed-variant": "#1e4f3a",
+                        "on-primary-fixed": "#002113",
+                        "on-primary-container": "#00422b",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#161d19",
+                        "background": "#f4fbf4",
+                        "surface-container-high": "#e3eae3",
+                        "primary-fixed-dim": "#4edea3",
+                        "tertiary": "#a43a3a",
+                        "on-surface-variant": "#3c4a42",
+                        "tertiary-fixed": "#ffdad7",
+                        "primary-fixed": "#6ffbbe",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#410005",
+                        "on-secondary-fixed": "#002113",
+                        "on-tertiary-container": "#711419",
+                        "on-secondary-container": "#3c6c54",
+                        "tertiary-fixed-dim": "#ffb3af",
+                        "inverse-primary": "#4edea3",
+                        "surface-tint": "#006c49",
+                        "inverse-on-surface": "#ebf3eb",
+                        "surface-container-low": "#eef6ee",
+                        "on-secondary": "#ffffff",
+                        "outline": "#6c7a71",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#005236",
+                        "surface-container-highest": "#dde4dd",
+                        "outline-variant": "#bbcabf",
+                        "error": "#ba1a1a",
+                        "surface": "#f4fbf4",
+                        "secondary": "#376850",
+                        "surface-container": "#e8f0e9",
+                        "primary-container": "#10b981",
+                        "secondary-fixed-dim": "#9ed2b5",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#dde4dd",
+                        "surface-dim": "#d4dcd5",
+                        "on-tertiary-fixed-variant": "#842225",
+                        "error-container": "#ffdad6",
+                        "primary": "#006c49",
+                        "surface-bright": "#f4fbf4",
+                        "secondary-fixed": "#baeed1",
+                        "secondary-container": "#b7ebce",
+                        "on-surface": "#161d19"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "gutter": "12px",
+                        "2xl": "48px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "container-padding": "16px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "safe": "env(safe-area-inset-bottom)"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { -webkit-tap-highlight-color: transparent; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col pt-safe pb-safe">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-md h-16 bg-surface dark:bg-on-surface docked full-width top-0 sticky z-40">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors text-primary dark:text-primary-fixed-dim Active: scale-95 duration-150 ease-in-out">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary truncate flex-1 text-center px-4">Pusat Bantuan</h1>
+<button aria-label="Information" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors text-primary dark:text-primary-fixed-dim Active: scale-95 duration-150 ease-in-out">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">info</span>
+</button>
+</header>
+<main class="flex-1 pb-2xl md:pb-xl">
+<!-- Search Hero Section -->
+<section class="px-md pt-lg pb-xl bg-surface-container-low rounded-b-xl shadow-sm mb-lg relative overflow-hidden">
+<div class="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-primary opacity-5 rounded-full blur-2xl pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 -ml-12 -mb-12 w-32 h-32 bg-secondary opacity-5 rounded-full blur-xl pointer-events-none"></div>
+<div class="relative z-10 max-w-md mx-auto">
+<h2 class="font-title-sm text-title-sm text-on-surface mb-sm text-center">Hai, ada yang bisa kami bantu?</h2>
+<div class="relative mt-md">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant z-10">search</span>
+<input class="w-full h-12 pl-12 pr-4 bg-surface-container-lowest rounded-DEFAULT border-none shadow-sm focus:ring-2 focus:ring-primary focus:outline-none font-body-md text-body-md text-on-surface placeholder-on-surface-variant transition-shadow" placeholder="Cari bantuan..." type="text"/>
+</div>
+</div>
+</section>
+<!-- Kategori Bantuan (Bento Grid) -->
+<section class="px-md mb-xl max-w-lg mx-auto">
+<h3 class="font-title-sm text-title-sm text-on-surface mb-md">Kategori Bantuan</h3>
+<div class="grid grid-cols-2 gap-sm md:gap-gutter">
+<!-- Card 1 -->
+<button class="bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm hover:shadow-md transition-shadow flex flex-col items-start gap-sm text-left border border-surface-container active:scale-95 duration-150">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold mt-xs">Pesanan &amp; Pembayaran</span>
+</button>
+<!-- Card 2 -->
+<button class="bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm hover:shadow-md transition-shadow flex flex-col items-start gap-sm text-left border border-surface-container active:scale-95 duration-150">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold mt-xs">GemaPay</span>
+</button>
+<!-- Card 3 -->
+<button class="bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm hover:shadow-md transition-shadow flex flex-col items-start gap-sm text-left border border-surface-container active:scale-95 duration-150">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold mt-xs">Akun &amp; Keamanan</span>
+</button>
+<!-- Card 4 -->
+<button class="bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm hover:shadow-md transition-shadow flex flex-col items-start gap-sm text-left border border-surface-container active:scale-95 duration-150">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">storefront</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold mt-xs">Layanan Vendor</span>
+</button>
+<!-- Card 5 (Full Width) -->
+<button class="col-span-2 bg-surface-container-lowest p-md rounded-DEFAULT shadow-sm hover:shadow-md transition-shadow flex flex-row items-center justify-between text-left border border-surface-container active:scale-95 duration-150">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">policy</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Kebijakan Privasi</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Topik Populer -->
+<section class="px-md max-w-lg mx-auto">
+<h3 class="font-title-sm text-title-sm text-on-surface mb-md">Topik Populer</h3>
+<div class="bg-surface-container-lowest rounded-DEFAULT shadow-sm border border-surface-container overflow-hidden divide-y divide-surface-container">
+<!-- FAQ Item 1 -->
+<button class="w-full flex items-start justify-between p-md hover:bg-surface-container-high transition-colors text-left group">
+<div class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary mt-1" style="font-size: 20px;">help</span>
+<div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Bagaimana cara membatalkan pesanan?</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+<!-- FAQ Item 2 -->
+<button class="w-full flex items-start justify-between p-md hover:bg-surface-container-high transition-colors text-left group">
+<div class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary mt-1" style="font-size: 20px;">help</span>
+<div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Cara upgrade akun vendor</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+<!-- FAQ Item 3 -->
+<button class="w-full flex items-start justify-between p-md hover:bg-surface-container-high transition-colors text-left group">
+<div class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary mt-1" style="font-size: 20px;">help</span>
+<div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Mengapa pembayaran GemaPay saya gagal?</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+</div>
+<!-- View All Button -->
+<div class="mt-md flex justify-center">
+<button class="font-label-md text-label-md text-primary bg-primary/10 hover:bg-primary/20 px-lg py-sm rounded-full transition-colors flex items-center gap-xs">
+                    Lihat Semua Topik
+                    <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Suppressed intentionally as per rules for Help Center / Support Sub-pages -->
+</body></html>

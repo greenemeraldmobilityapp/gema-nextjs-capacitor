@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Profile - GEMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-container": "#fc7c78",
+                      "on-primary": "#ffffff",
+                      "surface-container-low": "#eef6ee",
+                      "surface-container": "#e8f0e9",
+                      "secondary": "#376850",
+                      "outline": "#6c7a71",
+                      "tertiary-fixed-dim": "#ffb3af",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed": "#002113",
+                      "on-surface": "#161d19",
+                      "tertiary-fixed": "#ffdad7",
+                      "outline-variant": "#bbcabf",
+                      "secondary-container": "#b7ebce",
+                      "inverse-primary": "#4edea3",
+                      "surface": "#f4fbf4",
+                      "on-error-container": "#93000a",
+                      "error-container": "#ffdad6",
+                      "primary": "#006c49",
+                      "surface-bright": "#f4fbf4",
+                      "primary-fixed": "#6ffbbe",
+                      "surface-dim": "#d4dcd5",
+                      "on-primary-fixed-variant": "#005236",
+                      "inverse-surface": "#2b322d",
+                      "inverse-on-surface": "#ebf3eb",
+                      "on-tertiary-fixed": "#410005",
+                      "surface-container-high": "#e3eae3",
+                      "secondary-fixed-dim": "#9ed2b5",
+                      "secondary-fixed": "#baeed1",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed": "#002113",
+                      "on-secondary-fixed-variant": "#1e4f3a",
+                      "surface-container-highest": "#dde4dd",
+                      "primary-fixed-dim": "#4edea3",
+                      "on-tertiary-container": "#711419",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#3c6c54",
+                      "surface-tint": "#006c49",
+                      "on-primary-container": "#00422b",
+                      "on-background": "#161d19",
+                      "on-tertiary-fixed-variant": "#842225",
+                      "on-error": "#ffffff",
+                      "surface-variant": "#dde4dd",
+                      "primary-container": "#10b981",
+                      "tertiary": "#a43a3a",
+                      "surface-container-lowest": "#ffffff",
+                      "background": "#f4fbf4",
+                      "on-surface-variant": "#3c4a42"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "16px",
+                      "sm": "8px",
+                      "xl": "32px",
+                      "lg": "24px",
+                      "xs": "4px",
+                      "container-padding": "16px",
+                      "base": "4px",
+                      "gutter": "12px",
+                      "2xl": "48px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "title-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "title-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body-lg antialiased">
+<!-- Top App Bar -->
+<header class="flex justify-between items-center w-full px-container-padding py-sm bg-surface shadow-sm sticky top-0 z-50">
+<button class="text-on-surface p-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-200 ease-in-out">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Ubah Profil</h1>
+<div class="w-10"><!-- Spacer for balance --></div>
+</header>
+<main class="max-w-3xl mx-auto px-container-padding py-xl pb-2xl flex flex-col gap-lg">
+<!-- Profile Photo Section -->
+<section class="flex flex-col items-center justify-center pt-md pb-lg">
+<div class="relative inline-block group cursor-pointer">
+<div class="w-32 h-32 rounded-full overflow-hidden border-2 border-surface-container-high shadow-md">
+<img alt="Profile Photo" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEFdI8KBC7U4hGDpllRUuuNMGImdjr7KWGfVtRni0X0A0qgu2K0JfYyMvF_8_6mC6AsIZpOujfp6ZxMqIMXotGOFx6lxbbwY10w4hLtuttHGMhRdE16cmEOGoeGibG1JdsNEMVddKI9fR5qLXDidBB4IdpkkuQV2dPZBtoAJYYpR4rwbvoMVQW10VO-_WHEGUTWNjZUFYAuvpoZ_RqPWzO1fVDDm1ENjVkXMLThtvB7Fcxve1X7h2fGa1vORZNjNlUW5ZynI65jBg"/>
+</div>
+<button class="absolute bottom-1 right-1 bg-primary text-on-primary p-2 rounded-full shadow-lg hover:bg-on-primary-fixed-variant transition-all active:scale-90 flex items-center justify-center border-2 border-surface">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+</button>
+</div>
+<p class="mt-md font-label-md text-label-md text-on-surface-variant">Tap to update profile photo</p>
+</section>
+<!-- Form Section -->
+<form class="flex flex-col gap-lg bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30">
+<!-- Nama Lengkap -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant ml-sm font-semibold" for="namaLengkap">Nama Lengkap</label>
+<div class="relative"><span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline" style="font-variation-settings: 'FILL' 0;">person</span>
+<input class="w-full bg-white border border-outline-variant rounded-DEFAULT py-md pl-12 pr-md font-body-lg text-body-lg text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm placeholder:text-outline-variant" id="namaLengkap" placeholder="Masukkan nama lengkap" type="text" value="Rina Maharani"/></div>
+</div>
+<!-- Email -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant ml-sm font-semibold" for="email">Email</label>
+<div class="relative"><span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline" style="font-variation-settings: 'FILL' 0;">mail</span>
+<input class="w-full bg-white border border-outline-variant rounded-DEFAULT py-md pl-12 pr-md font-body-lg text-body-lg text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm placeholder:text-outline-variant" id="email" placeholder="Masukkan email" type="email" value="rina.maharani@email.com"/></div>
+</div>
+<!-- Nomor Telepon -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant ml-sm font-semibold" for="telepon">Nomor Telepon</label>
+<div class="relative"><span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline" style="font-variation-settings: 'FILL' 0;">call</span>
+<input class="w-full bg-white border border-outline-variant rounded-DEFAULT py-md pl-12 pr-md font-body-lg text-body-lg text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm placeholder:text-outline-variant" id="telepon" placeholder="Masukkan nomor telepon" type="tel" value="+62 812 3456 7890"/></div>
+</div>
+<!-- Alamat -->
+<div class="flex flex-col gap-xs"><label class="font-label-md text-label-md text-on-surface-variant ml-sm font-semibold" for="alamat">Alamat</label>
+<div class="flex flex-col gap-md bg-white border border-outline-variant rounded-DEFAULT p-md shadow-sm">
+<!-- Map Preview -->
+<div class="w-full h-32 bg-surface-container rounded-md overflow-hidden relative border border-outline-variant/30">
+<img alt="Map Preview" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AGV9R-M_l6e-qC25nN2V7C6m76868q7N67C-R_67M-qN68C_l7q-q7C-q7C_q7N6-C-q7N-6-q7N-6-C-q-C-6"/>
+<div class="absolute inset-0 flex items-center justify-center bg-black/5">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+</div>
+<!-- Select from Map Button -->
+<button class="flex items-center justify-center gap-sm w-full py-sm px-md border-2 border-primary text-primary font-title-sm rounded-full hover:bg-primary/5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">map</span>
+        Pilih dari Peta
+    </button>
+<!-- Address Text -->
+<div class="flex gap-sm">
+<span class="material-symbols-outlined text-outline mt-1" style="font-variation-settings: 'FILL' 0;">location_on</span>
+<p class="font-body-lg text-body-lg text-on-surface" id="alamat-display">
+            Jl. Sudirman No. 45, Kebayoran Baru, Jakarta Selatan, 12190
+        </p>
+</div>
+<!-- Hidden input to keep form functionality -->
+<input id="alamat" name="alamat" type="hidden" value="Jl. Sudirman No. 45, Kebayoran Baru, Jakarta Selatan, 12190"/>
+</div></div>
+<!-- Save Button -->
+<button class="mt-md w-full bg-primary text-on-primary font-title-sm text-title-sm py-md px-lg rounded-full shadow-lg hover:bg-on-primary-fixed-variant transition-all active:scale-95 flex items-center justify-center gap-sm transform hover:-translate-y-0.5" type="button">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+                Simpan Perubahan
+            </button>
+</form>
+</main>
+</body></html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GEMA - Profil Vendor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-bright": "#f4fbf4",
+                      "on-primary-container": "#00422b",
+                      "on-error": "#ffffff",
+                      "surface-container": "#e8f0e9",
+                      "tertiary": "#a43a3a",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-container": "#fc7c78",
+                      "on-background": "#161d19",
+                      "outline-variant": "#bbcabf",
+                      "on-surface": "#161d19",
+                      "secondary-fixed-dim": "#9ed2b5",
+                      "surface-variant": "#dde4dd",
+                      "background": "#f4fbf4",
+                      "surface-dim": "#d4dcd5",
+                      "on-tertiary-fixed-variant": "#842225",
+                      "secondary-fixed": "#baeed1",
+                      "inverse-on-surface": "#ebf3eb",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed-variant": "#1e4f3a",
+                      "on-tertiary-container": "#711419",
+                      "tertiary-fixed": "#ffdad7",
+                      "on-surface-variant": "#3c4a42",
+                      "secondary": "#376850",
+                      "inverse-surface": "#2b322d",
+                      "inverse-primary": "#4edea3",
+                      "surface-tint": "#006c49",
+                      "surface-container-highest": "#dde4dd",
+                      "tertiary-fixed-dim": "#ffb3af",
+                      "primary": "#006c49",
+                      "primary-fixed-dim": "#4edea3",
+                      "outline": "#6c7a71",
+                      "surface-container-lowest": "#ffffff",
+                      "surface": "#f4fbf4",
+                      "primary-fixed": "#6ffbbe",
+                      "surface-container-high": "#e3eae3",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed": "#002113",
+                      "on-primary-fixed-variant": "#005236",
+                      "error": "#ba1a1a",
+                      "surface-container-low": "#eef6ee",
+                      "on-secondary-fixed": "#002113",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed": "#410005",
+                      "on-secondary-container": "#3c6c54",
+                      "primary-container": "#10b981",
+                      "secondary-container": "#b7ebce"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "2xl": "48px",
+                      "xl": "32px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "container-padding": "16px",
+                      "gutter": "12px",
+                      "xs": "4px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "title-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "title-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased pb-32">
+<!-- Header / Top Bar (Transparent over Avatar) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-padding py-sm bg-gradient-to-b from-black/50 to-transparent">
+<button class="w-10 h-10 bg-surface-container-lowest/80 backdrop-blur-md rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-highest transition-colors active:scale-95 duration-200 shadow-sm">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex gap-sm">
+<button class="w-10 h-10 bg-surface-container-lowest/80 backdrop-blur-md rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-highest transition-colors active:scale-95 duration-200 shadow-sm">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="w-10 h-10 bg-surface-container-lowest/80 backdrop-blur-md rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-highest transition-colors active:scale-95 duration-200 shadow-sm">
+<span class="material-symbols-outlined">bookmark_border</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main>
+<!-- Hero Avatar Section -->
+<div class="relative w-full h-72">
+<img alt="Avatar Budi Santoso" class="w-full h-full object-cover" data-alt="A high-quality, professional portrait of a male technician named Budi Santoso. He is wearing a clean, modern uniform, possibly a polo shirt with a subtle logo. He is smiling warmly and looking directly at the camera. The background is a brightly lit, clean indoor setting, slightly blurred to keep the focus on him. The lighting is soft and natural, contributing to a trustworthy, efficient, and sophisticated modern-premium aesthetic. The overall color palette should harmonize with a light mode UI featuring deep blacks, pristine whites, and subtle emerald green accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYK_GOLOGdpyds_zuz178GLaz3q6KMbnlcURXZjSF-FgMY6l46MbaQpvdgW3vq9GQmhK1goPny_z_7kBZ8dck8ZSsgqW_J5vepJu3QKpTGCs0HchxCC7PMANEUtD0Ye2UTdhg6QqUbfOTsyGpKrUoiVKW7fH2Ui6MPudngZMbAjmWoYYWlMz04mOt_l1woCoDfNEYu4GGbkr7GmOo1ZaCsTUhYTLts5yoKpHC4gzxp1l6ZiN7oaQz9BAcS-_1ZAnxfeiBvhDB4X5o"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
+</div>
+<!-- Profile Info Container -->
+<div class="px-container-padding -mt-xl relative z-10">
+<!-- Title & Rating -->
+<div class="flex justify-between items-start mb-md">
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface flex items-center gap-xs">
+                        Budi Santoso
+                        <span class="material-symbols-outlined text-primary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Spesialis AC &amp; Listrik</p>
+</div>
+<div class="flex items-center gap-xs bg-surface-container-lowest shadow-sm rounded-full px-sm py-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md text-on-surface">4.9 <span class="text-on-surface-variant font-normal">(120)</span></span>
+</div>
+</div>
+<!-- Stats Row (Bento Style) -->
+<div class="grid grid-cols-3 gap-sm mb-lg">
+<div class="bg-surface-container-lowest rounded-xl p-sm flex flex-col items-center justify-center shadow-sm text-center">
+<span class="material-symbols-outlined text-outline mb-xs">work_history</span>
+<span class="font-title-sm text-title-sm text-on-surface">5 Tahun</span>
+<span class="font-label-md text-label-md text-on-surface-variant font-normal">Pengalaman</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-sm flex flex-col items-center justify-center shadow-sm text-center">
+<span class="material-symbols-outlined text-outline mb-xs">check_circle</span>
+<span class="font-title-sm text-title-sm text-on-surface">250+</span>
+<span class="font-label-md text-label-md text-on-surface-variant font-normal">Selesai</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-sm flex flex-col items-center justify-center shadow-sm text-center">
+<span class="material-symbols-outlined text-outline mb-xs">timer</span>
+<span class="font-title-sm text-title-sm text-on-surface">15 Mnt</span>
+<span class="font-label-md text-label-md text-on-surface-variant font-normal">Respon</span>
+</div>
+</div>
+<!-- Description -->
+<div class="mb-lg">
+<h2 class="font-title-sm text-title-sm text-on-surface mb-sm">Tentang</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                    Ahli perbaikan AC dan instalasi listrik dengan sertifikasi resmi. Mengutamakan kepuasan pelanggan dan pengerjaan tepat waktu.
+                </p>
+</div>
+<!-- Service List -->
+<div class="mb-lg">
+<h2 class="font-title-sm text-title-sm text-on-surface mb-sm">Layanan &amp; Harga</h2>
+<div class="flex flex-col gap-sm">
+<!-- Service Card 1 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT p-md shadow-sm flex justify-between items-center">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">ac_unit</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold">Cuci AC</h3>
+<p class="font-label-md text-label-md text-on-surface-variant font-normal mt-xs">Pembersihan menyeluruh</p>
+</div>
+</div>
+<span class="font-title-sm text-title-sm text-primary">Rp 75.000</span>
+</div>
+<!-- Service Card 2 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT p-md shadow-sm flex justify-between items-center">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">build</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold">Tambah Freon</h3>
+<p class="font-label-md text-label-md text-on-surface-variant font-normal mt-xs">R32 / R410 / R22</p>
+</div>
+</div>
+<span class="font-title-sm text-title-sm text-primary">Rp 150.000</span>
+</div>
+</div>
+</div>
+<!-- Portfolio Preview -->
+<div class="mb-lg">
+<div class="flex justify-between items-center mb-sm">
+<h2 class="font-title-sm text-title-sm text-on-surface">Portofolio</h2>
+<button class="font-label-md text-label-md text-primary">Lihat Semua</button>
+</div>
+<div class="flex gap-sm overflow-x-auto no-scrollbar pb-xs">
+<img alt="Kerja 1" class="w-32 h-32 object-cover rounded-xl shrink-0" data-alt="Close up shot of a clean, modern air conditioning unit being serviced by professional hands. The setting is bright and pristine, conveying a sense of high-quality service and trustworthiness. The lighting is soft white, enhancing the clean-simple aesthetic. Subtle emerald green accents highlight the tools or branding. The overall mood is efficient and sophisticated, aligning perfectly with a premium service app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsy9DMF9TXWGe4UCZEYHaAFSrpAOyZik8ZAj7n9c-zrYEYQ70k-yVSFy74DrT8FQlQgcgwCzOCy3xqh6VJshKWZevD3T7lmy-NzFU82yhTd5TCa6R1FCpHAcbPPLffi-l2XZXBtJUlsZRcIekaS9gJK2jg4HpB431pemF3zgvGamITs2x5LJVum0KEaiSek8NOE1uAowtkJlWUtbOtYUwaQkWqCY09vOLR-lREDTnxhaebZbp64Ox4ydzfT5aEBNSem8I1-NjJcok"/>
+<img alt="Kerja 2" class="w-32 h-32 object-cover rounded-xl shrink-0" data-alt="A well-organized electrical panel box, newly installed with neat wiring. The image reflects precision and attention to detail, bathed in bright, natural light. The environment feels secure and expertly handled. A subtle tonal layering effect gives depth, matching the modern-premium visual style of the application. The colors are predominantly light grays, whites, and touches of vibrant emerald." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASUQvuich6fDTiX67AnHREJPhE55FU6UVouLJpLDYorsSDo0195bhw0ToLfDBhH_dbcd-BJ0wFwfM5233hSJH0l_fR78MMnV7srNwIlbpql7DwwZrGuS6FyGucM-SRJwVJIJlcqyAUFlS1NZTMI6HxPEw-WSvm6lyNjsvVYKed0G9UIQ4saY5AMJkRkFREcAingBpFLfBDHbdW90FjW4BvB6NlRVu2zkN1wBGlq6z5JyfRtxvGaDCqsz4qyGbzpvcrPIGP0PtjW5g"/>
+<img alt="Kerja 3" class="w-32 h-32 object-cover rounded-xl shrink-0" data-alt="A technician confidently standing next to a fully repaired outdoor AC compressor unit. The background is slightly blurred to keep focus on the clean, efficient work done. The lighting is high-key and soft, creating a reliable and trustworthy mood. This image reinforces the high-end service delivery ethos of the brand, utilizing a sophisticated palette with emerald accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCM1hcxJMp-wo5iU0XjTXylKEKlVezgu98UH4DkBfFCsXaG0Bkrv8qI1J29EZUZwJ-T4Xy5eZXn4KQIC1x25Yx5t5W1VnomlnUtk1zbY9tkwUOLbkpIkn4IjwNya9dkbeL5Uuqcvov--kRIrVqaoOAunrs0j4IJwjAfvfL1cPvqVm_t84eUrBgY8yxXg9cyHZBXOxK7yp17teRqU2har6z0DCL1UFLZKZs2_hsoFecUdhFrrAprpuDSHBuzDdjodJAymy8TzWFQZNo"/>
+</div>
+</div>
+<!-- Reviews Preview -->
+<div class="mb-xl">
+<div class="flex justify-between items-center mb-sm">
+<h2 class="font-title-sm text-title-sm text-on-surface">Ulasan</h2>
+<button class="font-label-md text-label-md text-primary">Semua Ulasan</button>
+</div>
+<div class="flex flex-col gap-sm">
+<!-- Review 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-md shadow-sm">
+<div class="flex justify-between items-start mb-xs">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold text-sm">A</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-semibold">Andi M.</p>
+<p class="text-[10px] text-on-surface-variant">2 hari yang lalu</p>
+</div>
+</div>
+<div class="flex text-primary-container text-[14px]" style="font-variation-settings: 'FILL' 1;">
+<span class="material-symbols-outlined">star</span>
+<span class="material-symbols-outlined">star</span>
+<span class="material-symbols-outlined">star</span>
+<span class="material-symbols-outlined">star</span>
+<span class="material-symbols-outlined">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mt-sm">Kerjanya cepat, rapi, dan AC langsung dingin lagi. Rekomen banget!</p>
+</div>
+<!-- Review 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-md shadow-sm">
+<div class="flex justify-between items-start mb-xs">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container font-bold text-sm">S</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-semibold">Siti N.</p>
+<p class="text-[10px] text-on-surface-variant">1 minggu yang lalu</p>
+</div>
+</div>
+<div class="flex text-primary-container text-[14px]" style="font-variation-settings: 'FILL' 1;">
+<span class="material-symbols-outlined">star</span>
+<span class="material-symbols-outlined">star</span>
+<span class="material-symbols-outlined">star</span>
+<span class="material-symbols-outlined">star</span>
+<span class="material-symbols-outlined">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mt-sm">Pak Budi sangat profesional, datang tepat waktu dan harga transparan.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Action Bar -->
+<div class="fixed bottom-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-md border-t border-surface-variant px-container-padding pb-safe pt-md pb-md flex gap-sm shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+<button class="w-14 h-14 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined">chat</span>
+</button>
+<button class="flex-1 h-14 rounded-full bg-primary-container text-on-primary font-headline-md text-body-lg flex items-center justify-center active:scale-95 transition-transform duration-200 shadow-md">
+            Pesan Sekarang
+        </button>
+</div>
+</body></html>

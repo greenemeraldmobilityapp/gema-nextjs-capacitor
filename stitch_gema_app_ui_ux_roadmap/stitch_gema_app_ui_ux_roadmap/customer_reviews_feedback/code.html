@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Customer Reviews &amp; Feedback</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed-dim": "#ffb3af",
+                      "on-tertiary": "#ffffff",
+                      "surface-container": "#e8f0e9",
+                      "secondary-fixed-dim": "#9ed2b5",
+                      "primary": "#006c49",
+                      "error": "#ba1a1a",
+                      "tertiary": "#a43a3a",
+                      "inverse-on-surface": "#ebf3eb",
+                      "surface-container-highest": "#dde4dd",
+                      "on-surface-variant": "#3c4a42",
+                      "surface-variant": "#dde4dd",
+                      "on-primary": "#ffffff",
+                      "on-surface": "#161d19",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed": "#ffdad7",
+                      "on-secondary-container": "#3c6c54",
+                      "secondary-container": "#b7ebce",
+                      "on-primary-fixed-variant": "#005236",
+                      "on-tertiary-container": "#711419",
+                      "surface-bright": "#f4fbf4",
+                      "on-secondary-fixed-variant": "#1e4f3a",
+                      "primary-fixed": "#6ffbbe",
+                      "on-error-container": "#93000a",
+                      "surface-container-low": "#eef6ee",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed-dim": "#4edea3",
+                      "error-container": "#ffdad6",
+                      "background": "#f4fbf4",
+                      "surface-dim": "#d4dcd5",
+                      "secondary": "#376850",
+                      "inverse-surface": "#2b322d",
+                      "surface-tint": "#006c49",
+                      "on-primary-container": "#00422b",
+                      "outline": "#6c7a71",
+                      "surface-container-high": "#e3eae3",
+                      "on-primary-fixed": "#002113",
+                      "surface": "#f4fbf4",
+                      "primary-container": "#10b981",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed": "#410005",
+                      "inverse-primary": "#4edea3",
+                      "tertiary-container": "#fc7c78",
+                      "outline-variant": "#bbcabf",
+                      "on-tertiary-fixed-variant": "#842225",
+                      "secondary-fixed": "#baeed1",
+                      "on-secondary-fixed": "#002113",
+                      "on-background": "#161d19"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "16px",
+                      "xl": "32px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "container-padding": "16px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "2xl": "48px",
+                      "gutter": "12px"
+              },
+              "fontFamily": {
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "title-sm": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "title-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased pb-2xl md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-container-low shadow-sm dark:shadow-none docked full-width top-0 z-50 sticky">
+<div class="flex justify-between items-center w-full px-container-padding py-sm">
+<!-- Leading: Back Button (Intent-based override of avatar) -->
+<button class="p-2 -ml-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-200 ease-in-out text-primary dark:text-inverse-primary flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<!-- Headline -->
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary text-center flex-1">Ulasan &amp; Feedback</h1>
+<!-- Trailing: Icon -->
+<button class="p-2 -mr-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-200 ease-in-out text-primary dark:text-inverse-primary flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-3xl mx-auto mt-md">
+<!-- Summary Section -->
+<section class="mx-md bg-surface-container-lowest rounded-lg p-md shadow-sm mb-lg">
+<div class="flex items-center gap-lg">
+<!-- Average Rating -->
+<div class="flex flex-col items-center justify-center min-w-[100px]">
+<span class="font-display-lg text-display-lg text-on-surface">4.8</span>
+<div class="flex text-primary my-xs">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star_half</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant">128 Ulasan</span>
+</div>
+<!-- Breakdown -->
+<div class="flex-1 flex flex-col gap-xs">
+<!-- 5 Stars -->
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-label-md text-on-surface-variant w-[8px]">5</span>
+<div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+<!-- 4 Stars -->
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-label-md text-on-surface-variant w-[8px]">4</span>
+<div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 10%;"></div>
+</div>
+</div>
+<!-- 3 Stars -->
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-label-md text-on-surface-variant w-[8px]">3</span>
+<div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 3%;"></div>
+</div>
+</div>
+<!-- 2 Stars -->
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-label-md text-on-surface-variant w-[8px]">2</span>
+<div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 1%;"></div>
+</div>
+</div>
+<!-- 1 Star -->
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-label-md text-on-surface-variant w-[8px]">1</span>
+<div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 1%;"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Filters -->
+<section class="px-md mb-lg overflow-x-auto no-scrollbar">
+<div class="flex gap-sm whitespace-nowrap pb-2">
+<button class="px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md active:scale-95 transition-transform">Semua</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high active:scale-95 transition-all">Dengan Foto</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-xs hover:bg-surface-container-high active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span> 5
+                </button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-xs hover:bg-surface-container-high active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span> 4
+                </button>
+</div>
+</section>
+<!-- Review List -->
+<section class="flex flex-col gap-md px-md pb-xl">
+<!-- Review Card 1 -->
+<article class="bg-surface-container-lowest rounded-lg p-md shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A close-up portrait of an Asian man with a gentle smile, set against a soft, bright background that matches the clean, modern light-mode aesthetic of the app. The lighting is flattering and natural, emphasizing trust and professionalism. Subtle emerald green tones can be seen in his clothing, tying into the global color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7AJeeiJjLaHn4d1Fc0yXpMr8eTZ9t6nKJCt4I1SaP_v6sG8SoWQH2ftNlaGSt2jytIDqQo-FL7Jvs3n6xOCkFsgOu-nd3AGilMGP3cxL5xohnNO2cSYIwgc3cLNOAgX5T7iHMCrUeQxYxcv12V2DyaW3eYII6_9vcE0LGrob_eboU3tsFVcOJQLQtjKaEQNV1hbxazppvUrsQpPwaNhRKudT8pUgujCalU2jqLsO0Vtx1B8asb1Hdq2X4kKSpkbPHC5f74tQ--K4"/>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface">Budi S***</h3>
+<div class="flex items-center gap-xs text-on-surface-variant font-body-md text-[12px]">
+<span>2 hari yang lalu</span>
+<span>•</span>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-label-md text-[10px]">Teknisi AC</span>
+</div>
+</div>
+</div>
+<div class="flex text-primary">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface mb-sm">Sangat puas dengan pelayanannya, teknisi datang tepat waktu dan kerjaannya rapi. AC saya kembali dingin seperti baru.</p>
+<!-- Optional Photos -->
+<div class="flex gap-sm mb-md overflow-x-auto no-scrollbar pb-1">
+<div class="w-20 h-20 rounded-md overflow-hidden flex-shrink-0 bg-surface-container-high">
+<img alt="Review Photo" class="w-full h-full object-cover" data-alt="A clean, brightly lit photograph showing a modern split air conditioner unit mounted on a pristine white wall. The image implies a freshly serviced, working appliance. The room has soft, natural lighting, creating a comfortable and fresh atmosphere that aligns with the app's trustworthy and efficient aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0cQw9UwWDC2RINQBzwBUw81xBnws3WbaBw3Nx_PjUGL2y_Gm5CVMDgNS5ku-ODhahInKGfYldgYfJDsC_YJeO395hCl6hnl7HIcVN40QOAbKzLOTjvBKu3Z2Se3iaB9LYZVd17-gdJLPebcx8NifB6-esYOXwo6d_z-8mvaFtSNGEY7UKEM6b1AMDoE-nxmla19VAFnnGMZpwkQ4vjkYtsaU3BT06KFOPkDygiI2RcWx8C64DUqOLcLlvjhn2A-rZmfu7U319V3Y"/>
+</div>
+</div>
+<!-- Vendor Response -->
+<div class="bg-surface-container rounded-md p-sm mt-sm ml-lg border-l-4 border-primary">
+<div class="flex items-center gap-xs mb-1">
+<span class="material-symbols-outlined text-[14px] text-primary">storefront</span>
+<span class="font-label-md text-label-md text-primary">Respon Mitra</span>
+</div>
+<p class="font-body-md text-[13px] text-on-surface-variant">Terima kasih Bapak Budi atas kepercayaannya! Kami senang bisa membantu. Ditunggu pesanan layanan berikutnya.</p>
+</div>
+</article>
+<!-- Review Card 2 -->
+<article class="bg-surface-container-lowest rounded-lg p-md shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-title-sm">
+                            A
+                        </div>
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface">Ani W***</h3>
+<div class="flex items-center gap-xs text-on-surface-variant font-body-md text-[12px]">
+<span>1 minggu yang lalu</span>
+<span>•</span>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-label-md text-[10px]">Pembersihan Rumah</span>
+</div>
+</div>
+</div>
+<div class="flex text-primary">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 0;">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface">Kerjanya lumayan cepat, rumah jadi bersih. Cuma ada beberapa sudut yang kurang detail dibersihkan, tapi overal oke.</p>
+</article>
+</section>
+</main>
+</body></html>

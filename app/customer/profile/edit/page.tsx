@@ -1,17 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, User, Camera } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, User, Camera, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { useAuthStore } from '@/store/auth';
+import { createClient } from '@/lib/supabase/client';
 
 export default function EditProfilePage() {
-  const [formData, setFormData] = useState({
-    fullName: 'Ahmad Pelanggan',
-    email: 'ahmad@example.com',
-    phone: '081234567890',
-  });
+  const router = useRouter();
+  const profile = useAuthStore((s) => s.profile);
+  const setProfile = useAuthStore((s) => s.setProfile);
+  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '' });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        fullName: profile.full_name || '',
+        email: profile.email || '',
+        phone: '',
+      });
+    }
+  }, [profile]);
+
+  const handleSave = async () => {
+    if (!profile?.id) return;
+    setSaving(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('users')
+        .update({ full_name: formData.fullName, phone: formData.phone })
+        .eq('id', profile.id);
+
+      if (error) throw error;
+
+      setProfile({ ...profile, full_name: formData.fullName });
+      toast.success('Profil berhasil diperbarui');
+      router.push('/customer/profile');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Gagal menyimpan profil';
+      toast.error(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-safe">
@@ -23,7 +60,6 @@ export default function EditProfilePage() {
       </div>
 
       <div className="flex-1 p-4 flex flex-col items-center">
-        {/* Avatar */}
         <div className="relative mt-4 mb-8">
           <div className="w-24 h-24 bg-emerald-200 rounded-full flex items-center justify-center border-4 border-white shadow-sm overflow-hidden">
             <User size={48} className="text-emerald-700" />
@@ -33,7 +69,6 @@ export default function EditProfilePage() {
           </button>
         </div>
 
-        {/* Form */}
         <div className="w-full space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-gray-700 ml-1">Nama Lengkap</label>
@@ -43,15 +78,16 @@ export default function EditProfilePage() {
               className="h-14 bg-white border-transparent focus:border-emerald-500 rounded-xl shadow-sm text-base"
             />
           </div>
-          
+
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-gray-700 ml-1">Email</label>
             <Input
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="h-14 bg-white border-transparent focus:border-emerald-500 rounded-xl shadow-sm text-base"
+              disabled
+              className="h-14 bg-gray-100 border-transparent rounded-xl shadow-sm text-base cursor-not-allowed"
             />
+            <p className="text-xs text-gray-400 ml-1">Email tidak dapat diubah</p>
           </div>
 
           <div className="space-y-1.5">
@@ -67,8 +103,12 @@ export default function EditProfilePage() {
       </div>
 
       <div className="p-4 bg-white border-t shrink-0">
-        <Button className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm">
-          Simpan Perubahan
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm"
+        >
+          {saving ? <><Loader2 size={20} className="animate-spin mr-2" /> Menyimpan...</> : 'Simpan Perubahan'}
         </Button>
       </div>
     </div>
