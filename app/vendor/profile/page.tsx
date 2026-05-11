@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { User, Star, Shield, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle } from 'lucide-react';
+import { User, Star, Shield, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Wallet, PlusCircle, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
+import { useWallet } from '@/lib/services/useWallet';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
@@ -15,6 +16,7 @@ export default function VendorProfilePage() {
   const profile = useAuthStore((s) => s.profile);
   const setProfile = useAuthStore((s) => s.setProfile);
   const { data: vendor, isLoading, error } = useVendor(profile?.id);
+  const { data: wallet } = useWallet(profile?.id);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -25,6 +27,7 @@ export default function VendorProfilePage() {
   const menuItems = [
     { icon: User, label: 'Edit Profil', href: '/vendor/profile/edit' },
     { icon: Briefcase, label: 'Portofolio', href: '/vendor/portfolio' },
+    { icon: MapPin, label: 'Alamat & Area Layanan', href: '/vendor/profile/address' },
     { icon: Settings, label: 'Pengaturan', href: '#' },
   ];
 
@@ -52,7 +55,7 @@ export default function VendorProfilePage() {
       </div>
 
       <div className="p-4 space-y-4">
-        <div className="bg-white rounded-xl p-5 shadow-sm border text-center">
+        <div className="bg-white rounded-3xl p-5 shadow-sm border text-center">
           <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
             <User size={36} className="text-emerald-600" />
           </div>
@@ -70,7 +73,7 @@ export default function VendorProfilePage() {
             {vendor?.is_verified && (
               <div className="flex items-center gap-1 text-emerald-600">
                 <Shield size={16} />
-                <span className="font-medium">Terverifikasi</span>
+                <span className="font-medium text-xs px-2 py-0.5 rounded-full bg-emerald-50">Terverifikasi</span>
               </div>
             )}
           </div>
@@ -79,7 +82,24 @@ export default function VendorProfilePage() {
           )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border divide-y">
+        <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-3xl p-5 text-white shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Wallet size={20} />
+              </div>
+              <div>
+                <p className="text-xs text-emerald-100">Saldo GemaPay</p>
+                <p className="text-xl font-bold">Rp {(wallet?.balance || 0).toLocaleString()}</p>
+              </div>
+            </div>
+            <button className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+              <PlusCircle size={20} />
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-sm border divide-y">
           {menuItems.map((item) => (
             <Link
               key={item.label}
@@ -87,7 +107,7 @@ export default function VendorProfilePage() {
               className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
                   <item.icon size={18} className="text-gray-600" />
                 </div>
                 <span className="text-sm font-medium text-gray-900">{item.label}</span>

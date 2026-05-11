@@ -101,7 +101,7 @@ function ReviewContent() {
       </div>
 
       <div className="p-4 space-y-4 flex-1">
-        <Card className="rounded-2xl border-none shadow-sm">
+        <Card className="rounded-3xl border-none shadow-sm">
           <CardContent className="p-5 text-center">
             <p className="text-sm text-gray-500 mb-1">{order.service_name}</p>
             <p className="text-xs text-gray-400 mb-4">{order.scheduled_date ? new Date(order.scheduled_date).toLocaleDateString('id-ID') : '-'}</p>
@@ -117,7 +117,7 @@ function ReviewContent() {
                   className="transition-transform hover:scale-110 active:scale-95"
                 >
                   <Star
-                    size={36}
+                    size={44}
                     className={(hoverRating || rating) >= star
                       ? 'text-yellow-500 fill-yellow-500'
                       : 'text-gray-300'
@@ -137,7 +137,7 @@ function ReviewContent() {
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
               placeholder="Bagikan pengalaman Anda (opsional)..."
-              className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none resize-none h-28"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none resize-none h-28"
             />
           </CardContent>
         </Card>
@@ -147,7 +147,9 @@ function ReviewContent() {
         <Button
           disabled={rating === 0 || createReview.isPending}
           onClick={handleSubmit}
-          className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm disabled:opacity-50"
+          variant="pill"
+          size="lg"
+          className="w-full shadow-sm disabled:opacity-50"
         >
           {createReview.isPending ? 'Mengirim...' : 'Kirim Ulasan'}
         </Button>

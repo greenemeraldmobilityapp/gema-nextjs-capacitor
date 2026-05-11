@@ -151,7 +151,7 @@ Tasks
 - [x] Vendor verification approval
 - [x] Dispute handling
 - [x] Refund/topup/withdrawal approval
-- [ ] Fraud monitoring
+- [x] Fraud monitoring (detection triggers: self-dealing, rapid completion, burst registration, review bomb, off-platform contact)
 
 Output
 

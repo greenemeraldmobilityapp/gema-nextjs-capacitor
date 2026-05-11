@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, uuid, integer, doublePrecision, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, uuid, integer, doublePrecision, jsonb, pgEnum } from 'drizzle-orm/pg-core';
 
 export const userRoleEnum = pgEnum('user_role', ['customer', 'vendor', 'admin']);
 export const orderStatusEnum = pgEnum('order_status', ['pending', 'accepted', 'in_progress', 'completed', 'cancelled']);
@@ -10,6 +10,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   phone: text('phone'),
   role: userRoleEnum('role').default('customer').notNull(),
+  roleFrozen: boolean('role_frozen').default(false).notNull(),
   lat: doublePrecision('lat'),
   lng: doublePrecision('lng'),
   isOnline: boolean('is_online').default(false),
@@ -52,6 +53,8 @@ export const orders = pgTable('orders', {
   totalAmount: integer('total_amount').notNull(),
   paymentStatus: paymentStatusEnum('payment_status').default('unpaid').notNull(),
   orderStatus: orderStatusEnum('order_status').default('pending').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'),
   cancelledAt: timestamp('cancelled_at'),
 });
@@ -105,6 +108,23 @@ export const promos = pgTable('promos', {
   imageUrl: text('image_url'),
   active: boolean('active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const fraudAlerts = pgTable('fraud_alerts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  type: text('type').notNull(),
+  severity: text('severity').default('medium').notNull(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  affectedUserId: uuid('affected_user_id').references(() => users.id),
+  affectedVendorId: uuid('affected_vendor_id').references(() => vendorProfiles.userId),
+  relatedOrderId: uuid('related_order_id').references(() => orders.id),
+  metadata: jsonb('metadata'),
+  status: text('status').default('open').notNull(),
+  resolvedBy: uuid('resolved_by').references(() => users.id),
+  resolution: text('resolution'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  resolvedAt: timestamp('resolved_at'),
 });
 
 export const disputes = pgTable('disputes', {

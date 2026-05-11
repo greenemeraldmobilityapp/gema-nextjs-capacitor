@@ -39,7 +39,7 @@ export default function VendorChatPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari percakapan..."
-            className="pl-10 h-10 bg-gray-100 border-transparent rounded-xl text-sm"
+            className="pl-10 h-12 bg-gray-100 border-transparent rounded-xl text-sm"
           />
         </div>
       </div>
@@ -70,7 +70,7 @@ export default function VendorChatPage() {
               return (
                 <Link
                   key={chat.id}
-                  href={`/customer/chat?order_id=${chat.order_id}`}
+                  href={`/vendor/chat/detail?order_id=${chat.order_id}`}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
                 >
                   <div className="relative shrink-0">

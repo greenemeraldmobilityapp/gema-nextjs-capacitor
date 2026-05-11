@@ -10,6 +10,7 @@ export type Review = {
   vendor_id: string;
   rating: number;
   review_text: string | null;
+  review_image: string | null;
   created_at: string;
   customer?: { full_name: string } | null;
 };

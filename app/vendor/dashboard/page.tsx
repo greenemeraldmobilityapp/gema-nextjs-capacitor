@@ -36,7 +36,7 @@ export default function VendorDashboard() {
 
   return (
     <div className="flex flex-col h-full w-full bg-gray-50 pb-8">
-      <div className="bg-emerald-600 text-white p-4 pt-8 pb-12 rounded-b-[32px] shadow-sm">
+      <div className="bg-emerald-600 text-white p-4 pt-8 pb-12 rounded-b-3xl shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <div>
             <h1 className="text-xl font-bold">Hello, {profile?.full_name?.split(' ')[0] || 'Vendor'}!</h1>
@@ -59,23 +59,23 @@ export default function VendorDashboard() {
           </div>
         )}
 
-        <Card className="rounded-2xl border-none shadow-md overflow-hidden">
-          <CardHeader className="bg-emerald-50 pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-800 flex items-center gap-2">
+        <Card className="rounded-3xl border-none shadow-md overflow-hidden">
+          <CardHeader className={`pb-2 ${monthlyEarnings > 0 ? 'bg-gradient-to-r from-emerald-600 to-emerald-800' : 'bg-emerald-50'}`}>
+            <CardTitle className={`text-sm font-medium flex items-center gap-2 ${monthlyEarnings > 0 ? 'text-white' : 'text-emerald-800'}`}>
               <TrendingUp size={16} />
               Pendapatan Bulan Ini
             </CardTitle>
           </CardHeader>
-          <CardContent className="bg-white pt-4 pb-6">
-            <div className="text-3xl font-bold text-gray-900">Rp {monthlyEarnings.toLocaleString()}</div>
-            <p className="text-xs font-semibold text-emerald-600 mt-1">
+          <CardContent className={`pt-4 pb-6 ${monthlyEarnings > 0 ? 'bg-gradient-to-r from-emerald-600 to-emerald-800 text-white' : 'bg-white'}`}>
+            <div className="text-3xl font-bold">Rp {monthlyEarnings.toLocaleString()}</div>
+            <p className={`text-xs font-semibold mt-1 ${monthlyEarnings > 0 ? 'text-emerald-100' : 'text-emerald-600'}`}>
               Saldo: Rp {(wallet?.balance || 0).toLocaleString()}
             </p>
           </CardContent>
         </Card>
 
         <div className="grid grid-cols-2 gap-4">
-          <Card className="rounded-2xl border-gray-100 shadow-sm">
+          <Card className="rounded-3xl border-gray-100 shadow-sm">
             <CardContent className="p-4 flex flex-col items-center justify-center text-center">
               <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-2">
                 <Clock size={20} />
@@ -84,7 +84,7 @@ export default function VendorDashboard() {
               <p className="text-xs text-gray-500 font-medium">Pesanan Baru</p>
             </CardContent>
           </Card>
-          <Card className="rounded-2xl border-gray-100 shadow-sm">
+          <Card className="rounded-3xl border-gray-100 shadow-sm">
             <CardContent className="p-4 flex flex-col items-center justify-center text-center">
               <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-2">
                 <CheckCircle size={20} />
@@ -99,13 +99,13 @@ export default function VendorDashboard() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-bold text-gray-900">Permintaan Baru</h2>
-              <Link href="/vendor/orders" className="text-sm text-emerald-600 font-medium">
+              <Link href="/vendor/orders" className="text-sm font-semibold text-emerald-600 bg-emerald-50 rounded-full px-4 py-1.5 hover:bg-emerald-100 transition-colors">
                 Lihat semua
               </Link>
             </div>
             {pendingOrders.slice(0, 3).map(order => (
               <Link key={order.id} href={`/vendor/orders/detail?id=${order.id}`}>
-                <Card className="rounded-xl border-orange-100 bg-orange-50/50 shadow-sm mb-3">
+                <Card className="rounded-3xl border-orange-100 bg-orange-50/50 shadow-sm mb-3">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
@@ -116,7 +116,7 @@ export default function VendorDashboard() {
                         <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString()}</span>
                       </div>
                     </div>
-                    <Button className="w-full bg-emerald-500 hover:bg-emerald-600">
+                    <Button variant="pill" size="lg" className="w-full">
                       Terima
                     </Button>
                   </CardContent>

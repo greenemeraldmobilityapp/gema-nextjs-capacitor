@@ -1,44 +1,90 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, MapPin, Wrench } from 'lucide-react';
+import { Wrench, ShieldCheck, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+const slides = [
+  {
+    icon: Wrench,
+    title: 'Temukan Jasa Profesional Terpercaya',
+    description: 'GEMA membantu Anda menemukan teknisi dan layanan perbaikan terbaik di sekitar lokasi Anda.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Penyedia Tervalidasi & Berkualitas',
+    description: 'Semua vendor telah melewati verifikasi KYC untuk menjamin kualitas dan keamanan.',
+  },
+  {
+    icon: Wallet,
+    title: 'Pembayaran Aman lewat GemaPay',
+    description: 'Transaksi aman dengan sistem escrow — dana dilepaskan hanya setelah pekerjaan selesai.',
+  },
+];
+
 export default function OnboardingPage() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const isLastSlide = currentSlide === slides.length - 1;
+
+  const handleNext = () => {
+    if (isLastSlide) return;
+    setCurrentSlide((prev) => prev + 1);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center mt-12">
-        <div className="w-32 h-32 bg-emerald-50 rounded-full flex items-center justify-center mb-8">
-          <Wrench size={64} className="text-emerald-500" />
-        </div>
-        
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Temukan Vendor Terpercaya</h1>
-        <p className="text-gray-500 mb-8 max-w-sm">
-          GEMA membantu Anda menemukan teknisi, tukang, dan layanan perbaikan terbaik di sekitar lokasi Anda.
-        </p>
+      <div className="px-4 pt-4 shrink-0">
+        {!isLastSlide && (
+          <Link href="/register/role" className="text-sm font-semibold text-gray-500 float-right">
+            Skip
+          </Link>
+        )}
+      </div>
 
-        <div className="space-y-4 w-full max-w-xs text-left mb-12">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
-              <MapPin size={20} />
-            </div>
-            <p className="text-sm font-medium text-gray-700">Layanan berbasis lokasi realtime</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center shrink-0">
-              <ShieldCheck size={20} />
-            </div>
-            <p className="text-sm font-medium text-gray-700">Semua vendor terverifikasi (KYC)</p>
-          </div>
+      <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
+        <div
+          className="flex transition-transform duration-300 ease-out"
+          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+        >
+          {slides.map((slide, index) => {
+            const Icon = slide.icon;
+            return (
+              <div key={index} className="w-full shrink-0 px-8 flex flex-col items-center text-center">
+                <div className="w-32 h-32 bg-emerald-50 rounded-full flex items-center justify-center mb-8">
+                  <Icon size={64} className="text-emerald-500" />
+                </div>
+                <h1 className="font-heading text-3xl font-bold text-gray-900 mb-4">{slide.title}</h1>
+                <p className="text-gray-500 max-w-sm leading-relaxed">{slide.description}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
+      <div className="flex items-center justify-center gap-2 mb-6">
+        {slides.map((_, index) => (
+          <div
+            key={index}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              index === currentSlide ? 'w-6 bg-emerald-600' : 'w-2 bg-gray-300'
+            }`}
+          />
+        ))}
+      </div>
+
       <div className="p-4 pb-safe bg-white border-t space-y-3 shrink-0">
-        <Link href="/register/role" className="block w-full">
-          <Button className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold">
-            Mulai Sekarang
+        {isLastSlide ? (
+          <Link href="/register/role" className="block w-full">
+            <Button variant="pill" size="lg" className="w-full">
+              Mulai
+            </Button>
+          </Link>
+        ) : (
+          <Button variant="pill" size="lg" className="w-full" onClick={handleNext}>
+            Selanjutnya
           </Button>
-        </Link>
+        )}
         <div className="text-center">
           <span className="text-sm text-gray-500">Sudah punya akun? </span>
           <Link href="/login" className="text-sm font-bold text-emerald-600 hover:underline">

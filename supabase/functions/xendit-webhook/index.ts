@@ -24,7 +24,7 @@ serve(async (req) => {
     }
 
     const body = await req.json()
-    const { external_id: orderId, status, paid_amount } = body
+    const { external_id: orderId, status } = body
 
     if (!orderId) {
       return new Response('Missing external_id', { status: 400 })
@@ -33,45 +33,25 @@ serve(async (req) => {
     console.log(`Webhook received: order=${orderId}, status=${status}`)
 
     if (status === 'PAID') {
+      // Idempotency: skip if already processed
+      const checkRes = await supabaseFetch(
+        `/orders?id=eq.${orderId}&select=payment_status`,
+      )
+      const existing = await checkRes.json()
+      const currentStatus = existing?.[0]?.payment_status
+
+      if (currentStatus && currentStatus !== 'unpaid') {
+        console.log(`Order ${orderId} already processed (${currentStatus}), skipping`)
+        return new Response('OK', { status: 200 })
+      }
+
+      // Only set payment_status to escrow — wallet credit happens on completion
       await supabaseFetch(`/orders?id=eq.${orderId}`, {
         method: 'PATCH',
         body: JSON.stringify({ payment_status: 'escrow' }),
       })
 
-      const orderRes = await supabaseFetch(
-        `/orders?id=eq.${orderId}&select=vendor_id,vendor_payout`,
-      )
-      const orders = await orderRes.json()
-      const order = orders?.[0]
-
-      if (order?.vendor_id) {
-        const walletRes = await supabaseFetch(
-          `/wallets?user_id=eq.${order.vendor_id}&select=id,balance`,
-        )
-        const wallets = await walletRes.json()
-        const wallet = wallets?.[0]
-
-        if (wallet?.id) {
-          await supabaseFetch('/wallet_transactions', {
-            method: 'POST',
-            body: JSON.stringify({
-              wallet_id: wallet.id,
-              type: 'payment',
-              amount: paid_amount || order.vendor_payout,
-              status: 'success',
-            }),
-          })
-
-          await supabaseFetch(`/wallets?id=eq.${wallet.id}`, {
-            method: 'PATCH',
-            body: JSON.stringify({
-              balance: Number(wallet.balance) + Number(paid_amount || order.vendor_payout),
-            }),
-          })
-
-          console.log(`Wallet ${wallet.id} updated: +${paid_amount || order.vendor_payout}`)
-        }
-      }
+      console.log(`Order ${orderId} set to escrow`)
     } else if (status === 'EXPIRED') {
       console.log(`Invoice expired for order ${orderId}`)
     } else {

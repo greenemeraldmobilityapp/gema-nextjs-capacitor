@@ -28,13 +28,22 @@ function SearchContent() {
     }
   }, [categoryParam]);
 
+  const chips = [
+    { label: 'Semua', value: '' },
+    { label: 'Tukang Bangunan', value: 'tukang-bangunan' },
+    { label: 'Teknisi Listrik', value: 'teknisi-listrik' },
+    { label: 'Plumbing', value: 'plumbing' },
+    { label: 'Cat & Interior', value: 'cat-interior' },
+  ];
+
+  const activeChip = categoryParam || '';
   const filteredVendors = (vendors || []).filter((vendor) => {
     const nameMatch = vendor.users?.full_name?.toLowerCase().includes(query.toLowerCase());
     const specMatch = vendor.specialization?.toLowerCase().includes(query.toLowerCase());
-    const categoryMatch = categoryParam
-      ? vendor.specialization?.toLowerCase().replace(/\s+/g, '-') === categoryParam.toLowerCase()
+    const categoryMatch = activeChip
+      ? vendor.specialization?.toLowerCase().replace(/\s+/g, '-') === activeChip.toLowerCase()
       : true;
-    return (nameMatch || specMatch) && (!categoryParam || categoryMatch);
+    return (nameMatch || specMatch) && (!activeChip || categoryMatch);
   });
 
   return (
@@ -57,12 +66,28 @@ function SearchContent() {
       </div>
 
       <div className="p-4 flex-1">
+        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none -mx-4 px-4">
+          {chips.map((chip) => (
+            <Link
+              key={chip.value}
+              href={chip.value ? `/customer/search?category=${chip.value}` : '/customer/search'}
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                activeChip === chip.value
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {chip.label}
+            </Link>
+          ))}
+        </div>
+
         {isLoading ? (
           <div className="flex items-center justify-center py-16 text-gray-400">
             <Loader2 size={24} className="animate-spin mr-2" />
             <span className="text-sm">Memuat vendor...</span>
           </div>
-        ) : !query.trim() && !categoryParam ? (
+        ) : !query.trim() && !activeChip ? (
           <div className="text-center text-gray-500 mt-20">
             <SearchIcon size={48} className="mx-auto mb-4 text-gray-300" />
             <p>Mulai cari tukang atau layanan di sekitar Anda.</p>
@@ -72,7 +97,7 @@ function SearchContent() {
             <h2 className="text-sm font-bold text-gray-900">Hasil Pencarian ({filteredVendors.length})</h2>
             {filteredVendors.map((vendor) => (
               <Link key={vendor.user_id} href={`/customer/vendor?id=${vendor.user_id}`}>
-                <Card className="rounded-xl overflow-hidden cursor-pointer hover:border-emerald-500 transition-colors border-none shadow-sm">
+                <Card className="rounded-3xl overflow-hidden cursor-pointer hover:border-emerald-500 transition-colors border-none shadow-sm">
                   <CardContent className="p-4 flex gap-4">
                     <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center font-bold text-xl flex-shrink-0">
                       {vendor.users?.full_name?.charAt(0) || '?'}

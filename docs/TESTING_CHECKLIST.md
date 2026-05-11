@@ -6,7 +6,11 @@
 
 ## A. Build & Compile
 
-- [x] `npm run build` — 34 halaman compiled & exported tanpa error (+review, +promo, +map, +realtime)
+- [x] `npm run build` — 44 halaman compiled & exported, 0 error
+- [x] `npm run lint` — ES Lint passes (pre-existing warnings only)
+- [x] Admin user `admin@gema.com` exists, role=admin, role_frozen=false
+- [x] `fraud_alerts` table exists (BASE TABLE)
+- [x] `role_frozen` column exists on `users` (boolean)
 
 ## B. Auth Flow — Register
 
@@ -194,6 +198,48 @@ AND NOT EXISTS (SELECT 1 FROM wallets WHERE user_id = '<UUID_VENDOR>');
 | RLS policies aktif di semua tabel | ✅ |
 | Trigger `handle_new_user` di-create ulang (versi robust) | ✅ |
 | Google OAuth → profile auto-created | ✅ |
+
+### K.21. Escrow Release — Wallet Credit via release-payment Edge Function
+
+> Edge Function `release-payment` (verify_jwt=true) dipanggil saat vendor menyelesaikan pekerjaan. Wallet vendor dikreditkan di sini, **bukan** di webhook Xendit.
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Login sebagai Vendor, buka order detail dengan status `in_progress` | Tombol "Selesaikan Pekerjaan" muncul |
+| 2 | Tap "Selesaikan Pekerjaan" | Loading, lalu panggil Edge Function `release-payment` |
+| 3 | Cek wallet vendor (`/vendor/earnings`) | Balance bertambah sebesar `vendor_payout` |
+| 4 | Cek wallet_transactions | Transaksi `type: 'payment'` tercatat dengan amount positif |
+| 5 | Cek order status | `order_status = 'completed'`, `payment_status = 'released'` |
+| 6 | **Error:** Vendor bukan pemilik order | Edge Function return 403, wallet tidak berubah |
+| 7 | **Error:** Order sudah completed | Edge Function return 400, wallet tidak double-credit |
+| 8 | **Error:** JWT tidak valid (unauthenticated) | Edge Function return 401 |
+
+### K.22. Xendit Webhook Idempotency
+
+> Webhook `xendit-webhook` (verify_jwt=false) harus idempoten — tidak boleh double-credit wallet jika invoice yang sama dikirim dua kali.
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Simulasikan Xendit kirim webhook `invoice.paid` untuk order dengan `payment_status = 'unpaid'` | `200 OK`, payment_status berubah jadi `escrow`, wallet transaction terbuat |
+| 2 | Kirim webhook yang **sama persis** (external_id sama) untuk kedua kalinya | `200 OK` (idempotent), payment_status tetap `escrow`, **tidak ada** wallet transaction duplikat |
+| 3 | Kirim webhook untuk order dengan `payment_status = 'escrow'` (sudah diproses) | `200 OK`, tidak ada perubahan, tidak ada duplikasi |
+| 4 | Kirim webhook untuk order dengan `payment_status = 'released'` (sudah selesai) | `200 OK`, tidak ada perubahan |
+| 5 | Kirim webhook `invoice.expired` | `200 OK`, tidak ada perubahan pada wallet/order |
+| 6 | **Regression:** Verifikasi flow end-to-end: booking → bayar → webhook → vendor selesai → release-payment → wallet terisi | Semua langkah berjalan, tidak ada double-credit |
+
+### K.23. Fraud Monitoring — Admin Dashboard
+
+> `fraud_alerts` table + `/admin/fraud` page sudah tersedia. Detection triggers dijadwalkan di Sprint 2.
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/admin/fraud` sebagai Admin | Halaman fraud alert muncul dengan tabel/list |
+| 2 | Insert data fraud alert test langsung di SQL: `INSERT INTO fraud_alerts (order_id, alert_type, severity, description) VALUES (NULL, 'test_alert', 'low', 'Test alert — admin fraud page functional');` | Data muncul di halaman fraud |
+| 3 | Ganti status alert: Open → Investigating | Status berubah, toast sukses |
+| 4 | Ganti status alert: Investigating → Resolved | Status berubah, resolved_at terisi |
+| 5 | Ganti status alert: Open → False Positive | Status berubah |
+| 6 | **Empty state:** Hapus semua fraud alert (atau sebelum insert) | Tampil "Tidak ada peringatan fraud" |
+| 7 | **Cleanup:** `DELETE FROM fraud_alerts WHERE alert_type = 'test_alert';` | Data test bersih |
 
 ## J. Catatan untuk Testing Selanjutnya
 
@@ -533,7 +579,86 @@ npx supabase functions logs xendit-webhook --tail
 | 9 | Cek validasi: jumlah > saldo | Error "Melebihi saldo tersedia" |
 | 10 | Cek validasi: jumlah < Rp 10.000 | Tombol disabled |
 
-### K.17. Loading Skeleton Components
+#### K.25. Design System — Button Refinement (Stitch BATCH 1)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Cek Button default size | `h-12 px-6` (48px height, 24px horizontal padding) |
+| 2 | Cek Button size `lg` | `h-14 px-8` (56px height) |
+| 3 | Cek Button size `icon` | `size-12` (48x48px) |
+| 4 | Cek bahwa size `xs`, `sm`, `icon-xs`, `icon-sm` sudah **tidak ada** | Class `h-6`, `h-7`, `size-6`, `size-7` tidak ada di button.tsx |
+| 5 | Cek variant `pill` | Button dengan `rounded-full bg-primary h-12 px-8` |
+| 6 | Cek variant `default` tetap `rounded-lg` | Tidak berubah jadi pill |
+| 7 | **Regression:** Button dengan variant `outline`, `secondary`, `ghost`, `destructive`, `link` | Masih berfungsi normal |
+
+### K.26. Design System — Card Refinement (Stitch BATCH 1)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Cek Card component | `rounded-3xl` (24px radius) bukan `rounded-xl` |
+| 2 | Cek Card tidak punya `ring-1 ring-foreground/10` | Tidak ada ring border |
+| 3 | Cek Card punya `shadow-sm` | Bayangan halus muncul |
+| 4 | Cek CardHeader & CardFooter | `rounded-t-3xl` / `rounded-b-3xl` (konsisten dengan Card) |
+| 5 | **Regression:** Card sub-components (CardHeader, CardContent, CardFooter, CardTitle) | Masih berfungsi normal |
+
+### K.27. Design System — Input Refinement (Stitch BATCH 1)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Cek Input height | `h-12` (48px) bukan `h-8` |
+| 2 | Cek Input radius | `rounded-xl` (12px) bukan `rounded-lg` |
+| 3 | Cek Input background | `bg-surface-container-low` (bukan `bg-transparent`) |
+| 4 | Cek Input padding horizontal | `px-4` (16px) bukan `px-2.5` |
+| 5 | Cek `md:text-sm` sudah **tidak ada** | Tidak ada responsive breakpoint di input |
+| 6 | **Regression:** Input dengan type text, email, password, number | Semua berfungsi normal |
+| 7 | **Regression:** Input disabled state | `disabled:bg-input/50 disabled:opacity-50` masih ada |
+
+### K.28. Design System — Bottom Navigation (Stitch BATCH 1)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Customer Bottom Nav container | `h-14` (56px) bukan `h-16` |
+| 2 | Tab aktif Customer | `bg-emerald-100 text-emerald-700 rounded-full px-4 py-1` (pill style) |
+| 3 | Tab tidak aktif Customer | `text-gray-500` tanpa background |
+| 4 | Vendor Bottom Nav container | `h-14` (56px) bukan `h-16` |
+| 5 | Tab aktif Vendor | `bg-emerald-100 text-emerald-700 rounded-full px-4 py-1` (pill style) |
+| 6 | Admin Bottom Nav container | `h-14` bukan `h-16` |
+| 7 | Tab aktif Admin | `bg-emerald-100 text-emerald-700 rounded-full px-3 py-1` (pill style, compact) |
+| 8 | **Regression:** Navigasi ke semua tab | Setiap tab mengarah ke route yang benar |
+| 9 | **Regression:** Tab aktif berubah saat pindah halaman | Active state sesuai dengan pathname |
+
+### K.29. Design System — StatusBadge Component (Stitch BATCH 1)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Cek StatusBadge dengan order status `pending` | `bg-amber-100 text-amber-700` dengan icon Clock, label "Menunggu" |
+| 2 | Cek StatusBadge dengan order status `accepted` | `bg-blue-100 text-blue-700` dengan icon Check, label "Diterima" |
+| 3 | Cek StatusBadge dengan order status `in_progress` | `bg-blue-100 text-blue-700` dengan icon Sync, label "Diproses" |
+| 4 | Cek StatusBadge dengan order status `completed` | `bg-emerald-100 text-emerald-700` dengan icon CheckCircle, label "Selesai" |
+| 5 | Cek StatusBadge dengan order status `cancelled` | `bg-red-100 text-red-700` dengan icon XCircle, label "Dibatalkan" |
+| 6 | Cek StatusBadge dengan payment status `unpaid` | `bg-yellow-100 text-yellow-700` dengan icon AlertCircle, label "Belum Dibayar" |
+| 7 | Cek StatusBadge dengan payment status `escrow` | `bg-blue-100 text-blue-700` dengan icon Shield, label "Escrow" |
+| 8 | Cek StatusBadge dengan payment status `released` | `bg-emerald-100 text-emerald-700` dengan icon CheckCircle, label "Dibayarkan" |
+| 9 | Cek StatusBadge dengan payment status `refunded` | `bg-red-100 text-red-700` dengan icon RotateCcw, label "Dikembalikan" |
+| 10 | Cek StatusBadge dengan status tidak dikenal | `null` atau tidak render (return null) |
+| 11 | Cek styling | `rounded-full px-2 py-0.5 text-xs font-semibold`, semua icon `size-3` |
+
+### K.30. Design System — CSS Variables (Stitch BATCH 1)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Cek `:root` di globals.css | `--surface-container-low`, `--surface-container`, `--surface-container-high`, `--surface-container-highest`, `--surface-container-lowest` ada |
+| 2 | Cek `:root` di globals.css | `--outline`, `--outline-variant` ada |
+| 3 | Cek `:root` di globals.css | `--on-surface`, `--on-surface-variant` ada |
+| 4 | Cek `:root` di globals.css | `--success`, `--success-foreground` ada |
+| 5 | Cek `:root` di globals.css | `--radius-md: 0.75rem` ada |
+| 6 | Cek tailwind.config.ts | Semua color aliases untuk CSS variables di atas ada |
+| 7 | Cek layout.tsx | Plus_Jakarta_Sans ter-import dengan `--font-heading` variable |
+| 8 | Cek tailwind.config.ts | `fontFamily.heading` terdefinisi dengan `var(--font-heading)` |
+
+---
+
+## K.17. Loading Skeleton Components
 
 | Langkah | Skenario | Expected Result |
 |---------|----------|----------------|
@@ -647,7 +772,7 @@ npx supabase functions logs xendit-webhook --tail
 
 | Langkah | Skenario | Expected Result |
 |---------|----------|----------------|
-| 1 | Bottom nav muncul | 6 tab: Dashboard, Vendor, Sengketa, Pesanan, Promo, Transaksi |
+| 1 | Bottom nav muncul | 7 tab: Dashboard, Fraud, Vendor, Sengketa, Transaksi, Promo, Pesanan |
 | 2 | Tap setiap tab | Navigasi ke halaman yang sesuai, tab aktif berwarna emerald |
 
 ### K.20.9. Membuat Akun Admin
@@ -675,9 +800,280 @@ Migration ini membuat function `is_admin()` + semua RLS policies untuk admin.
 | 4 | Dapatkan UUID | Buka SQL Editor, jalankan: `SELECT id, email FROM auth.users WHERE email = 'admin@gema.com';` |
 | 5 | Update role | `UPDATE users SET role = 'admin' WHERE email = 'admin@gema.com';` |
 | 6 | Login ke app | Buka app → login dengan `admin@gema.com` / `admin123` |
-| 7 | Verifikasi | Redirect ke `/admin/dashboard`, bottom nav 6 tab muncul |
+| 7 | Verifikasi | Redirect ke `/admin/dashboard`, bottom nav 7 tab muncul |
+
+---
+
+### K.24. Fraud Detection Triggers
+
+> Migration `0004_fraud_detection_triggers.sql` sudah di-apply. 5 trigger aktif: self-dealing, rapid completion, burst registration, review bomb, off-platform contact.
+
+#### K.24.1. Self-Dealing
 
 | Langkah | Skenario | Expected Result |
 |---------|----------|----------------|
-| 1 | Bottom nav muncul | 6 tab: Dashboard, Vendor, Sengketa, Pesanan, Promo, Transaksi |
-| 2 | Tap setiap tab | Navigasi ke halaman yang sesuai, tab aktif berwarna emerald |
+| 1 | Jalankan SQL: `INSERT INTO orders (customer_id, vendor_id, service_id, service_category, service_name, scheduled_date, service_address, base_amount, platform_fee, vendor_payout, total_amount) VALUES ('<SAME_UUID>', '<SAME_UUID>', (SELECT id FROM services LIMIT 1), 'Test', 'Test', NOW(), 'Test', 100000, 5000, 95000, 105000);` | RAISE EXCEPTION 'Self-dealing detected', insert ditolak |
+| 2 | Cek `fraud_alerts` | Satu alert type 'self_dealing' tercatat |
+
+#### K.24.2. Rapid Completion
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buat order via UI (customer booking → payment → escrow) | Order dengan payment_status 'escrow' |
+| 2 | Login sebagai vendor, update order ke completed dalam < 30 menit sejak created_at | Trigger menyala |
+| 3 | Cek `fraud_alerts` | Alert type 'rapid_completion' muncul |
+| 4 | Kirim update yang sama lagi (double-trigger) | Tidak ada duplikasi alert (idempotent) |
+
+#### K.24.3. Burst Registration
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Insert >5 user dalam 1 jam di Supabase (`INSERT INTO users ...`) | Trigger menyala |
+| 2 | Cek `fraud_alerts` | Satu alert type 'burst_registration' dengan severity 'medium' |
+| 3 | Insert user ke-7, 8, dst dalam jam yang sama | Tidak ada duplikasi alert (once per hour) |
+
+#### K.24.4. Review Bomb
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Insert 4 review dengan rating <= 2 dari customer yang sama ke vendor yang sama dalam 24 jam | Trigger menyala di review ke-4 |
+| 2 | Cek `fraud_alerts` | Alert type 'review_bomb' muncul |
+| 3 | Insert review ke-5 dengan rating tinggi (>= 3) | Tidak ada alert baru |
+
+#### K.24.5. Off-Platform Contact
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Kirim pesan di chat yang berisi nomor HP Indonesia (contoh: "hubungi 081234567890") | Trigger menyala |
+| 2 | Cek `fraud_alerts` | Alert type 'off_platform' muncul dengan preview pesan di metadata |
+| 3 | Kirim pesan berisi email (contoh: "email saya test@email.com") | Alert baru untuk pesan dengan email |
+| 4 | Kirim pesan berisi link wa.me (contoh: "chat wa.me/628123456789") | Alert baru untuk link social media |
+| 5 | Kirim pesan normal tanpa kontak | Tidak ada alert |
+| 6 | Kirim pesan yang sama dalam 1 jam ke chat yang sama | Tidak ada duplikasi (cooldown 1 jam) |
+
+#### K.24.6. Fraud Alert Admin Page
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/admin/fraud` sebagai Admin | Semua alert dari trigger di atas tampil |
+| 2 | Cek tipe alert: self_dealing, rapid_completion, burst_registration, review_bomb, off_platform | Masing-masing muncul dengan label yang sesuai |
+| 3 | Filter by status 'Terbuka' | Alert open muncul |
+| 4 | Tap 'Selidiki' pada salah satu alert | Status berubah jadi 'Diselidiki' |
+| 5 | Tap 'Selesai' | Status berubah jadi 'Selesai' |
+| 6 | Cek metadata alert (expand card) | JSON metadata berisi order_id, vendor_id, dll |
+
+## K.25. Auth Refinement (Stitch Design — BATCH 2 Sesi 1)
+
+#### K.25.1. Splash (`/`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/` | Background #10B981, wordmark "GEMA" besar `font-heading` |
+| 2 | Tunggu 2 detik | Auto-redirect ke `/onboarding` |
+| 3 | Animasi | Muncul dengan scale + opacity (GPU-accelerated) |
+
+#### K.25.2. Onboarding (`/onboarding`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/onboarding` | Slide 1 tampil dengan ikon Wrench + judul |
+| 2 | Tap "Selanjutnya" | Slide 2 tampil dengan ikon ShieldCheck |
+| 3 | Tap "Selanjutnya" lagi | Slide 3 tampil dengan ikon Wallet + tombol "Mulai" |
+| 4 | Pagination dots | Dot active lebih lebar (w-6) bg-emerald-600, dot lain w-2 bg-gray-300 |
+| 5 | Tap "Skip" (slide 1 atau 2) | Redirect ke `/register/role` |
+| 6 | Tap "Mulai" (slide 3) | Redirect ke `/register/role` |
+| 7 | Tap "Masuk" | Redirect ke `/login` |
+| 8 | Transisi slide | Animasi translate-x smooth |
+
+#### K.25.3. Register (`/register`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/register?role=customer` | Judul "Buat Akun Pelanggan" pakai `font-heading` |
+| 2 | Cek submit button | `rounded-full` pill variant, bukan rounded-xl |
+| 3 | Validasi form | Required fields, email format, password min 8 |
+
+#### K.25.4. Login (`/login`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/login` | Judul "Selamat Datang!" pakai `font-heading` |
+| 2 | Cek submit button | `rounded-full` pill variant, bukan rounded-xl |
+| 3 | Google button | Icon + text center alignment |
+
+#### K.25.5. Customer Home (`/customer/home`) — Refinement
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/customer/home` | Header bg-emerald-500 dengan GemaPay widget di pojok kanan |
+| 2 | Cek GemaPay widget | Icon Wallet, label "GemaPay", saldo Rp 250.000, tombol PlusCircle |
+| 3 | Search bar | `rounded-full` (pill shape) |
+| 4 | Promo banner | `rounded-3xl` | 
+| 5 | Vendor cards (Vendor Terdekat) | `rounded-3xl`, avatar `rounded-xl` |
+| 6 | Vendor cards (Vendor Terbaik) | `rounded-3xl`, avatar `rounded-xl` |
+| 7 | "Lihat Semua" link | Pill button dengan bg-emerald-50, rounded-full |
+
+#### K.25.6. Search (`/customer/search`) — Refinement
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/customer/search` | Filter chips (Semua, Tukang Bangunan, dll) di atas hasil |
+| 2 | Chip style | `rounded-full`, active = bg-emerald-600 text-white, inactive = bg-white border |
+| 3 | Tap chip kategori | Filter vendors by specialization |
+| 4 | Result cards | `rounded-3xl` |
+
+#### K.25.7. Booking Summary (`/customer/booking`) — Refinement
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/customer/booking?serviceId=X&vendorId=Y` | Service card dengan avatar, nama, kategori, `rounded-3xl` |
+| 2 | Date/Time section | Grid 2 kolom, icon CalendarDays + Clock di dalam card |
+| 3 | Payment method | Radio-style GEMA Pay (Wallet icon) + Transfer Bank (Building2 icon) |
+| 4 | Select GEMA Pay | Radio terisi, border berubah emerald |
+| 5 | Select Transfer Bank | Radio terisi, border berubah emerald |
+| 6 | Cost breakdown | Biaya Layanan, Biaya Platform, Promo, Total |
+| 7 | Bottom bar | Sticky total display + "Konfirmasi Pesanan" pill button |
+| 8 | Submit button | `variant="pill"`, `rounded-full` |
+| 9 | Textarea | `rounded-xl` (konsisten) |
+
+#### K.25.8. Order Detail (`/customer/orders/detail`) — Refinement
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/customer/orders/detail?id=X` | Status card `rounded-3xl`, status badge pill style (rounded-full) |
+| 2 | All inner cards (Map, Schedule, Cost, Timeline) | `rounded-3xl` |
+| 3 | Progress stepper | Completed step = emerald dot + CheckCircle2, Current step = blue dot |
+| 4 | Chat button | `variant="pill"`, `rounded-full` |
+| 5 | Cancel button (pending order) | `rounded-xl` secondary style |
+| 6 | Review button (completed order) | `rounded-xl` secondary style |
+
+#### K.25.9. Order History (`/customer/orders`) — Refinement
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/customer/orders` | Tab bar pill style (rounded-full bg-white p-1), active tab = bg-emerald-600 text-white |
+| 2 | Tap "Riwayat" tab | Switch ke riwayat pesanan |
+| 3 | Order cards | `rounded-3xl` dengan vendor avatar (`w-12 h-12 rounded-full`) |
+| 4 | Order ID | Ditampilkan dengan prefix `#` (8 digit pertama) |
+| 5 | Status badge | Pill style dengan warna sesuai status |
+| 6 | "Lihat Detail" button | Pill button (`rounded-full`) dengan ArrowRight icon |
+| 7 | Chat icon button | `w-10 h-10 rounded-full` di samping "Lihat Detail" |
+| 8 | Empty state | Icon + pesan "Belum ada pesanan aktif/riwayat" |
+
+#### K.25.10. Review (`/customer/review`) — Refinement
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/customer/review?order_id=X` | Star rating icon `size={44}` (touch target) |
+| 2 | Hover star | `scale-110` (transform) |
+| 3 | Textarea | `rounded-xl` |
+| 4 | Submit button | `variant="pill"`, `rounded-full` |
+
+#### K.25.11. Chat (`/customer/chat`) — Refinement
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/customer/chat?order_id=X` | Header dengan avatar + online dot (`w-3 h-3 bg-emerald-500`, -bottom-0.5 -right-0.5) |
+| 2 | Call button | `w-10 h-10 rounded-full` icon button di header kanan |
+| 3 | Attachment button | Paperclip icon button di kiri input |
+| 4 | Input | `rounded-full h-12 bg-gray-50`, send button `h-12 w-12 rounded-full` |
+
+---
+
+### K.26 BATCH 4 — New Screens & Refinement
+
+#### K.26.1. Customer Reviews Listing (`/customer/reviews`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/customer/reviews?vendor_id=X` | Header: "Ulasan & Feedback" dengan back button |
+| 2 | Aggregate card | Rata-rata rating (font-heading), star distribution bar chart, total ulasan |
+| 3 | Filter chips | 7 pill chips: "Semua", "5★", "4★", "3★", "2★", "1★", "Dengan Foto" |
+| 4 | Tap filter chip | Reviews terfilter sesuai pilihan |
+| 5 | Review card | Avatar nama, tanggal, rating stars, teks, foto thumbnail (jika ada) |
+| 6 | Filter "Dengan Foto" | Hanya review dengan `review_image` yang tampil |
+| 7 | Empty state | Icon + "Belum ada ulasan" jika tidak ada review |
+| 8 | Filter empty | "Tidak ada ulasan dengan filter ini" jika hasil kosong |
+
+#### K.26.2. Payment Methods (`/customer/payment/methods`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/customer/payment/methods?order_id=X` | Header "Pilih Metode Pembayaran" + back button |
+| 2 | Order summary card | `rounded-3xl` dengan `font-heading` total amount |
+| 3 | Method options | GEMA Pay (wallet + saldo), Transfer Bank, Kartu Kredit — `rounded-3xl` cards |
+| 4 | Radio selection | Selected method: `border-emerald-500 bg-emerald-50` |
+| 5 | Confirm button | `variant="pill"` `w-full` "Konfirmasi Pembayaran" |
+| 6 | Tap confirm | Redirect ke `/customer/payment?order_id=X&method=...` |
+
+#### K.26.3. Payment Success (`/customer/payment/success`) — Refinement
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/customer/payment/success?order_id=X` | Full screen bg-emerald-600 |
+| 2 | Paid state | CheckCircle icon, "Pembayaran Berhasil!", emerald-100 description |
+| 3 | Unpaid state | Clock icon, "Menunggu Pembayaran" |
+| 4 | Detail card | `rounded-3xl`: Order ID, Layanan, Total (`font-heading`), Tanggal, Status |
+| 5 | Total amount | `font-heading font-bold text-lg` |
+| 6 | Polling timeout | 15 detik → fallback ke unpaid state |
+| 7 | "Lacak Pesanan" button | `h-14 rounded-xl` bg-white text-emerald-700 + ArrowRight |
+| 8 | "Kembali ke Beranda" button | `variant="pill"` dengan Home icon |
+
+#### K.26.4. Wallet (`/wallet`) — Gradient Redesign
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/wallet` | Balance card `rounded-3xl`, `bg-gradient-to-br from-emerald-600 to-emerald-800` |
+| 2 | Balance display | `font-heading text-4xl font-bold` |
+| 3 | "Top Up" button | `variant="pill"` |
+| 4 | "Tarik" button | `rounded-xl` bg-white/20 |
+| 5 | Transaction list | Icons `w-10 h-10 rounded-full`: topup=emerald, withdrawal=red, payment=blue |
+| 6 | "Promo Saya" link | Di header riwayat transaksi, navigasi ke `/wallet/vouchers` |
+| 7 | Loading state | Skeleton `rounded-3xl` |
+| 8 | Error state | AlertCircle + "Gagal memuat dompet" |
+| 9 | Empty transactions | Wallet icon + "Belum ada transaksi" |
+
+#### K.26.5. Promo Voucher History (`/wallet/vouchers`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/wallet/vouchers` | Header "Riwayat Promo" + back button |
+| 2 | Voucher cards | `rounded-3xl` dengan notch cutout (circles left/right) dan left border emerald |
+| 3 | Status badge per card | "Aktif" (emerald) atau "Kadaluarsa" (gray) pill badge |
+| 4 | Tap voucher | Navigasi ke `/wallet/promo?id=X` |
+| 5 | Loading state | Loader2 spinner |
+| 6 | Empty state | Gift icon + "Belum ada promo" |
+
+#### K.26.6. Promo Voucher Detail (`/wallet/promo`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/wallet/promo?id=X` | Header "Detail Promo" + back button |
+| 2 | Hero card | Gradient `rounded-3xl`, discount `text-5xl font-heading`, title, description |
+| 3 | Countdown timer | "Berakhir dalam X hari Y jam" |
+| 4 | Terms & Conditions | List dengan CheckCircle icons |
+| 5 | "Gunakan Promo" button | `variant="pill"` `w-full` di sticky bottom |
+| 6 | Error state | "Promo tidak ditemukan" jika ID invalid |
+
+#### K.26.7. Premium Deal Banner Component
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Component rendered | `bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-3xl` |
+| 2 | Premium badge | Pill `uppercase` "PREMIUM" dengan Gift icon |
+| 3 | Discount circle | `w-20 h-20` white/20 rounded-full, `font-heading` |
+| 4 | Notch cutout | Half-circles left and right (absolute -translate-y-1/2) |
+| 5 | CTA | "Lihat Detail" dengan ArrowRight |
+
+#### K.26.8. Vendor Profile Address (`/vendor/profile/address`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/vendor/profile/address` | Header "Alamat & Area Layanan" + back button |
+| 2 | Address section | MapPin icon + Input address + LocationPicker map |
+| 3 | Map section | Leaflet map (dynamic import), drag marker to set location |
+| 4 | Operating hours | 7 days with checkbox, time inputs (open/close), Minggu default inactive |
+| 5 | Coverage area | Range slider 1-50 km, display nilai |
+| 6 | Simpan button | `variant="pill"` `w-full` |
+| 7 | Success save | Toast "Alamat berhasil disimpan" |
+

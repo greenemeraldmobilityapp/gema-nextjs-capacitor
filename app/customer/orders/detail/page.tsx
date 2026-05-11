@@ -32,7 +32,8 @@ function getMilestones(orderStatus: string) {
   const currentIdx = statusOrder.indexOf(orderStatus);
   return all.map((m, i) => ({
     ...m,
-    completed: i <= currentIdx,
+    completed: i <= currentIdx && orderStatus !== 'cancelled',
+    current: i === currentIdx && orderStatus !== 'completed' && orderStatus !== 'cancelled',
   }));
 }
 
@@ -88,18 +89,18 @@ function OrderTrackingContent() {
       </div>
 
       <div className="p-4 space-y-4">
-        <div className={`rounded-2xl border-2 p-4 ${status.bg}`}>
+        <div className={`rounded-3xl border-2 p-4 ${status.bg}`}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">{order.service_category}</p>
               <h2 className="font-bold text-gray-900 text-lg">{order.service_name}</h2>
             </div>
-            <span className={`text-sm font-bold ${status.color}`}>{status.label}</span>
+            <span className={`text-xs font-semibold px-3 py-1 rounded-full ${status.color} bg-white border`}>{status.label}</span>
           </div>
         </div>
 
         {order.payment_status === 'refunded' && (
-          <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-4 flex items-center gap-3">
+          <div className="rounded-3xl border-2 border-red-200 bg-red-50 p-4 flex items-center gap-3">
             <XCircle size={20} className="text-red-500 shrink-0" />
             <div>
               <p className="text-sm font-bold text-red-600">Dana Telah Dikembalikan</p>
@@ -108,7 +109,7 @@ function OrderTrackingContent() {
           </div>
         )}
 
-        <Card className="rounded-2xl border-none shadow-sm">
+        <Card className="rounded-3xl border-none shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-1">
               <MapPin size={18} className="text-emerald-500 shrink-0" />
@@ -118,7 +119,7 @@ function OrderTrackingContent() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-none shadow-sm">
+        <Card className="rounded-3xl border-none shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-1">
               <Clock size={18} className="text-emerald-500 shrink-0" />
@@ -132,7 +133,7 @@ function OrderTrackingContent() {
         </Card>
 
         {order.notes && (
-          <Card className="rounded-2xl border-none shadow-sm">
+          <Card className="rounded-3xl border-none shadow-sm">
             <CardContent className="p-4">
               <p className="text-sm font-medium text-gray-900 mb-1">Catatan</p>
               <p className="text-sm text-gray-500">{order.notes}</p>
@@ -144,7 +145,7 @@ function OrderTrackingContent() {
           <CustomerLocationViewer orderId={order.id} />
         )}
 
-        <Card className="rounded-2xl border-none shadow-sm">
+        <Card className="rounded-3xl border-none shadow-sm">
           <CardContent className="p-4">
             <h3 className="font-bold text-gray-900 mb-3">Rincian Biaya</h3>
             <div className="flex justify-between items-center mb-2">
@@ -163,18 +164,31 @@ function OrderTrackingContent() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-none shadow-sm">
+        <Card className="rounded-3xl border-none shadow-sm">
           <CardContent className="p-5">
             <h3 className="font-bold text-gray-900 mb-6">Status Pesanan</h3>
             <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
               {milestones.map((milestone, idx) => (
                 <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                  <div className={`flex items-center justify-center w-6 h-6 rounded-full border-2 bg-white ${milestone.completed ? 'border-emerald-500 text-emerald-500' : 'border-gray-300 text-gray-300'} z-10 shrink-0`}>
+                  <div className={`flex items-center justify-center w-6 h-6 rounded-full border-2 bg-white z-10 shrink-0 ${
+                    milestone.completed
+                      ? 'border-emerald-500 text-emerald-500'
+                      : milestone.current
+                        ? 'border-blue-500 text-blue-500'
+                        : 'border-gray-300 text-gray-300'
+                  }`}>
                     {milestone.completed && <CheckCircle2 size={16} />}
+                    {milestone.current && <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />}
                   </div>
                   <div className="w-[calc(100%-2.5rem)] md:w-[calc(50%-2.5rem)] px-4">
                     <div className="flex flex-col">
-                      <span className={`font-semibold ${milestone.completed ? 'text-gray-900' : 'text-gray-400'}`}>{milestone.label}</span>
+                      <span className={`font-semibold ${
+                        milestone.completed
+                          ? 'text-gray-900'
+                          : milestone.current
+                            ? 'text-blue-600'
+                            : 'text-gray-400'
+                      }`}>{milestone.label}</span>
                     </div>
                   </div>
                 </div>
@@ -185,7 +199,7 @@ function OrderTrackingContent() {
 
         <div className="flex gap-3">
           <Link href={`/customer/chat?order_id=${orderId}`} className="flex-1">
-            <Button className="w-full h-12 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-700 shadow-none font-semibold flex items-center gap-2">
+            <Button variant="pill" size="lg" className="w-full shadow-sm">
               <MessageSquare size={18} />
               Chat
             </Button>

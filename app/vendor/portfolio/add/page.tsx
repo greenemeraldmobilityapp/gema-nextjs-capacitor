@@ -54,7 +54,7 @@ export default function VendorAddPortfolioPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 space-y-4">
-        <div className="bg-white rounded-xl p-5 shadow-sm border space-y-4">
+        <div className="bg-white rounded-3xl p-5 shadow-sm border space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-gray-700">Nama Layanan</label>
             <Input
@@ -111,7 +111,9 @@ export default function VendorAddPortfolioPage() {
         <Button
           type="submit"
           disabled={createService.isPending}
-          className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm disabled:opacity-50"
+          variant="pill"
+          size="lg"
+          className="w-full shadow-sm disabled:opacity-50"
         >
           {createService.isPending ? (
             <span className="flex items-center gap-2"><Loader2 size={20} className="animate-spin" /> Menyimpan...</span>

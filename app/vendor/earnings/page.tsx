@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Wallet, TrendingUp, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { Wallet, TrendingUp, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
 import { useVendorOrders } from '@/lib/services/useOrders';
@@ -51,10 +51,15 @@ export default function VendorEarningsPage() {
           </div>
         ) : (
           <>
-            <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-5 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <Wallet size={18} />
-                <span className="text-sm opacity-90">Saldo Tersedia</span>
+            <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-3xl p-5 text-white shadow-lg">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <Wallet size={18} />
+                  <span className="text-sm opacity-90">Saldo Tersedia</span>
+                </div>
+                <button className="text-sm font-semibold flex items-center gap-1 bg-white/20 rounded-full px-4 py-1.5 hover:bg-white/30 transition-colors">
+                  Tarik Saldo <ArrowRight size={14} />
+                </button>
               </div>
               <p className="text-3xl font-bold mt-1">Rp {(wallet?.balance || 0).toLocaleString()}</p>
               <div className="flex gap-6 mt-4 pt-4 border-t border-white/20">
@@ -78,7 +83,7 @@ export default function VendorEarningsPage() {
                       key={p}
                       onClick={() => setPeriod(p)}
                       className={cn(
-                        'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+                        'px-3 py-1 text-xs font-medium rounded-full transition-colors',
                         period === p ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
                       )}
                     >
@@ -130,7 +135,7 @@ export default function VendorEarningsPage() {
                   <div key={tx.id} className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className={cn(
-                        'w-9 h-9 rounded-full flex items-center justify-center',
+                        'w-10 h-10 rounded-full flex items-center justify-center',
                         tx.type === 'payment' || tx.type === 'topup' ? 'bg-emerald-100' : 'bg-red-100'
                       )}>
                         {tx.type === 'payment' || tx.type === 'topup' ? (

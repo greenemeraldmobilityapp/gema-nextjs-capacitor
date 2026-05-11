@@ -110,13 +110,13 @@ export default function VendorEditProfilePage() {
       </div>
 
       <form onSubmit={handleSave} className="p-4 space-y-4">
-        <div className="bg-white rounded-xl p-5 shadow-sm border text-center">
+        <div className="bg-white rounded-3xl p-5 shadow-sm border text-center">
           <div className="relative w-20 h-20 mx-auto">
             <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center">
               <User size={36} className="text-emerald-600" />
             </div>
-            <button type="button" className="absolute -bottom-1 -right-1 w-7 h-7 bg-emerald-600 rounded-full flex items-center justify-center shadow-md">
-              <Camera size={14} className="text-white" />
+            <button type="button" className="absolute -bottom-1 -right-1 w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+              <Camera size={16} className="text-white" />
             </button>
           </div>
           <p className="text-xs text-gray-400 mt-2">Tap untuk mengganti foto</p>
@@ -134,7 +134,7 @@ export default function VendorEditProfilePage() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl p-5 shadow-sm border space-y-4">
+        <div className="bg-white rounded-3xl p-5 shadow-sm border space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-gray-700">Nama Lengkap</label>
             <Input
@@ -192,7 +192,9 @@ export default function VendorEditProfilePage() {
         <Button
           type="submit"
           disabled={saving}
-          className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm disabled:opacity-50"
+          variant="pill"
+          size="lg"
+          className="w-full shadow-sm disabled:opacity-50"
         >
           {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
         </Button>

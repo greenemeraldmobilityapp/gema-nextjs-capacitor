@@ -22,7 +22,7 @@ export default function VendorPortfolioPage() {
       <div className="bg-white px-4 pt-6 pb-4 border-b flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">Portofolio</h1>
         <Link href="/vendor/portfolio/add">
-          <Button className="h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 gap-1.5">
+          <Button className="h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 gap-1.5">
             <Plus size={18} />
             Tambah
           </Button>
@@ -56,9 +56,9 @@ export default function VendorPortfolioPage() {
           services.map((service) => {
             const Icon = categoryIcons[service.category] || Briefcase;
             return (
-              <div key={service.id} className="bg-white rounded-xl p-4 shadow-sm border">
+              <div key={service.id} className="bg-white rounded-3xl p-4 shadow-sm border">
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
                     <Icon size={24} className="text-emerald-600" />
                   </div>
                   <div className="flex-1 min-w-0">

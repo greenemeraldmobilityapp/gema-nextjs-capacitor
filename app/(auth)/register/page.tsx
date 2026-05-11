@@ -107,7 +107,7 @@ function RegisterContent() {
 
       <div className="flex-1 p-6 flex flex-col">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Buat Akun {role === 'vendor' ? 'Mitra' : 'Pelanggan'}</h1>
+          <h1 className="font-heading text-2xl font-bold text-gray-900 mb-2">Buat Akun {role === 'vendor' ? 'Mitra' : 'Pelanggan'}</h1>
           <p className="text-gray-500">Lengkapi data Anda untuk mendaftar di GEMA.</p>
         </div>
 
@@ -172,10 +172,12 @@ function RegisterContent() {
           </div>
 
           <div className="pt-4">
-            <Button 
-              type="submit" 
-              disabled={isLoading} 
-              className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm"
+            <Button
+              type="submit"
+              disabled={isLoading}
+              variant="pill"
+              size="lg"
+              className="w-full"
             >
               {isLoading ? 'Mendaftarkan...' : 'Daftar Sekarang'}
             </Button>

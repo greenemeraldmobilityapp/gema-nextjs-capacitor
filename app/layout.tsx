@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,11 @@ import { Toaster } from "@/components/ui/sonner";
 import { NotificationInit } from "@/components/shared/NotificationInit";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  weight: ["600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "GEMA",
@@ -22,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", inter.variable)}>
-      <body className={cn("min-h-screen bg-background font-sans antialiased", inter.variable)}>
+    <html lang="en" className={cn("font-sans", inter.variable, plusJakartaSans.variable)}>
+      <body className={cn("min-h-screen bg-background font-sans antialiased", inter.variable, plusJakartaSans.variable)}>
         <QueryProvider>
           <AuthProvider>
             <AuthGuard>

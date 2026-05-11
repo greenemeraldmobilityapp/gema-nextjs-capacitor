@@ -28,3 +28,18 @@ export function useActivePromos() {
     },
   });
 }
+
+export function useAllPromos() {
+  return useQuery({
+    queryKey: ['all-promos'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('promos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Promo[];
+    },
+  });
+}

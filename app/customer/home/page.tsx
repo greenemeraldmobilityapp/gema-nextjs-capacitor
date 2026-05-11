@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { MapPin, Search, Wrench, Zap, Droplets, Paintbrush, Star, Loader2, Percent, LayoutGrid, Map as MapIcon } from 'lucide-react';
+import { MapPin, Search, Wrench, Zap, Droplets, Paintbrush, Star, Loader2, Percent, LayoutGrid, Map as MapIcon, Wallet, PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
@@ -46,9 +46,9 @@ export default function CustomerHome() {
   const vendorCards = (list: (VendorProfile & { distance?: number })[]) =>
     list.slice(0, 5).map((vendor) => (
       <Link key={vendor.user_id} href={`/customer/vendor?id=${vendor.user_id}`}>
-        <Card className="rounded-xl overflow-hidden cursor-pointer hover:border-emerald-500 transition-colors">
-          <CardContent className="p-4 flex gap-4">
-            <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center text-gray-500 font-bold text-xl">
+          <Card className="rounded-3xl overflow-hidden cursor-pointer hover:border-emerald-500 transition-colors">
+            <CardContent className="p-4 flex gap-4">
+              <div className="w-20 h-20 bg-gray-200 rounded-xl flex-shrink-0 flex items-center justify-center text-gray-500 font-bold text-xl">
               {vendor.users?.full_name?.charAt(0) || '?'}
             </div>
             <div className="flex-1">
@@ -76,8 +76,8 @@ export default function CustomerHome() {
   return (
     <div className="flex flex-col h-full w-full">
       <div className="bg-emerald-500 text-white p-4 pt-8 rounded-b-[24px] shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <MapPin size={20} className="text-emerald-100" />
+        <div className="flex items-start gap-2 mb-4">
+          <MapPin size={20} className="text-emerald-100 mt-0.5" />
           <div className="flex-1">
             <p className="text-xs text-emerald-100 font-medium tracking-wide uppercase">
               {userLocation ? 'Lokasi Anda' : 'Current Location'}
@@ -85,6 +85,18 @@ export default function CustomerHome() {
             <p className="text-sm font-semibold truncate">
               {userLocation ? `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}` : 'Jl. Sudirman No 123, Jakarta'}
             </p>
+          </div>
+          <div className="bg-white shadow-md rounded-lg px-3 py-2 flex items-center gap-2 border border-emerald-100">
+            <div className="bg-emerald-100 rounded-full p-1.5">
+              <Wallet size={16} className="text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 leading-tight">GemaPay</p>
+              <p className="font-heading text-sm text-gray-900 font-bold">Rp 250.000</p>
+            </div>
+            <button className="text-emerald-500">
+              <PlusCircle size={18} />
+            </button>
           </div>
         </div>
         
@@ -96,7 +108,7 @@ export default function CustomerHome() {
             <Input 
               type="text" 
               placeholder="Search for services or vendors..." 
-              className="pl-10 h-12 bg-white text-gray-900 border-none rounded-xl shadow-sm placeholder:text-gray-400 cursor-pointer"
+              className="pl-10 h-12 bg-white text-gray-900 border-none rounded-full shadow-sm placeholder:text-gray-400 cursor-pointer"
               readOnly
             />
           </div>
@@ -105,12 +117,12 @@ export default function CustomerHome() {
 
       <div className="p-4 space-y-6">
         {promosLoading ? (
-          <div className="w-full bg-emerald-50 rounded-2xl p-4 border border-emerald-100 animate-pulse">
+          <div className="w-full bg-emerald-50 rounded-3xl p-4 border border-emerald-100 animate-pulse">
             <div className="h-6 w-32 bg-emerald-200 rounded mb-2"></div>
             <div className="h-4 w-48 bg-emerald-200 rounded"></div>
           </div>
         ) : promo ? (
-          <div className="w-full bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div className="w-full bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-3xl p-4 flex items-center justify-between shadow-sm">
             <div className="text-white">
               <h3 className="font-bold text-lg">{promo.title}</h3>
               <p className="text-sm text-emerald-100">{promo.description}</p>
@@ -120,7 +132,7 @@ export default function CustomerHome() {
             </div>
           </div>
         ) : (
-          <div className="w-full bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex items-center justify-between">
+          <div className="w-full bg-emerald-50 rounded-3xl p-4 border border-emerald-100 flex items-center justify-between">
             <div>
               <h3 className="font-bold text-emerald-800 text-lg">Diskon 50%</h3>
               <p className="text-sm text-emerald-600">Untuk pengguna baru GEMA!</p>
@@ -159,7 +171,7 @@ export default function CustomerHome() {
                   {viewMode === 'map' ? <LayoutGrid size={18} /> : <MapIcon size={18} />}
                 </button>
               )}
-              <Link href="/customer/search" className="text-sm text-emerald-600 font-medium">See all</Link>
+              <Link href="/customer/search" className="text-sm font-semibold text-emerald-600 bg-emerald-50 rounded-full px-4 py-1.5 hover:bg-emerald-100 transition-colors">Lihat Semua</Link>
             </div>
           </div>
 
@@ -204,9 +216,9 @@ export default function CustomerHome() {
             <div className="space-y-3">
               {topVendors.slice(0, 5).map((vendor) => (
                 <Link key={vendor.user_id} href={`/customer/vendor?id=${vendor.user_id}`}>
-                  <Card className="rounded-xl overflow-hidden cursor-pointer hover:border-yellow-500 transition-colors border-yellow-100">
+                  <Card className="rounded-3xl overflow-hidden cursor-pointer hover:border-yellow-500 transition-colors border-yellow-100">
                     <CardContent className="p-4 flex gap-4">
-                      <div className="w-20 h-20 bg-yellow-50 rounded-lg flex-shrink-0 flex items-center justify-center text-yellow-600 font-bold text-xl">
+                      <div className="w-20 h-20 bg-yellow-50 rounded-xl flex-shrink-0 flex items-center justify-center text-yellow-600 font-bold text-xl">
                         {vendor.users?.full_name?.charAt(0) || '?'}
                       </div>
                       <div className="flex-1">

@@ -356,3 +356,65 @@ export function useRejectTransaction() {
     },
   });
 }
+
+export type FraudAlert = {
+  id: string;
+  type: string;
+  severity: string;
+  title: string;
+  description: string;
+  affected_user_id: string | null;
+  affected_vendor_id: string | null;
+  related_order_id: string | null;
+  metadata: Record<string, unknown> | null;
+  status: string;
+  resolved_by: string | null;
+  resolution: string | null;
+  created_at: string;
+  resolved_at: string | null;
+};
+
+export function useFraudAlerts() {
+  return useQuery({
+    queryKey: ['fraud-alerts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('fraud_alerts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as FraudAlert[];
+    },
+    refetchInterval: 30000,
+  });
+}
+
+export function useUpdateFraudAlert() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, status, resolution, resolvedBy }: {
+      id: string;
+      status: 'investigating' | 'resolved' | 'false_positive';
+      resolution?: string;
+      resolvedBy?: string;
+    }) => {
+      const updates: Record<string, unknown> = { status };
+      if (resolution) updates.resolution = resolution;
+      if (status === 'resolved' || status === 'false_positive') updates.resolved_at = new Date().toISOString();
+      if (resolvedBy) updates.resolved_by = resolvedBy;
+
+      const { error } = await supabase
+        .from('fraud_alerts')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fraud-alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+    },
+  });
+}

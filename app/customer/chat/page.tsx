@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Send, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, AlertCircle, Phone, Paperclip } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -54,14 +54,20 @@ function ChatContent() {
           <ArrowLeft size={24} className="text-gray-700" />
         </Link>
         <div className="flex items-center gap-3 flex-1">
-          <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold shrink-0">
-            CS
+          <div className="relative shrink-0">
+            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold">
+              CS
+            </div>
+            <div className="w-3 h-3 bg-emerald-500 rounded-full absolute -bottom-0.5 -right-0.5 border-2 border-white" />
           </div>
           <div>
             <h2 className="font-bold text-gray-900 leading-tight">Chat Pesanan</h2>
             <p className="text-xs text-emerald-600 font-medium">Online</p>
           </div>
         </div>
+        <button className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors shrink-0">
+          <Phone size={18} />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -103,6 +109,9 @@ function ChatContent() {
       </div>
 
       <div className="bg-white border-t p-4 pb-safe flex items-center gap-2 shrink-0">
+        <button className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0">
+          <Paperclip size={20} />
+        </button>
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}

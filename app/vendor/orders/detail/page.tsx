@@ -1,15 +1,15 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Calendar, Clock, Phone, MessageSquare, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Clock, Phone, MessageSquare, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
-import { useWallet, useAddTransaction } from '@/lib/services/useWallet';
 import { useAuthStore } from '@/store/auth';
+import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { VendorLocationSharer } from '@/components/shared/LiveTracker';
 
@@ -20,8 +20,6 @@ function OrderDetailContent() {
   const { data: order, isLoading, error } = useOrder(id);
   const updateStatus = useUpdateOrderStatus();
   const profile = useAuthStore((s) => s.profile);
-  const { data: vendorWallet } = useWallet(profile?.id);
-  const addTransaction = useAddTransaction();
 
   const statusSteps = [
     { key: 'pending', label: 'Pesanan Baru' },
@@ -32,13 +30,14 @@ function OrderDetailContent() {
 
   const currentStepIndex = statusSteps.findIndex(s => s.key === order?.order_status);
 
+  const [isReleasing, setIsReleasing] = useState(false);
+
   const handleAction = async (action: 'accept' | 'start' | 'complete' | 'decline') => {
     if (!order) return;
 
     const mutations: Record<string, Parameters<typeof updateStatus.mutateAsync>[0]> = {
       accept: { orderId: order.id, order_status: 'accepted', payment_status: 'escrow' },
       start: { orderId: order.id, order_status: 'in_progress' },
-      complete: { orderId: order.id, order_status: 'completed', payment_status: 'released', completed_at: new Date().toISOString() },
       decline: { orderId: order.id, order_status: 'cancelled', cancelled_at: new Date().toISOString(), payment_status: order.payment_status === 'escrow' ? 'refunded' : undefined },
     };
 
@@ -50,21 +49,34 @@ function OrderDetailContent() {
     };
 
     try {
-      await updateStatus.mutateAsync(mutations[action]);
-
-      if (action === 'decline' && order.payment_status === 'escrow' && vendorWallet?.id) {
-        await addTransaction.mutateAsync({
-          wallet_id: vendorWallet.id,
-          type: 'refund',
-          amount: -order.vendor_payout,
-          status: 'success',
+      if (action === 'complete') {
+        setIsReleasing(true);
+        const supabase = createClient();
+        const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/release-payment`;
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) throw new Error('Sesi tidak ditemukan');
+        const res = await fetch(functionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ order_id: order.id }),
         });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal melepaskan pembayaran');
+      } else {
+        await updateStatus.mutateAsync(mutations[action]);
       }
 
       toast.success(labels[action]);
       router.refresh();
-    } catch {
-      toast.error('Gagal memperbarui status pesanan');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Gagal memperbarui status pesanan';
+      toast.error(msg);
+    } finally {
+      setIsReleasing(false);
     }
   };
 
@@ -113,7 +125,7 @@ function OrderDetailContent() {
       </div>
 
       <div className="p-4 space-y-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
+        <div className="bg-white rounded-3xl p-4 shadow-sm border">
           <h2 className="font-semibold text-gray-900 mb-3">Progress</h2>
           <div className="space-y-3">
             {statusSteps.map((step, i) => (
@@ -139,7 +151,7 @@ function OrderDetailContent() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
+        <div className="bg-white rounded-3xl p-4 shadow-sm border">
           <h2 className="font-semibold text-gray-900 mb-3">Informasi Pesanan</h2>
           <div className="space-y-3">
             <div>
@@ -184,7 +196,20 @@ function OrderDetailContent() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
+        <Link href={`/vendor/chat?order_id=${order.id}`}>
+          <div className="bg-white rounded-3xl p-4 shadow-sm border flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+              <MessageSquare size={18} />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-gray-900 text-sm">Chat dengan Pelanggan</p>
+              <p className="text-xs text-gray-500">Tanya detail atau konfirmasi pesanan</p>
+            </div>
+            <ChevronRight size={18} className="text-gray-400" />
+          </div>
+        </Link>
+
+        <div className="bg-white rounded-3xl p-4 shadow-sm border">
           <h2 className="font-semibold text-gray-900 mb-3">Rincian Pembayaran</h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -210,13 +235,13 @@ function OrderDetailContent() {
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex gap-3">
-        {updateStatus.isPending && (
+        {(updateStatus.isPending || isReleasing) && (
           <div className="flex items-center justify-center w-full text-sm text-gray-500">
             <Loader2 size={16} className="animate-spin mr-2" />
             Memproses...
           </div>
         )}
-        {!updateStatus.isPending && order.order_status === 'accepted' && (
+        {!updateStatus.isPending && !isReleasing && order.order_status === 'accepted' && (
           <>
             <Button
               variant="outline"
@@ -227,21 +252,25 @@ function OrderDetailContent() {
             </Button>
             <Button
               onClick={() => handleAction('start')}
-              className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700"
+              variant="pill"
+              size="lg"
+              className="flex-1"
             >
               Mulai Pekerjaan
             </Button>
           </>
         )}
-        {!updateStatus.isPending && order.order_status === 'in_progress' && (
+        {!updateStatus.isPending && !isReleasing && order.order_status === 'in_progress' && (
           <Button
             onClick={() => handleAction('complete')}
-            className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700"
+            variant="pill"
+            size="lg"
+            className="flex-1"
           >
             Selesaikan Pekerjaan
           </Button>
         )}
-        {!updateStatus.isPending && order.order_status === 'pending' && (
+        {!updateStatus.isPending && !isReleasing && order.order_status === 'pending' && (
           <>
             <Button
               variant="outline"
@@ -252,13 +281,15 @@ function OrderDetailContent() {
             </Button>
             <Button
               onClick={() => handleAction('accept')}
-              className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700"
+              variant="pill"
+              size="lg"
+              className="flex-1"
             >
               Terima Pesanan
             </Button>
           </>
         )}
-        {!updateStatus.isPending && (order.order_status === 'completed' || order.order_status === 'cancelled') && (
+        {!updateStatus.isPending && !isReleasing && (order.order_status === 'completed' || order.order_status === 'cancelled') && (
           <p className="w-full text-center text-sm text-gray-400 py-3">
             {order.order_status === 'completed' ? 'Pesanan selesai' : 'Pesanan dibatalkan'}
           </p>

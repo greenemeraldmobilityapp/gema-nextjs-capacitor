@@ -3,6 +3,8 @@ GEMA (Green Emerald Mobility Apps)
 Frontend Development Roadmap
 Version 1.0
 
+> **Companion document**: See [`REFINE_STITCH_UI_UX_ROADMAP.md`](./REFINE_STITCH_UI_UX_ROADMAP.md) for the detailed Stitch design refinement plan including design system tokens, component specs, and per-screen UI changes.
+
 ---
 
 # 1. Objective
@@ -392,7 +394,7 @@ Belum ada di design Stitch tapi wajib.
 ## Admin Features
 - [x] vendor approval (verify/unverify vendors)
 - [x] dispute management (list + resolve with admin notes)
-- [x] fraud detection (via monitoring all orders/transactions)
+- [x] fraud detection (auto triggers: self-dealing, rapid completion, burst registration, review bomb, off-platform contact)
 - [x] payout approval (topup/withdrawal approve/reject)
 - [x] analytics dashboard (stats: users, vendors, orders, revenue, pending actions)
 - [x] promo CRUD (create, toggle active, delete)
@@ -456,13 +458,13 @@ DILARANG lompat milestone.
 
 Setiap milestone dianggap selesai jika:
 
-- [ ] responsive mobile
-- [ ] connected to real data
-- [ ] no broken navigation
-- [ ] reusable components
-- [ ] loading states available
-- [ ] empty states available
-- [ ] error handling available
+- [x] responsive mobile
+- [x] connected to real data
+- [x] no broken navigation
+- [x] reusable components
+- [x] loading states available
+- [x] empty states available
+- [x] error handling available
 
 ---
 

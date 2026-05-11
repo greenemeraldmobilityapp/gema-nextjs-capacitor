@@ -84,10 +84,11 @@ Kerjakan dalam urutan ini **SEBELUM** menulis kode fitur yang menggunakan tabel 
 1. **Cek jika ada perubahan schema** — jika iya, kerjakan **Schema Change Workflow** di atas terlebih dahulu
 2. **Verify against `prd.md`** — ensure implementation matches PRD architecture and schema
 3. **Update `roadmap.md`** — check/uncheck tasks in the relevant phase
-4. **Update `REFINE_STITCH_UI_UXX_ROADMAP.md`** — check/uncheck screens and features affected
-5. **Update `docs/TESTING_CHECKLIST.md`** — add test scenarios for the change (section K format)
-6. **Run `npm run lint`** — catch lint errors (build won't catch them)
-7. **Run `npm run build`** — confirm 0 errors (catches TS errors)
+4. **Update `UI_UX_ROADMAP.md`** — check/uncheck screens and features affected
+5. **Update `REFINE_STITCH_UI_UX_ROADMAP.md`** — check/uncheck items in implementation order
+6. **Update `docs/TESTING_CHECKLIST.md`** — add test scenarios for the change (section K format)
+7. **Run `npm run lint`** — catch lint errors (build won't catch them)
+8. **Run `npm run build`** — confirm 0 errors (catches TS errors)
 
 ## Known Gaps (don't assume they exist)
 

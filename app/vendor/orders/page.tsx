@@ -30,21 +30,23 @@ export default function VendorOrdersPage() {
         <h1 className="text-xl font-bold text-gray-900">Pesanan</h1>
       </div>
 
-      <div className="flex border-b bg-white px-4">
-        {(['active', 'history'] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={cn(
-              'py-3 px-4 text-sm font-medium border-b-2 transition-colors',
-              tab === t
-                ? 'text-emerald-600 border-emerald-600'
-                : 'text-gray-500 border-transparent hover:text-gray-700'
-            )}
-          >
-            {t === 'active' ? 'Aktif' : 'Riwayat'}
-          </button>
-        ))}
+      <div className="px-4 py-3 bg-white">
+        <div className="flex bg-gray-100 rounded-full p-1">
+          {(['active', 'history'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={cn(
+                'flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-all',
+                tab === t
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              )}
+            >
+              {t === 'active' ? 'Aktif' : 'Riwayat'}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 p-4 space-y-3">
@@ -68,7 +70,7 @@ export default function VendorOrdersPage() {
           <Link
             key={order.id}
             href={`/vendor/orders/detail?id=${order.id}`}
-            className="block bg-white rounded-xl p-4 shadow-sm border hover:shadow-md transition-shadow"
+            className="block bg-white rounded-3xl p-4 shadow-sm border hover:shadow-md transition-shadow"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1">

@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Loader2, CalendarDays, Clock, Wallet, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -32,6 +32,7 @@ function BookingContent() {
     new Date().toISOString().split('T')[0]
   );
   const [selectedTime, setSelectedTime] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'gemapay' | 'transfer'>('gemapay');
 
   const { data: service, isLoading } = useQuery({
     queryKey: ['service', serviceId],
@@ -93,10 +94,17 @@ function BookingContent() {
             <Loader2 size={24} className="animate-spin text-emerald-600" />
           </div>
         ) : service ? (
-          <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
+          <Card className="rounded-3xl border-none shadow-sm overflow-hidden">
             <CardContent className="p-4">
-              <h3 className="font-bold text-gray-900 mb-1">{service.title}</h3>
-              <p className="text-sm text-gray-500 mb-4">{vendor?.full_name || 'Vendor'}</p>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold">
+                  {vendor?.full_name?.charAt(0) || 'V'}
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">{service.title}</h3>
+                  <p className="text-sm text-gray-500">{vendor?.full_name || 'Vendor'} • {service.category || 'General'}</p>
+                </div>
+              </div>
               
               <div className="w-full h-px bg-gray-100 mb-4"></div>
               
@@ -107,6 +115,10 @@ function BookingContent() {
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Biaya Platform (5%)</span>
                 <span className="font-semibold text-gray-900">Rp {platformFee.toLocaleString('id-ID')}</span>
+              </div>
+              <div className="flex justify-between items-center mb-2 text-emerald-600">
+                <span className="text-sm">Promo</span>
+                <span className="font-semibold">-Rp 0</span>
               </div>
               <div className="w-full h-px bg-gray-100 my-4"></div>
               <div className="flex justify-between items-center">
@@ -134,22 +146,44 @@ function BookingContent() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-900 px-1">Tanggal</label>
-              <div className="bg-white p-4 rounded-2xl shadow-sm">
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full text-sm text-gray-900 outline-none bg-transparent"
-                />
-                <p className="text-xs text-gray-400 mt-2">{formatDateLabel(selectedDate)}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-900 px-1">Tanggal</label>
+                <div className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3">
+                  <CalendarDays size={20} className="text-emerald-500 shrink-0" />
+                  <div className="flex-1">
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full text-sm text-gray-900 outline-none bg-transparent"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">{formatDateLabel(selectedDate)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-900 px-1">Waktu</label>
+                <div className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3">
+                  <Clock size={20} className="text-emerald-500 shrink-0" />
+                  <select
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                    className="w-full text-sm text-gray-900 outline-none bg-transparent"
+                  >
+                    <option value="">Pilih jam</option>
+                    {TIME_SLOTS.map((slot) => (
+                      <option key={slot} value={slot}>{slot}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-900 px-1">Waktu</label>
+              <label className="text-sm font-bold text-gray-900 px-1">Slot Waktu Tersedia</label>
               <div className="grid grid-cols-4 gap-2">
                 {TIME_SLOTS.map((slot) => (
                   <button
@@ -172,12 +206,62 @@ function BookingContent() {
               )}
             </div>
 
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-900 px-1">Metode Pembayaran</label>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('gemapay')}
+                  className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left ${
+                    paymentMethod === 'gemapay'
+                      ? 'border-emerald-500 bg-emerald-50'
+                      : 'border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center shrink-0">
+                    <Wallet size={20} className="text-emerald-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900 text-sm">GEMA Pay</p>
+                    <p className="text-xs text-gray-500">Saldo: Rp 250.000</p>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    paymentMethod === 'gemapay' ? 'border-emerald-500' : 'border-gray-300'
+                  }`}>
+                    {paymentMethod === 'gemapay' && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />}
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('transfer')}
+                  className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left ${
+                    paymentMethod === 'transfer'
+                      ? 'border-emerald-500 bg-emerald-50'
+                      : 'border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                    <Building2 size={20} className="text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900 text-sm">Transfer Bank</p>
+                    <p className="text-xs text-gray-500">Manual 1-2 hari kerja</p>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    paymentMethod === 'transfer' ? 'border-emerald-500' : 'border-gray-300'
+                  }`}>
+                    {paymentMethod === 'transfer' && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />}
+                  </div>
+                </button>
+              </div>
+            </div>
+
             <div className="space-y-2 pb-8">
               <label className="text-sm font-bold text-gray-900 px-1">Catatan Tambahan (Opsional)</label>
               <textarea 
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none resize-none h-24"
+                className="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none resize-none h-24"
                 placeholder="Tulis instruksi tambahan untuk vendor..."
               ></textarea>
             </div>
@@ -186,6 +270,15 @@ function BookingContent() {
       </div>
 
       <div className="p-4 bg-white border-t space-y-3 shrink-0">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <p className="text-xs text-gray-500">Total Pembayaran</p>
+            <p className="font-heading text-lg font-bold text-emerald-600">Rp {totalAmount.toLocaleString('id-ID')}</p>
+          </div>
+          {totalAmount > 0 && (
+            <p className="text-xs text-gray-400">termasuk biaya platform</p>
+          )}
+        </div>
         <Button
           disabled={!selectedTime || createOrder.isPending}
           onClick={async () => {
@@ -219,9 +312,11 @@ function BookingContent() {
               }
             );
           }}
-          className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-bold shadow-sm disabled:opacity-50"
+          variant="pill"
+          size="lg"
+          className="w-full shadow-sm disabled:opacity-50"
         >
-          {createOrder.isPending ? 'Memproses...' : 'Lanjut ke Pembayaran'}
+          {createOrder.isPending ? 'Memproses...' : 'Konfirmasi Pesanan'}
         </Button>
       </div>
     </div>
