@@ -29,6 +29,13 @@
       "when": 1778493228849,
       "tag": "0003_silly_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778736241343,
+      "tag": "0004_third_dark_beast",
+      "breakpoints": true
     }
   ]
 }

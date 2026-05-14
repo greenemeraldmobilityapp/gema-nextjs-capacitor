@@ -34,14 +34,14 @@ Adopsi selektif dari Stitch GEMA App (04-customer), dengan warna tetap emerald.
 
 ## Cross-Page Consistency Fixes
 
-- [ ] **Double padding bottom** — Hapus `pb-20`/`pb-24`/`pb-safe` dari page individual (layout `pb-16` sudah cukup). Affected: search, booking, vendor, chat
-- [ ] **Header uniformity** — Semua page pakai `bg-emerald-600` (home masih `bg-emerald-500`, fix)
-- [ ] **Chat header** — Konsisten dengan page lain (emerald gradient + `rounded-b-[24px]`)
-- [ ] **Loading states** — Ganti `Loader2` spinner dengan shadcn `Skeleton` component
-- [ ] **Bahasa placeholder** — Ganti placeholder Inggris ke Indonesia (search: "Cari layanan...")
-- [ ] **Dead page** — Cleanup `payment/methods` (duplikat/WIP)
-- [ ] **Hardcoded data** — Hapus placeholder data (home address, booking address, chat avatar)
-- [ ] **`font-heading`** — Apply konsisten di semua halaman
+- [x] **Double padding bottom** — Hapus `pb-20`/`pb-24`/`pb-safe` dari page individual (layout `pb-16` sudah cukup)
+- [x] **Header uniformity** — Semua page pakai `bg-emerald-600` + `rounded-b-[24px]`
+- [x] **Chat header** — Konsisten emerald gradient + `rounded-b-[24px]`
+- [x] **Loading states** — Ganti `Loader2` spinner dengan shadcn `Skeleton` component
+- [x] **Bahasa placeholder** — Ganti placeholder Inggris ke Indonesia
+- [x] **Dead page** — Cleanup `payment/methods` (duplikat/WIP)
+- [x] **Hardcoded data** — Hapus placeholder data (home address, booking address, chat avatar)
+- [x] **`font-heading`** — Apply konsisten di semua halaman
 
 ---
 
@@ -136,19 +136,29 @@ Adopsi selektif dari Stitch GEMA App (04-customer), dengan warna tetap emerald.
 ### 10. `profile/page.tsx` — Profile
 
 **Refinements:**
-- [ ] Profile header: avatar `w-24 h-24` with edit overlay (camera icon)
-- [ ] GemaPay balance card: gradient `from-emerald-600 to-emerald-500` with white text, "Top Up" + "Riwayat" buttons
-- [ ] Primary menu: 4 items (Informasi Akun, Alamat, Pembayaran, Keamanan) with emerald-tinted icon containers
-- [ ] Secondary menu: 3 items (Pusat Bantuan, Syarat, Keluar) with gray icon containers, Keluar in red
-- [ ] List items: icon circle + title + subtitle + chevron right, `divide-y divide-gray-100`
+- [x] Profile header: avatar `w-24 h-24` with edit overlay (camera icon)
+- [x] GemaPay balance card: gradient `from-emerald-600 to-emerald-500` with white text, "Top Up" + "Riwayat" buttons
+- [x] Primary menu: 4 items (Informasi Akun, Alamat, Pembayaran, Keamanan) with emerald-tinted icon containers
+- [x] Secondary menu: 2 items (Pusat Bantuan, Pengaturan) with gray icon containers, Keluar in red
+- [x] List items: icon circle + title + subtitle + chevron right, gradient divider
+- [x] Dynamic wallet balance via `useWallet` hook (was hardcoded)
+- [x] Camera upload: file picker + Supabase Storage + local preview
+- [x] Logout confirmation dialog (`window.confirm`)
+- [x] Phone number display from profile
+- [x] SVG wave decoration at header bottom
+- [x] Avatar: gradient ring `ring-4 ring-white/30`
+- [x] GemaPay card: glass overlay `via-white/5`
+- [x] Menu micro-interactions: `group-hover:scale-110` icon, `group-hover:translate-x-0.5` chevron
+- [x] Logout card: red gradient icon `from-red-500 to-red-600`
 
 ### 11. `profile/edit/page.tsx` — Edit Profile
 
 **Refinements:**
-- [ ] Photo with camera overlay button
-- [ ] Form inputs: leading icon inside input, focus ring `focus-visible:ring-2 focus-visible:ring-emerald-500/30`
-- [ ] Address section: map preview + "Pilih dari Peta" button
-- [ ] Save button: full-width emerald gradient pill
+- [x] Photo with camera overlay button (upload ke Supabase Storage)
+- [x] Form inputs: focus ring `focus-visible:ring-2 focus-visible:ring-emerald-500/30`
+- [x] Address section: link ke `/customer/profile/address`
+- [x] Save button: full-width emerald gradient pill
+- [x] Avatar preview after upload
 
 ### 12. `settings/notifications/page.tsx` — Notification Settings
 
@@ -185,13 +195,29 @@ Adopsi selektif dari Stitch GEMA App (04-customer), dengan warna tetap emerald.
 
 ---
 
+### 16. `profile/address/page.tsx` — Address (NEW)
+
+**Refinements:**
+- [x] Address form with lat/lng coordinate inputs
+- [x] "Gunakan lokasi saat ini" button (geolocation API)
+- [x] Info card explaining coordinate purpose
+- [x] Save to `users` table (lat, lng)
+- [x] Skeleton loading state
+
+---
+
 ## Order Pengerjaan
 
 User akan menentukan halaman per halaman. Setelah selesai 1 halaman, lanjut ke halaman berikutnya sesuai pilihan user.
 
 ## Done Checklist
 
-- [ ] Lint pass (`npm run lint`)
-- [ ] Build pass (`npm run build`)
+- [x] Lint pass (`npm run lint`) — 0 errors (pre-existing warnings only)
+- [x] Build pass (`npm run build`) — 55 pages, 0 errors
+- [x] Infrastructure: Storage RLS policies applied for `avatars` bucket
+- [x] Infrastructure: `avatar_url` column added to `users` table
+- [x] Infrastructure: Drizzle schema updated, migrations created (0005, 0006)
+- [x] Auth: `auth-provider.tsx` updated to select/pass `avatar_url`
+- [x] Profile: Avatar upload now persists URL to Supabase Storage + `users` table
 - [ ] Update `docs/TESTING_CHECKLIST.md` jika ada skenario baru
 - [ ] Update `roadmap.md` jika ada perubahan progress

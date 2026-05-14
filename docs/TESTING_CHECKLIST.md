@@ -1107,3 +1107,39 @@ Migration ini membuat function `is_admin()` + semua RLS policies untuk admin.
 | 8 | Tap icon User di header mana pun | Navigasi ke `/admin/profile` |
 | 9 | Avatar icon | `w-10 h-10 rounded-full bg-white/20` dengan `User` icon, `hover:bg-white/30` |
 
+### K.28. Vendor Portfolio — Luxury Refinements (REFINE_UI_UX_VENDOR.md §3.9–3.10)
+
+#### K.28.1. Vendor Portfolio List (`/vendor/portfolio`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/vendor/portfolio` | Background `bg-stone-50`, header sticky dengan `backdrop-blur-lg bg-white/80` |
+| 2 | Header styling | `font-heading text-xl font-bold text-stone-800` untuk judul "Portofolio" |
+| 3 | Tambah button | `h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md` dengan Plus icon |
+| 4 | Loading state | Loader2 spinner animate-spin + teks "Memuat portofolio..." warna `text-stone-400` |
+| 5 | Empty state | Briefcase icon di dalam `w-16 h-16 rounded-full bg-stone-100`, teks "Belum ada portofolio", CTA button gradient |
+| 6 | Service card | `bg-white/90 backdrop-blur-sm rounded-3xl p-4 shadow-elegant` |
+| 7 | Card hover | `hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer` |
+| 8 | Category icon container | `w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm` |
+| 9 | Service title | `font-semibold text-stone-800` |
+| 10 | Category label | `text-xs text-stone-400` |
+| 11 | Description | `text-xs text-stone-500 line-clamp-2` |
+| 12 | Price | `font-bold text-emerald-600` dengan format `Rp` + `.toLocaleString('id-ID')` |
+| 13 | Hover service card | Lift effect + shadow increase, cursor pointer |
+
+#### K.28.2. Vendor Add Portfolio (`/vendor/portfolio/add`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/vendor/portfolio/add` | Background `bg-stone-50`, header `backdrop-blur-lg bg-white/80` |
+| 2 | Back button | `w-10 h-10 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors` |
+| 3 | Form card | `bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant` |
+| 4 | Labels | `text-xs font-semibold text-stone-500 uppercase tracking-wider` |
+| 5 | Input fields | `h-12 bg-stone-50 border-stone-200 rounded-xl` dengan `focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10` |
+| 6 | Category pills | Grid 3 kolom, `rounded-xl text-sm font-semibold border-2`, active = `border-emerald-400 bg-emerald-50 text-emerald-700 shadow-sm` |
+| 7 | Textarea | `bg-stone-50 border-stone-200 rounded-xl resize-none`, placeholder `text-stone-400` |
+| 8 | Submit button | `w-full h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md` |
+| 9 | Submit loading | Loader2 animate-spin + "Menyimpan..." teks |
+| 10 | Submit success | Toast.success "Portofolio berhasil ditambahkan" + redirect ke `/vendor/portfolio` |
+| 11 | Submit error | Toast.error "Gagal menambahkan portofolio" |
+

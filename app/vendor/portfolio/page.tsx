@@ -18,20 +18,20 @@ export default function VendorPortfolioPage() {
   const { data: services, isLoading, error } = useVendorServices(profile?.id);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="bg-white px-4 pt-6 pb-4 border-b flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Portofolio</h1>
+    <div className="flex flex-col min-h-screen bg-stone-50">
+      <header className="bg-white/90 backdrop-blur-lg px-4 pt-6 pb-4 border-b border-stone-100 sticky top-0 z-20 flex items-center justify-between">
+        <h1 className="font-heading text-xl font-bold text-stone-800">Portofolio</h1>
         <Link href="/vendor/portfolio/add">
-          <Button className="h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 gap-1.5">
+          <Button className="h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md gap-1.5">
             <Plus size={18} />
             Tambah
           </Button>
         </Link>
-      </div>
+      </header>
 
       <div className="flex-1 p-4 space-y-3">
         {isLoading ? (
-          <div className="flex items-center justify-center py-16 text-gray-400">
+          <div className="flex items-center justify-center py-16 text-stone-400">
             <Loader2 size={24} className="animate-spin mr-2" />
             <span>Memuat portofolio...</span>
           </div>
@@ -41,12 +41,14 @@ export default function VendorPortfolioPage() {
             <p className="font-medium">Gagal memuat portofolio</p>
           </div>
         ) : !services || services.length === 0 ? (
-          <div className="flex flex-col items-center py-16 text-gray-400">
-            <Briefcase size={48} className="mb-3 opacity-50" />
+          <div className="flex flex-col items-center py-16 text-stone-400">
+            <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mx-auto mb-4">
+              <Briefcase size={32} className="opacity-50" />
+            </div>
             <p className="font-medium">Belum ada portofolio</p>
             <p className="text-sm mt-1">Tambahkan layanan yang Anda tawarkan</p>
             <Link href="/vendor/portfolio/add" className="mt-4">
-              <Button className="rounded-xl bg-emerald-600 hover:bg-emerald-700">
+              <Button className="h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md">
                 <Plus size={18} className="mr-1" />
                 Tambah Portofolio
               </Button>
@@ -56,20 +58,20 @@ export default function VendorPortfolioPage() {
           services.map((service) => {
             const Icon = categoryIcons[service.category] || Briefcase;
             return (
-              <div key={service.id} className="bg-white rounded-3xl p-4 shadow-sm border">
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
+              <div key={service.id} className="bg-white/90 backdrop-blur-sm rounded-3xl p-4 shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm flex items-center justify-center shrink-0">
                     <Icon size={24} className="text-emerald-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900">{service.title}</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">{service.category}</p>
+                    <h3 className="font-semibold text-stone-800">{service.title}</h3>
+                    <p className="text-xs text-stone-400 mt-0.5">{service.category}</p>
                     {service.description && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{service.description}</p>
+                      <p className="text-xs text-stone-500 mt-1 line-clamp-2">{service.description}</p>
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-bold text-emerald-700">Rp {service.price.toLocaleString()}</p>
+                    <p className="font-bold text-emerald-600">Rp {service.price.toLocaleString('id-ID')}</p>
                   </div>
                 </div>
               </div>

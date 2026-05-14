@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, PlusCircle, ChevronRight, Sparkles } from 'lucide-react';
+import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, PlusCircle, ChevronRight, Sparkles, Search, ArrowUpRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import { useVendors, useNearbyVendors } from '@/lib/services/useVendors';
 import { useActivePromos } from '@/lib/services/usePromos';
+import { useAuthStore } from '@/store/auth';
 import type { VendorProfile } from '@/lib/services/useVendors';
 
 const VendorMap = dynamic(() => import('@/components/shared/VendorMap'), { ssr: false });
@@ -22,9 +23,9 @@ const categories = [
 
 export default function CustomerHome() {
   const router = useRouter();
+  const profile = useAuthStore((s) => s.profile);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -70,7 +71,7 @@ export default function CustomerHome() {
                   e.preventDefault();
                   router.push(`/customer/vendor?id=${vendor.user_id}`);
                 }}
-                className="mt-2 w-full h-9 rounded-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 text-white text-sm font-semibold shadow-sm hover:brightness-105 active:brightness-95 transition-all"
+                className="mt-2 w-fit px-5 h-9 rounded-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 text-white text-sm font-semibold shadow-sm hover:brightness-105 active:brightness-95 transition-all"
               >
                 Pesan
               </button>
@@ -82,33 +83,64 @@ export default function CustomerHome() {
 
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 text-white p-4 pt-8 rounded-b-[24px] shadow-lg shadow-emerald-900/20 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-600 text-white p-4 pt-8 pb-8 rounded-b-[24px] shadow-lg shadow-emerald-900/20 relative overflow-hidden">
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-emerald-400/10 blur-3xl rounded-full pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-300/10 blur-3xl rounded-full pointer-events-none" />
-        <div className="relative z-10">
-          <div className="flex items-start gap-2">
-            <MapPin size={20} className="text-emerald-100 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-xs text-emerald-100 font-medium tracking-wide uppercase">Lokasi Anda</p>
-              <p className="text-sm font-semibold truncate">
-                {userLocation ? `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}` : 'Memuat lokasi...'}
-              </p>
+        <div className="relative z-10 space-y-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-2 min-w-0 flex-1">
+              <MapPin size={18} className="text-emerald-100 mt-0.5 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] text-emerald-100/70 font-medium tracking-wider uppercase">Lokasi</p>
+                <p className="text-sm font-semibold truncate">
+                  {userLocation ? `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}` : 'Memuat lokasi...'}
+                </p>
+              </div>
             </div>
             <Link
-              href="/wallet"
-              className="bg-white/90 backdrop-blur-md shadow-lg shadow-emerald-900/10 rounded-lg px-3 py-2 flex items-center gap-2 ring-1 ring-white/30 hover:shadow-xl transition-all"
+              href="/customer/profile"
+              className="flex items-center gap-2 ml-3 shrink-0 bg-white/10 rounded-full pl-2 pr-3 py-1 border border-white/10 hover:bg-white/20 transition-all"
             >
-              <div className="bg-emerald-100 rounded-full p-1.5">
-                <Wallet size={16} className="text-emerald-600" />
+              <div className="w-8 h-8 bg-emerald-300 rounded-full flex items-center justify-center text-emerald-800 font-bold text-sm">
+                {profile?.full_name?.charAt(0) || 'U'}
               </div>
-              <div>
-                <p className="text-[10px] text-gray-400 leading-tight">GemaPay</p>
-                <p className="font-heading text-sm text-gray-900 font-bold">Rp 250.000</p>
-              </div>
-              <PlusCircle size={16} className="text-emerald-500" />
+              <span className="text-sm font-semibold truncate max-w-[80px]">{profile?.full_name?.split(' ')[0] || 'User'}</span>
             </Link>
           </div>
+
+          <Link
+            href="/wallet"
+            className="bg-white/10 backdrop-blur-xl rounded-2xl px-4 py-3 flex items-center gap-3 border border-white/10 hover:bg-white/20 transition-all group"
+          >
+            <div className="w-10 h-10 bg-emerald-400/30 rounded-xl flex items-center justify-center shrink-0">
+              <Wallet size={20} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] text-emerald-100/60 leading-tight">Saldo GemaPay</p>
+              <p className="font-heading text-base text-white font-bold">Rp 250.000</p>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/20 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full hover:bg-white/30 transition-colors shrink-0">
+              <PlusCircle size={12} />
+              <span>Top Up</span>
+            </div>
+          </Link>
         </div>
+      </div>
+
+      <div className="-mt-7 px-4 relative z-20">
+        <Link
+          href="/customer/search"
+          className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-xl shadow-emerald-900/8 border border-emerald-500/10 cursor-pointer hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 group"
+        >
+          <div className="w-9 h-9 bg-emerald-50 rounded-full flex items-center justify-center group-hover:bg-emerald-100 transition-colors shrink-0">
+            <Search size={18} className="text-emerald-500" />
+          </div>
+          <span className="text-sm text-gray-400 flex-1">Cari layanan...</span>
+          <div className="flex items-center gap-1 text-[11px] font-medium text-gray-400">
+            <span className="hidden sm:inline">Cari</span>
+            <Search size={14} />
+          </div>
+        </Link>
       </div>
 
       <div className="p-4 space-y-6">
@@ -151,14 +183,14 @@ export default function CustomerHome() {
 
         <div className="space-y-3">
           <div className="border-l-4 border-emerald-500 pl-3">
-            <h2 className="text-lg font-bold text-gray-900">Kategori</h2>
+              <h2 className="text-lg font-heading font-bold text-gray-900">Kategori</h2>
           </div>
           <div className="grid grid-cols-4 gap-3">
             {categories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/customer/search?category=${cat.slug}`}
-                className="flex flex-col items-center gap-2 p-3 rounded-[20px] border border-gray-100 bg-white shadow-sm cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 group"
+                className="flex flex-col items-center gap-2 p-3 rounded-[24px] border border-gray-100 bg-white shadow-sm cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 group"
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${cat.color}`}>
                   <cat.icon size={22} />
@@ -172,7 +204,7 @@ export default function CustomerHome() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="border-l-4 border-emerald-500 pl-3">
-              <h2 className="text-lg font-bold text-gray-900">Vendor Terdekat</h2>
+              <h2 className="text-lg font-heading font-bold text-gray-900">Vendor Terdekat</h2>
             </div>
             <div className="flex items-center gap-2">
               {displayVendors.length > 0 && (
@@ -224,7 +256,7 @@ export default function CustomerHome() {
         {topVendors.length > 0 && (
           <div className="space-y-3 pb-8">
             <div className="border-l-4 border-emerald-500 pl-3">
-              <h2 className="text-lg font-bold text-gray-900">Vendor Terbaik</h2>
+              <h2 className="text-lg font-heading font-bold text-gray-900">Vendor Terbaik</h2>
             </div>
             <div className="space-y-3">
               {topVendors.slice(0, 5).map((vendor) => (

@@ -24,7 +24,7 @@
       "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
       "enabled": true,
       "environment": {
-        "GITHUB_TOKEN": "{env:GH_TOKEN}"
+        "GITHUB_TOKEN": "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"
       }
     },
     "playwright": {
@@ -41,9 +41,12 @@
       }
     },
     "mdn": {
-      "type": "local",
-      "command": ["npx", "-y", "mdn-mcp"],
-      "enabled": true
+      "type": "remote",
+      "url": "https://mcp.mdn.mozilla.net/",
+      "enabled": true,
+      "headers": {
+        "X-Moz-1st-Party-Data-Opt-Out": "1"
+      }
     }
   }
 }

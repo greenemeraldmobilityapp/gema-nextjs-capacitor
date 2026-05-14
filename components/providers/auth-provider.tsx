@@ -38,13 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('id, email, full_name, role')
+          .select('id, email, full_name, role, phone, avatar_url')
           .eq('id', userId)
           .single();
 
         if (error) {
           if (error.code === 'PGRST116') {
-            // Profile belum ada. Coba insert manual dulu.
             const inserted = await ensureProfileExists(
               userId,
               email,
@@ -52,10 +51,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             );
 
             if (inserted) {
-              // Coba fetch lagi setelah insert
               const { data: retryData, error: retryError } = await supabase
                 .from('users')
-                .select('id, email, full_name, role')
+                .select('id, email, full_name, role, phone, avatar_url')
                 .eq('id', userId)
                 .single();
 
@@ -65,6 +63,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   email: retryData.email,
                   full_name: retryData.full_name,
                   role: retryData.role as 'customer' | 'vendor' | 'admin',
+                  phone: retryData.phone,
+                  avatar_url: retryData.avatar_url,
                 });
                 if (mounted) setLoading(false);
                 return;
@@ -83,6 +83,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: data.email,
             full_name: data.full_name,
             role: data.role as 'customer' | 'vendor' | 'admin',
+            phone: data.phone,
+            avatar_url: data.avatar_url,
           });
         }
       } catch (err) {

@@ -8,6 +8,7 @@ import { Suspense, useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useChatByOrder, useChatMessages, useRealtimeMessages, useSendMessage } from '@/lib/services/useChat';
 import { useAuthStore } from '@/store/auth';
+import { cn } from '@/lib/utils';
 
 export default function VendorChatDetailPage() {
   return (
@@ -47,56 +48,62 @@ function ChatDetailContent() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 pb-safe">
-      <div className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-0 z-10 shadow-sm shrink-0">
+    <div className="flex flex-col h-screen bg-stone-50 pb-safe">
+      <div className="bg-white/90 backdrop-blur-lg border-b border-stone-100 px-4 py-3 flex items-center gap-3 sticky top-0 z-30 shadow-sm">
         <Link href={`/vendor/orders/detail?id=${orderId}`}>
-          <ArrowLeft size={24} className="text-gray-700" />
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-stone-100 to-stone-50 shadow-sm flex items-center justify-center">
+            <ArrowLeft size={22} className="text-stone-600" />
+          </div>
         </Link>
         <div className="flex items-center gap-3 flex-1">
           <div className="relative shrink-0">
-            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold">
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm flex items-center justify-center text-emerald-600 font-bold">
               P
             </div>
-            <div className="w-3 h-3 bg-emerald-500 rounded-full absolute -bottom-0.5 -right-0.5 border-2 border-white" />
+            <div className="w-3.5 h-3.5 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full absolute -bottom-0.5 -right-0.5 border-2 border-white" />
           </div>
           <div>
-            <h2 className="font-bold text-gray-900 leading-tight">Chat Pelanggan</h2>
+            <h2 className="font-heading font-semibold text-stone-800 leading-tight">Chat Pelanggan</h2>
             <p className="text-xs text-emerald-600 font-medium">Online</p>
           </div>
         </div>
-        <button className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors shrink-0">
+        <button className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm flex items-center justify-center text-emerald-600 hover:shadow-md transition-all shrink-0">
           <Phone size={18} />
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {chatLoading || msgLoading ? (
-          <div className="flex items-center justify-center py-16 text-gray-400">
+          <div className="flex items-center justify-center py-16 text-stone-400">
             <Loader2 size={24} className="animate-spin" />
           </div>
         ) : !chat ? (
-          <div className="flex flex-col items-center py-16 text-gray-400">
+          <div className="flex flex-col items-center py-16 text-stone-400">
             <AlertCircle size={48} className="mb-3 opacity-50" />
             <p className="font-medium">Chat tidak tersedia</p>
           </div>
         ) : !messages || messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+          <div className="flex flex-col items-center justify-center py-16 text-stone-400">
             <p className="text-sm">Belum ada pesan. Kirim pesan untuk memulai.</p>
           </div>
         ) : (
           <>
             <div className="flex flex-col items-center mb-6">
-              <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Hari ini</span>
+              <span className="text-xs text-stone-400 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">Hari ini</span>
             </div>
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.sender_id === profile?.id ? 'justify-end' : 'justify-start'}`}>
-                <div className={`rounded-2xl px-4 py-2 max-w-[80%] shadow-sm ${
+                <div className={cn(
+                  'rounded-2xl px-4 py-2.5 max-w-[80%] shadow-md',
                   msg.sender_id === profile?.id
-                    ? 'bg-emerald-500 text-white rounded-tr-sm'
-                    : 'bg-white border text-gray-800 rounded-tl-sm'
-                }`}>
+                    ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-tr-sm'
+                    : 'bg-white/90 backdrop-blur-sm border border-stone-100 text-stone-800 rounded-tl-sm'
+                )}>
                   <p className="text-sm">{msg.message}</p>
-                  <span className={`text-[10px] mt-1 block text-right ${msg.sender_id === profile?.id ? 'text-emerald-100' : 'text-gray-400'}`}>
+                  <span className={cn(
+                    'text-[10px] mt-1 block text-right',
+                    msg.sender_id === profile?.id ? 'text-emerald-100' : 'text-stone-400'
+                  )}>
                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -107,8 +114,8 @@ function ChatDetailContent() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="bg-white border-t p-4 pb-safe flex items-center gap-2 shrink-0">
-        <button className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0">
+      <div className="bg-white/90 backdrop-blur-lg border-t border-stone-100 p-4 pb-safe flex items-center gap-2 shrink-0">
+        <button className="w-11 h-11 rounded-xl bg-stone-100 hover:bg-stone-200 transition-colors flex items-center justify-center text-stone-500 shrink-0">
           <Paperclip size={20} />
         </button>
         <Input
@@ -116,13 +123,13 @@ function ChatDetailContent() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder="Ketik pesan..."
-          className="flex-1 rounded-full border-gray-200 focus-visible:ring-emerald-500 bg-gray-50 h-12"
+          className="flex-1 rounded-full border-stone-200 focus:border-emerald-400 bg-stone-50 h-12 transition-colors"
         />
         <Button
           onClick={handleSend}
           disabled={!input.trim() || sendMessage.isPending || !chat?.id}
           size="icon"
-          className="h-12 w-12 rounded-full bg-emerald-500 hover:bg-emerald-600 shrink-0 shadow-sm transition-transform active:scale-95"
+          className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all shrink-0"
         >
           <Send size={20} />
         </Button>

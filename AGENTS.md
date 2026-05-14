@@ -6,12 +6,7 @@
 - Supabase (Auth + Postgres + Storage) — all data via direct browser client
 - TanStack React Query — server state; Zustand — UI state only
 - Tailwind + Shadcn UI (base-nova style, `@base-ui/react`) + lucide-react icons
-- sonner for toasts (`<Toaster />` in `app/layout.tsx`)
-- Capacitor (Android/iOS) — webDir is `out/`
-
-## Paths
-
-`@/*` → project root. Use `@/store/auth`, `@/lib/services/useOrders`, etc.
+- sonner for toasts; Leaflet for maps; Capacitor (Android/iOS, webDir `out/`)
 
 ## Commands
 
@@ -19,210 +14,149 @@
 |---------|------|
 | `npm run dev` | dev server |
 | `npm run build` | static export → `out/` |
-| `npm run lint` | ESLint (not run during build) |
+| `npm run lint` | ESLint (separate — ignored during build) |
 
-- Build fails on TypeScript errors (`typescript.ignoreBuildErrors: false`)
-- ESLint is ignored during build (`eslint.ignoreDuringBuilds: true`) — lint separately
-- No test framework exists
-- Dual config files exist for PostCSS (`postcss.config.js` + `.mjs`)
+- Build fails on TS errors (`ignoreBuildErrors: false`); ESLint ignored during build
+- No test framework exists — all testing is manual (see `docs/TESTING_CHECKLIST.md`)
+- Dual PostCSS configs — **active**: `.mjs`, legacy: `.js`; Drizzle config reads `DATABASE_URL` from `.env.local`
+- Playwright MCP available for ad-hoc browser testing/screenshots
+
+## Code Style Guidelines
+
+**Imports order** (separated by blank line):
+1. third-party: `react`/`next`, `lucide-react`, `sonner`, `@tanstack/react-query`, `zustand`
+2. Components: `@/components/*`
+3. Project: `@/lib/*`, `@/store/*`
+4. Utils: `@/lib/utils`
+
+Use `@/*` path alias for all project imports.
+
+**Sonner toast:** `import { toast } from 'sonner'` then `toast.error("Pesan")` / `toast.success("Pesan")`.
+
+**Naming conventions:**
+- Files: `kebab-case` for pages (`customer/home/page.tsx`), `camelCase` for hooks/services (`useOrders.ts`), `PascalCase` for components (`CustomerBottomNav.tsx`)
+- Types/interfaces: PascalCase, always exported (`export type VendorProfile = {...}`)
+- Hooks: `use` + PascalCase prefix (`useVendors`, `useAuthStore`, `useWallet`)
+- Variables/functions: camelCase
+- DB schema: camelCase in TS (`vendorId`, `isVerified`), snake_case in actual DB columns (`vendor_id`, `is_verified`)
+
+**TypeScript:** strict mode. All service functions use `if (error) throw error` pattern. Query hooks use `enabled: !!variable` guard to skip undefined params. Export types that are used across modules.
+
+**React Query patterns:**
+- Query key: `['resource', param1, param2]`
+- Module-level Supabase client via `createClient()` from `@/lib/supabase/client` (called once at module top level, not inside hooks)
+- Mutations invalidate queries via `queryClient.invalidateQueries({ queryKey: [...] })` in `onSuccess`
+
+**Component patterns:**
+- Every page starts with `'use client'`
+- Zustand selector: `useAuthStore((s) => s.profile)` — select in hook call, not in render
+- Loading state: `Loader2` icon with `animate-spin`
+- Error state: `AlertCircle` + red text/tint
+- Empty state: relevant icon + muted text message
+- All clickable cards need `cursor-pointer` and hover transitions (`hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md`)
+- Pages using `useSearchParams` must be wrapped in `<Suspense>`
+
+**Available shadcn UI components:** `button` (base-nova, `@base-ui/react`), `card`, `input`, `textarea`, `label`, `select`, `tabs`, `skeleton`, `otp-input`, `file-upload`, `status-badge` (custom order/payment status). All in `@/components/ui/*`.
+
+**Styling conventions:**
+- Tailwind utility classes only; use `cn()` from `@/lib/utils` for conditional merging
+- Cards: `rounded-3xl` (24px radius), `shadow-sm`, no border (or `border-gray-100`)
+- Default button: `h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700`
+- Pill variant: `rounded-full bg-primary h-12 px-8`
+- H-14 (56px) for bottom nav; z-50 for fixed elements
+- Rupiah: `.toLocaleString('id-ID')`
+- Indonesian labels for all UI text
+
+**Error handling:** Services throw on DB error (`if (error) throw error`). Components handle 3 states: loading (spinner), error (toast + inline message), empty (icon + text). Sonner toast: `toast.error("Pesan gagal")`.
 
 ## Key Architecture
 
 - **All pages are `'use client'`** — no server components
-- **Auth**: `AuthProvider` → `AuthGuard` → role-based redirect. Auth state in `useAuthStore` (zustand). `profile.id` maps to `users.id` (Supabase auth UID)
-- **Data**: hooks in `lib/services/*.ts`, each creates its own Supabase client via `createClient()` from `@/lib/supabase/client`. All server state through React Query
+- **Auth**: `AuthProvider` → `AuthGuard` → role-based redirect. State in `useAuthStore` (Zustand). `profile.id` = Supabase auth UID
+- **Data hooks** in `lib/services/*.ts`: each creates its own Supabase client via `createClient()`. All server state through React Query
 - **Two Supabase clients**: singleton `lib/supabase.ts` (legacy) and factory `lib/supabase/client.ts` (used by services)
-- **Layouts**: `app/vendor/layout.tsx` and `app/customer/layout.tsx` each mount a bottom nav. Auth/wallet/splash pages have no bottom nav
-- **Order status enum**: `pending → accepted → in_progress → completed` (plus `cancelled`)
-- **Payment status enum**: `unpaid → escrow → released | refunded`
-- **Xendit secret key** must only be used in Supabase Edge Functions, never on frontend
-- **Register route** is under `(auth)` route group (`/register`, `/register/role`). `app/register/role/` is empty (dead directory)
+- **Order status**: `pending → accepted → in_progress → completed` (plus `cancelled`)
+- **Payment status**: `unpaid → escrow → released | refunded`
+- **Xendit secret key** — Edge Functions only, never on frontend
 
 ## Schema (source of truth: `lib/db/schema.ts`)
 
-Key tables: `users`, `vendor_profiles`, `services`, `orders`, `chats`, `messages`, `wallets`, `wallet_transactions`, `reviews`, `disputes`, `promos`
+Key tables: `users`, `vendor_profiles`, `services`, `orders`, `chats`, `messages`, `wallets`, `wallet_transactions`, `reviews`, `disputes`, `promos`, `fraud_alerts`
 
-Migration: `supabase/migrations/`, Drizzle config reads `DATABASE_URL` from `.env.local`.
-Run `npx drizzle-kit generate` after schema changes, then apply the generated SQL in Supabase.
+Migrations in `supabase/migrations/`. Drizzle config reads `DATABASE_URL` from `.env.local`.
 
-## MCP Servers (6 providers via OpenCode)
+## MCP Servers (6 via OpenCode)
 
-6 MCP servers configured in `opencode.json` (project root) and `.vscode/mcp.json`.
+| Server | Type | Auth (`env`) | Use |
+|--------|------|-------------|-----|
+| **upstash** | local | `UPSTASH_EMAIL`, `UPSTASH_API_KEY` | Redis, QStash, Workflow, Box |
+| **supabase** | remote | `SUPABASE_ACCESS_TOKEN` | DB queries, Edge Functions, project mgmt |
+| **playwright** | local | — | Browser testing, screenshots |
+| **github** | local | `GH_TOKEN` | Issues, PRs, repos, search |
+| **exa** | local | `EXA_API_KEY` | Web search & content |
+| **mdn** | local | — | MDN docs reference |
 
-| Server | Package / URL | Credentials (`.env.local`) | Purpose |
-|--------|---------------|---------------------------|---------|
-| **upstash** | `@upstash/mcp-server` | `UPSTASH_EMAIL`, `UPSTASH_API_KEY` | Redis, QStash, Workflow, Box management |
-| **supabase** | `mcp.supabase.com/mcp` (remote) | `SUPABASE_ACCESS_TOKEN` (bearer header) | Database query, project mgmt, edge functions |
-| **playwright** | `@playwright/mcp@latest` | — | Browser automation, web testing, screenshots |
-| **github** | `@modelcontextprotocol/server-github` | `GH_TOKEN` | GitHub API, repos, issues, PRs, search |
-| **exa** | `exa-mcp-server` | `EXA_API_KEY` | Web search & content extraction |
-| **mdn** | `mdn-mcp` | — | MDN Web Docs reference lookup |
+## Schema Change Workflow
 
-To use MCP tools, mention the server name in your prompt (e.g. "use playwright to test the login page", "use supabase to query the orders table", "use upstash to list redis databases").
-
-To add/edit MCP servers: edit `opencode.json` (OpenCode CLI) or `.vscode/mcp.json` (VS Code).
-
-## Schema Change Workflow — Saat ada perubahan tabel
-
-Kerjakan dalam urutan ini **SEBELUM** menulis kode fitur yang menggunakan tabel baru/berubah:
-
-1. **Edit `lib/db/schema.ts`** — definisikan/tambah/hapus/modifikasi tabel di Drizzle schema
-2. **Generate migration** — user jalankan `npx drizzle-kit generate` (menghasilkan file SQL di `supabase/migrations/`)
-3. **Review & add supporting SQL** — baca file migration yang baru digenerate. Tambahkan SQL untuk:
-   - **Row Level Security (RLS) policies** — enable RLS, buat policy `SELECT`/`INSERT`/`UPDATE`/`DELETE` sesuai role (vendor/customer)
-   - **Indexes** — untuk kolom yang sering di-query
-   - **Triggers** atau **default data** jika diperlukan
-   - **Seed data** untuk development jika ada master data baru
-   - Simpan SQL ini sebagai file migration baru atau catatan untuk dijalankan di Supabase
-4. **Apply migration** — gunakan `supabase_apply_migration` via Supabase MCP untuk apply semua file migration baru. Jika ada RLS/supporting SQL, apply sebagai migration terpisah
-5. **Generate TypeScript types** — jalankan `supabase_generate_typescript_types` via Supabase MCP agar tipe database sinkron dengan kode
-6. **Update `lib/db/schema.ts` exports** — pastikan tabel baru di-export jika perlu
-7. **Lanjut ke Mandatory Workflow** — setelah schema siap, tulis kode fitur dan jalankan mandatory workflow di bawah
+Before writing feature code that uses new/changed tables:
+1. Edit `lib/db/schema.ts` in Drizzle
+2. Run `npx drizzle-kit generate` → creates SQL in `supabase/migrations/`
+3. Review generated SQL; add RLS policies, indexes, triggers, seed data as separate migration
+4. Apply via `supabase_apply_migration` (Supabase MCP)
+5. Generate types via `supabase_generate_typescript_types` (Supabase MCP)
+6. Ensure new tables are exported from schema if needed
 
 ## Mandatory Workflow — After EVERY code change
 
-1. **Cek jika ada perubahan schema** — jika iya, kerjakan **Schema Change Workflow** di atas terlebih dahulu
-2. **Verify against `prd.md`** — ensure implementation matches PRD architecture and schema
-3. **Update `roadmap.md`** — check/uncheck tasks in the relevant phase
-4. **Update `UI_UX_ROADMAP.md`** — check/uncheck screens and features affected
-5. **Update `REFINE_STITCH_UI_UX_ROADMAP.md`** — check/uncheck items in implementation order
-6. **Update `docs/TESTING_CHECKLIST.md`** — add test scenarios for the change (section K format)
-7. **Run `npm run lint`** — catch lint errors (build won't catch them)
-8. **Run `npm run build`** — confirm 0 errors (catches TS errors)
-
-## Known Gaps (don't assume they exist)
-
-- **Realtime subscriptions** — `useRealtimeMessages` uses Supabase Realtime for new chat messages, but all other queries (orders, chats list) use 5s polling via `refetchInterval`
-- **Xendit integration** — Edge Functions (Deno-based, `serve` from `deno.land/std`) deployed via Supabase CLI; env vars set in Supabase dashboard. Payment page calls Edge Function with fallback to direct mutation
-- **No review system frontend** — `reviews` table exists, no UI
+1. Check for schema changes → run Schema Change Workflow above
+2. Verify against `prd.md` — match PRD architecture
+3. Update `roadmap.md`, `UI_UX_ROADMAP.md`, `REFINE_STITCH_UI_UX_ROADMAP.md`
+4. Update `docs/TESTING_CHECKLIST.md` (section K format)
+5. Run `npm run lint` then `npm run build` — 0 errors required
 
 ## Supabase Edge Functions
 
-Located in `supabase/functions/`:
-- `create-invoice` — creates Xendit invoice for an order
-- `xendit-webhook` — handles Xendit payment callbacks, updates wallet
+`supabase/functions/create-invoice` (Xendit invoice), `xendit-webhook` (payment callbacks, idempotent), `release-payment` (escrow release). Deploy via `supabase functions deploy`. Env vars set in Supabase dashboard.
 
-Both are Deno HTTP handlers. Deploy via `supabase functions deploy`. Env vars (`XENDIT_SECRET_KEY`, etc.) set in Supabase dashboard, not in `.env.local`.
+## Required Env (`.env.local`)
 
-## Database Setup
-
-SQL files in `supabase/`: run `clean_and_setup.sql` once for fresh DB, then migration files in `supabase/migrations/` incrementally.
-
-## Required Env (`.env.local` — already exists)
-
-```env
+```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-DATABASE_URL=          # for drizzle-kit only
+DATABASE_URL=          # drizzle-kit only
 ```
 
-## Style Conventions
+## Known Gaps
 
-- Indonesian UI labels (e.g. "Pesanan", "Pendapatan", "Simpan Perubahan")
-- Rupiah formatting via `.toLocaleString('id-ID')`
-- Shadcn button: `className="h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700"`
-- Toast notifications via `sonner` (`import { toast } from 'sonner'`)
-- All pages wrapped in `<Suspense>` when using `useSearchParams`
+- Realtime only for chat messages; orders/chats list use 5s `refetchInterval`
+- Xendit integration via Edge Functions (Deno); payment page has fallback to direct mutation
+- `reviews` table exists with no UI
+- `app/register/role/` is a dead directory
 
 ## UI/UX Design Workflow
 
-Setiap request UI/UX (design, build, create, implement, review, fix, improve), **WAJIB** gunakan skill ini.
-
-### Skill Location
-
-`skills/ui-ux-pro-max/` — Comprehensive design guide dengan 67 styles, 96 color palettes, 57 font pairings, 99 UX guidelines.
-
-### Prerequisite
-
-Pastikan Python3 terinstall:
+Wajib untuk setiap request UI/UX. Prerequisite: Python3.
 
 ```bash
-python3 --version
-```
-
-Jika belum, install sesuai OS (brew/apt/winget).
-
-### Mandatory Workflow
-
-**Step 1: Analyze Requirements**
-- Product type: SaaS, e-commerce, marketplace, service, etc.
-- Style keywords: minimal, professional, elegant, dark mode, etc.
-- Industry: beauty, fintech, healthcare, service (marketplace)
-- Stack: **shadcn** (default untuk proyek ini)
-
-**Step 2: Generate Design System (REQUIRED)**
-
-Selalu mulai dengan `--design-system` untuk dapat rekomendasi lengkap:
-
-```bash
+# Generate design system (REQUIRED first step)
 python3 skills/ui-ux-pro-max/scripts/search.py "<product_type> <industry> <keywords>" --design-system -p "GEMA"
 ```
 
-Ini mengembalikan: pattern, style, colors, typography, effects, dan anti-patterns.
-
-**Step 2b: Persist Design System (Optional)**
-
-Simpan sebagai file untuk hierarchical retrieval:
-
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "GEMA" --page "<page_name>"
-```
-
-Ini membuat:
-- `design-system/MASTER.md` — Global Source of Truth
-- `design-system/pages/<page_name>.md` — Page-specific overrides
-
-**Step 3: Supplement Searches (as needed)**
-
-| Need | Domain | Example |
-|------|--------|---------|
-| More style options | `style` | `--domain style "glassmorphism minimal"` |
-| UX best practices | `ux` | `--domain ux "animation accessibility"` |
-| Typography options | `typography` | `--domain typography "elegant modern"` |
-| Color palettes | `color` | `--domain color "saas service"` |
-| Landing structure | `landing` | `--domain landing "hero social-proof"` |
-
-**Step 4: Stack Guidelines**
-
-```bash
+# Stack-specific guidelines
 python3 skills/ui-ux-pro-max/scripts/search.py "<keywords>" --stack shadcn
 ```
 
-### Common Rules
+Supplement searches via `--domain style|ux|typography|color|landing`. Use `--persist` to save as `design-system/MASTER.md` + page overrides.
 
-| Rule | Do | Don't |
-|------|----|-------|
-| **No emoji icons** | Use SVG icons (Heroicons, Lucide) | Use emojis sebagai UI icons |
-| **Cursor pointer** | Tambah `cursor-pointer` di semua clickable cards | Biarkan default cursor |
-| **Hover feedback** | Color/shadow/border transitions | No visual feedback |
-| **Smooth transitions** | `transition-colors duration-200` | Instant atau >500ms |
-| **Text contrast** | `#0F172A` (slate-900) untuk body text | `#94A3B8` (slate-400) |
-| **Glass card light** | `bg-white/80` atau higher opacity | `bg-white/10` (terlalu transparan) |
-| **Border visibility** | `border-gray-200` in light mode | `border-white/10` |
-| **Floating navbar** | `top-4 left-4 right-4` spacing | `top-0 left-0 right-0` |
+### Key UI Rules
 
-### Pre-Delivery Checklist
-
-**Visual:**
-- No emojis used as icons
-- All icons from consistent icon set (Lucide)
-- Hover states don't cause layout shift
-
-**Interaction:**
-- All clickable elements have `cursor-pointer`
-- Hover states provide clear visual feedback
-- Transitions are smooth (150-300ms)
-
-**Layout:**
-- Floating elements have proper spacing from edges
-- No content hidden behind fixed navbars
+- No emoji icons — use Lucide SVGs
+- `cursor-pointer` on all clickable cards
+- Hover: color/shadow transitions, `transition-colors duration-200`
+- Text contrast: `#0F172A` (slate-900) for body
+- Glass cards: `bg-white/80` minimum opacity
+- Border: `border-gray-200` in light mode
+- Floating navbar: `top-4 left-4 right-4` spacing
 - Responsive at 375px, 768px, 1024px
-
-**Accessibility:**
-- All images have alt text
-- Form inputs have labels
-- Color is not the only indicator
-
-### Stack Guidelines
-
-Gunakan `--stack shadcn` untuk proyek ini. Available stacks: `html-tailwind`, `react`, `nextjs`, `shadcn`, `swiftui`, `react-native`, dll.
+- Touch targets: 48px minimum

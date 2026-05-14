@@ -4,6 +4,7 @@ import { Suspense, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Star, MessageSquare, Loader2, AlertCircle, Camera } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useVendorReviews } from '@/lib/services/useReviews';
 import { useVendor } from '@/lib/services/useVendors';
 
@@ -52,14 +53,17 @@ function ReviewsContent() {
         <Link href={`/customer/vendor?id=${vendorId}`} className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
           <ArrowLeft size={20} />
         </Link>
-        <span className="font-bold text-lg">Ulasan & Feedback</span>
+        <span className="font-heading font-bold text-lg">Ulasan & Feedback</span>
       </div>
 
       <div className="p-4 space-y-4">
         {isLoading ? (
-          <div className="flex items-center justify-center py-16 text-gray-400">
-            <Loader2 size={24} className="animate-spin mr-2" />
-            <span className="text-sm">Memuat ulasan...</span>
+          <div className="space-y-4">
+            <Skeleton className="h-32 w-full rounded-3xl" />
+            <div className="flex gap-2">
+              {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-8 w-20 rounded-full" />)}
+            </div>
+            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28 w-full rounded-3xl" />)}
           </div>
         ) : error ? (
           <div className="flex flex-col items-center py-16 text-red-400">

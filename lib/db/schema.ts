@@ -14,6 +14,7 @@ export const users = pgTable('users', {
   lat: doublePrecision('lat'),
   lng: doublePrecision('lng'),
   isOnline: boolean('is_online').default(false),
+  avatarUrl: text('avatar_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

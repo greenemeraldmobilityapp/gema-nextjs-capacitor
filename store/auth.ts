@@ -5,6 +5,8 @@ interface UserProfile {
   email: string;
   full_name: string;
   role: 'customer' | 'vendor' | 'admin' | null;
+  phone?: string | null;
+  avatar_url?: string | null;
 }
 
 interface AuthState {
@@ -16,7 +18,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set) => ({
   profile: null,
-  isLoading: true, // starts loading until supabase auth state is resolved
+  isLoading: true,
   setProfile: (profile) => set({ profile }),
   setLoading: (isLoading) => set({ isLoading }),
 }));

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/auth';
 import { useCreateService } from '@/lib/services/useVendors';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const CATEGORIES = ['AC', 'Listrik', 'Pipa', 'Cat', 'Lainnya'];
@@ -43,49 +44,52 @@ export default function VendorAddPortfolioPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="bg-white px-4 pt-6 pb-4 border-b sticky top-0 z-10">
+    <div className="flex flex-col min-h-screen bg-stone-50">
+      <header className="bg-white/90 backdrop-blur-lg px-4 pt-6 pb-4 border-b border-stone-100 sticky top-0 z-20">
         <div className="flex items-center gap-3">
-          <Link href="/vendor/portfolio" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700">
+          <Link href="/vendor/portfolio" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-lg font-bold text-gray-900">Tambah Portofolio</h1>
+          <h1 className="font-heading text-lg font-bold text-stone-800">Tambah Portofolio</h1>
         </div>
-      </div>
+      </header>
 
       <form onSubmit={handleSubmit} className="p-4 space-y-4">
-        <div className="bg-white rounded-3xl p-5 shadow-sm border space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">Nama Layanan</label>
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant space-y-5">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Nama Layanan</label>
             <Input
               required
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               placeholder="cth: Perbaikan AC Bocor"
-              className="h-12 bg-gray-50 border-gray-200 rounded-xl"
+              className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">Kategori</label>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Kategori</label>
             <div className="grid grid-cols-3 gap-2">
               {CATEGORIES.map(cat => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, category: cat }))}
-                  className={`py-3 rounded-xl text-sm font-medium border-2 transition-all ${
+                  className={cn(
+                    "py-3 rounded-xl text-sm font-semibold border-2 transition-all duration-200",
                     formData.category === cat
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                      : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
-                  }`}
+                      ? 'border-emerald-400 bg-emerald-50 text-emerald-700 shadow-sm'
+                      : 'border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-300'
+                  )}
                 >
                   {cat}
                 </button>
               ))}
             </div>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">Harga (Rp)</label>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Harga (Rp)</label>
             <Input
               required
               type="number"
@@ -93,17 +97,18 @@ export default function VendorAddPortfolioPage() {
               value={formData.price}
               onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
               placeholder="150000"
-              className="h-12 bg-gray-50 border-gray-200 rounded-xl"
+              className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">Deskripsi</label>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Deskripsi</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               rows={4}
               placeholder="Jelaskan layanan yang Anda tawarkan..."
-              className="w-full h-24 bg-gray-50 border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200 resize-none"
             />
           </div>
         </div>
@@ -111,9 +116,7 @@ export default function VendorAddPortfolioPage() {
         <Button
           type="submit"
           disabled={createService.isPending}
-          variant="pill"
-          size="lg"
-          className="w-full shadow-sm disabled:opacity-50"
+          className="w-full h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md disabled:opacity-50 transition-all duration-200"
         >
           {createService.isPending ? (
             <span className="flex items-center gap-2"><Loader2 size={20} className="animate-spin" /> Menyimpan...</span>

@@ -8,11 +8,11 @@ import { useAuthStore } from '@/store/auth';
 import { useVendorOrders } from '@/lib/services/useOrders';
 
 const statusLabel: Record<string, { text: string; color: string }> = {
-  pending: { text: 'Menunggu', color: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
-  accepted: { text: 'Diterima', color: 'text-blue-600 bg-blue-50 border-blue-200' },
-  in_progress: { text: 'Berjalan', color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
-  completed: { text: 'Selesai', color: 'text-gray-600 bg-gray-50 border-gray-200' },
-  cancelled: { text: 'Dibatalkan', color: 'text-red-600 bg-red-50 border-red-200' },
+  pending: { text: 'Menunggu', color: 'bg-amber-50/80 text-amber-700 border border-amber-200/50' },
+  accepted: { text: 'Diterima', color: 'bg-blue-50/80 text-blue-700 border border-blue-200/50' },
+  in_progress: { text: 'Berjalan', color: 'bg-emerald-50/80 text-emerald-700 border border-emerald-200/50' },
+  completed: { text: 'Selesai', color: 'bg-stone-100/80 text-stone-600 border border-stone-200/50' },
+  cancelled: { text: 'Dibatalkan', color: 'bg-red-50/80 text-red-600 border border-red-200/50' },
 };
 
 export default function VendorOrdersPage() {
@@ -25,22 +25,22 @@ export default function VendorOrdersPage() {
   const displayOrders = tab === 'active' ? activeOrders : historyOrders;
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="bg-white px-4 pt-6 pb-4 border-b">
-        <h1 className="text-xl font-bold text-gray-900">Pesanan</h1>
+    <div className="flex flex-col min-h-screen bg-stone-50">
+      <div className="bg-white/90 backdrop-blur-lg px-4 pt-6 pb-4 border-b border-stone-100 sticky top-0 z-20">
+        <h1 className="font-heading text-xl font-bold text-stone-800">Pesanan</h1>
       </div>
 
-      <div className="px-4 py-3 bg-white">
-        <div className="flex bg-gray-100 rounded-full p-1">
+      <div className="px-4 py-3 bg-white/80 backdrop-blur-sm border-b border-stone-100">
+        <div className="flex bg-stone-100/80 backdrop-blur-sm rounded-full p-1">
           {(['active', 'history'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                'flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-all',
+                'flex-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200',
                 tab === t
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white shadow-md text-stone-800'
+                  : 'text-stone-500 hover:text-stone-700'
               )}
             >
               {t === 'active' ? 'Aktif' : 'Riwayat'}
@@ -51,7 +51,7 @@ export default function VendorOrdersPage() {
 
       <div className="flex-1 p-4 space-y-3">
         {isLoading ? (
-          <div className="flex items-center justify-center py-16 text-gray-400">
+          <div className="flex items-center justify-center py-16 text-stone-400">
             <Loader2 size={24} className="animate-spin mr-2" />
             <span>Memuat pesanan...</span>
           </div>
@@ -59,35 +59,37 @@ export default function VendorOrdersPage() {
           <div className="flex flex-col items-center py-16 text-red-400">
             <AlertCircle size={48} className="mb-3 opacity-50" />
             <p className="font-medium">Gagal memuat pesanan</p>
-            <p className="text-sm text-gray-400 mt-1">{error.message}</p>
+            <p className="text-sm text-stone-400 mt-1">{error.message}</p>
           </div>
         ) : displayOrders.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            <Clock size={48} className="mx-auto mb-3 opacity-50" />
+          <div className="text-center py-16 text-stone-400">
+            <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mx-auto mb-4">
+              <Clock size={32} className="opacity-50" />
+            </div>
             <p className="font-medium">Tidak ada pesanan</p>
           </div>
         ) : displayOrders.map((order) => (
           <Link
             key={order.id}
             href={`/vendor/orders/detail?id=${order.id}`}
-            className="block bg-white rounded-3xl p-4 shadow-sm border hover:shadow-md transition-shadow"
+            className="block bg-white/90 backdrop-blur-sm rounded-3xl p-4 shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{order.service_name}</h3>
-                <p className="text-sm text-gray-500 mt-0.5">{order.customer?.full_name || 'Pelanggan'}</p>
+                <h3 className="font-semibold text-stone-800">{order.service_name}</h3>
+                <p className="text-sm text-stone-500 mt-0.5">{order.customer?.full_name || 'Pelanggan'}</p>
               </div>
-              <div className={cn('px-2.5 py-1 rounded-full border text-xs font-medium', statusLabel[order.order_status].color)}>
+              <div className={cn('px-3 py-1 rounded-full text-xs font-semibold', statusLabel[order.order_status].color)}>
                 {statusLabel[order.order_status].text}
               </div>
             </div>
-            <div className="flex items-center text-xs text-gray-400 gap-1 mb-2">
+            <div className="flex items-center text-xs text-stone-400 gap-1.5 mb-3">
               <MapPin size={12} />
               <span className="truncate">{order.service_address}</span>
             </div>
-            <div className="flex items-center justify-between pt-2 border-t">
-              <span className="font-bold text-emerald-700">Rp {order.vendor_payout.toLocaleString()}</span>
-              <span className="text-xs text-gray-400 flex items-center gap-0.5">
+            <div className="flex items-center justify-between pt-3 border-t border-stone-100">
+              <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString()}</span>
+              <span className="text-xs text-stone-400 flex items-center gap-0.5">
                 {order.scheduled_date ? new Date(order.scheduled_date).toLocaleDateString('id-ID') : ''}{order.scheduled_time ? ` ${order.scheduled_time}` : ''} <ChevronRight size={14} />
               </span>
             </div>

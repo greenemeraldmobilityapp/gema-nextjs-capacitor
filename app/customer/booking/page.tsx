@@ -85,7 +85,7 @@ function BookingContent() {
         <Link href={`/customer/vendor?id=${vendorId}`} className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
           <ArrowLeft size={20} />
         </Link>
-        <span className="font-bold text-lg">Detail Pesanan</span>
+        <span className="font-heading font-bold text-lg">Detail Pesanan</span>
       </div>
 
       <div className="p-4 space-y-4 flex-1">
@@ -116,9 +116,9 @@ function BookingContent() {
                 <span className="text-sm text-gray-600">Biaya Platform (5%)</span>
                 <span className="font-semibold text-gray-900">Rp {platformFee.toLocaleString('id-ID')}</span>
               </div>
-              <div className="flex justify-between items-center mb-2 text-emerald-600">
-                <span className="text-sm">Promo</span>
-                <span className="font-semibold">-Rp 0</span>
+              <div className="flex justify-between items-center mb-2 bg-emerald-50 -mx-4 px-4 py-2 rounded-lg">
+                <span className="text-sm font-medium text-emerald-700">Promo</span>
+                <span className="font-semibold text-emerald-600">-Rp 0</span>
               </div>
               <div className="w-full h-px bg-gray-100 my-4"></div>
               <div className="flex justify-between items-center">
@@ -140,8 +140,8 @@ function BookingContent() {
               <div className="bg-white p-4 rounded-2xl shadow-sm flex gap-3 items-start relative">
                 <MapPin size={20} className="text-emerald-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-bold text-gray-900 text-sm">Rumah</p>
-                  <p className="text-sm text-gray-500 leading-snug mt-1">Jl. Sudirman No 123, Jakarta Selatan (Patokan depan minimarket)</p>
+                  <p className="font-bold text-gray-900 text-sm">Alamat Anda</p>
+                  <p className="text-sm text-gray-500 leading-snug mt-1">Atur alamat di halaman profil</p>
                 </div>
               </div>
             </div>
@@ -269,55 +269,55 @@ function BookingContent() {
         )}
       </div>
 
-      <div className="p-4 bg-white border-t space-y-3 shrink-0">
-        <div className="flex items-center justify-between px-1">
-          <div>
-            <p className="text-xs text-gray-500">Total Pembayaran</p>
-            <p className="font-heading text-lg font-bold text-emerald-600">Rp {totalAmount.toLocaleString('id-ID')}</p>
+      <div className="relative">
+        <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" />
+        <div className="p-4 bg-white border-t space-y-3 shrink-0">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-500">Total Pembayaran</p>
+              <p className="font-heading text-lg font-bold text-emerald-600">Rp {totalAmount.toLocaleString('id-ID')}</p>
+            </div>
+            <Button
+              disabled={!selectedTime || createOrder.isPending}
+              onClick={async () => {
+                if (!service || !profile) return;
+                const platformFee = Math.round(service.price * 0.05);
+                const totalAmount = service.price + platformFee;
+                createOrder.mutate(
+                  {
+                    customer_id: profile.id,
+                    vendor_id: vendorId,
+                    service_id: service.id,
+                    service_category: service.category,
+                    service_name: service.title,
+                    scheduled_date: selectedDate,
+                    scheduled_time: selectedTime || null,
+                    service_address: 'Alamat Anda (Atur di profil)',
+                    notes: notes || null,
+                    base_amount: service.price,
+                    platform_fee: platformFee,
+                    vendor_payout: service.price - platformFee,
+                    total_amount: totalAmount,
+                  },
+                  {
+                    onSuccess: (order) => {
+                      toast.success('Pesanan berhasil dibuat');
+                      router.push(`/customer/payment?order_id=${order.id}`);
+                    },
+                    onError: (err) => {
+                      toast.error(err.message || 'Gagal membuat pesanan');
+                    },
+                  }
+                );
+              }}
+              variant="pill"
+              size="lg"
+              className="shadow-sm disabled:opacity-50"
+            >
+              {createOrder.isPending ? 'Memproses...' : 'Konfirmasi Pesanan'}
+            </Button>
           </div>
-          {totalAmount > 0 && (
-            <p className="text-xs text-gray-400">termasuk biaya platform</p>
-          )}
         </div>
-        <Button
-          disabled={!selectedTime || createOrder.isPending}
-          onClick={async () => {
-            if (!service || !profile) return;
-            const platformFee = Math.round(service.price * 0.05);
-            const totalAmount = service.price + platformFee;
-            createOrder.mutate(
-              {
-                customer_id: profile.id,
-                vendor_id: vendorId,
-                service_id: service.id,
-                service_category: service.category,
-                service_name: service.title,
-                scheduled_date: selectedDate,
-                scheduled_time: selectedTime || null,
-                service_address: 'Jl. Sudirman No 123, Jakarta Selatan (Patokan depan minimarket)',
-                notes: notes || null,
-                base_amount: service.price,
-                platform_fee: platformFee,
-                vendor_payout: service.price - platformFee,
-                total_amount: totalAmount,
-              },
-              {
-                onSuccess: (order) => {
-                  toast.success('Pesanan berhasil dibuat');
-                  router.push(`/customer/payment?order_id=${order.id}`);
-                },
-                onError: (err) => {
-                  toast.error(err.message || 'Gagal membuat pesanan');
-                },
-              }
-            );
-          }}
-          variant="pill"
-          size="lg"
-          className="w-full shadow-sm disabled:opacity-50"
-        >
-          {createOrder.isPending ? 'Memproses...' : 'Konfirmasi Pesanan'}
-        </Button>
       </div>
     </div>
   );
@@ -325,7 +325,7 @@ function BookingContent() {
 
 export default function BookingPage() {
   return (
-    <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="p-4 text-center text-gray-400">Memuat...</div>}>
       <BookingContent />
     </Suspense>
   );

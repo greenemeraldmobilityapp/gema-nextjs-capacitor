@@ -24,6 +24,26 @@ serve(async (req) => {
     }
 
     const body = await req.json()
+
+    // payment_session webhook (new format with event wrapper)
+    if (body.event) {
+      const event = body.event
+      console.log(`Webhook received: event=${event}`)
+
+      if (event === 'payment_session.expired') {
+        const orderId = body.data?.reference_id
+        if (!orderId) {
+          return new Response('Missing reference_id', { status: 400 })
+        }
+        console.log(`Payment session expired for order ${orderId}`)
+      } else {
+        console.log(`Unhandled event: ${event}`)
+      }
+
+      return new Response('OK', { status: 200 })
+    }
+
+    // Invoice webhook (legacy format)
     const { external_id: orderId, status } = body
 
     if (!orderId) {

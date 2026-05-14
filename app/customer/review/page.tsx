@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Star, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useOrder } from '@/lib/services/useOrders';
 import { useCreateReview, useOrderReview } from '@/lib/services/useReviews';
@@ -34,8 +35,10 @@ function ReviewContent() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <Loader2 size={24} className="animate-spin text-gray-400" />
+      <div className="min-h-screen bg-gray-50 p-4 space-y-4">
+        <Skeleton className="h-6 w-1/3" />
+        <Skeleton className="h-48 w-full rounded-3xl" />
+        <Skeleton className="h-12 w-full rounded-xl" />
       </div>
     );
   }
@@ -57,7 +60,7 @@ function ReviewContent() {
           <Link href={`/customer/orders/detail?id=${orderId}`} className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
             <ArrowLeft size={20} />
           </Link>
-          <span className="font-bold text-lg">Beri Ulasan</span>
+          <span className="font-heading font-bold text-lg">Beri Ulasan</span>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-400">
           <AlertCircle size={48} className="mb-3 opacity-50" />
