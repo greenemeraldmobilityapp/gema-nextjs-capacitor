@@ -36,6 +36,20 @@
       "when": 1778736241343,
       "tag": "0004_third_dark_beast",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778761154164,
+      "tag": "0005_glossy_ink",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778974855389,
+      "tag": "0006_complex_mongu",
+      "breakpoints": true
     }
   ]
 }

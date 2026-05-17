@@ -185,6 +185,22 @@ function OrderTrackingContent() {
                 <p className="text-xs font-semibold text-gray-700">Lokasi</p>
               </div>
               <p className="text-xs text-gray-500 leading-relaxed">{order.service_address}</p>
+              {order.customer?.address_full && (
+                <p className="text-xs text-gray-400 mt-2 leading-relaxed whitespace-pre-line border-t border-gray-100 pt-2">
+                  {order.customer.address_full}
+                </p>
+              )}
+              {order.customer?.lat && order.customer?.lng && (
+                <a
+                  href={`https://www.google.com/maps?q=${order.customer.lat},${order.customer.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-emerald-600 hover:text-emerald-700 inline-flex items-center gap-1 mt-1"
+                >
+                  <MapPin size={12} />
+                  Buka di Google Maps
+                </a>
+              )}
             </CardContent>
           </Card>
           <Card className="rounded-3xl border-none shadow-sm">

@@ -14,12 +14,22 @@ export default function VendorEarningsPage() {
   const { data: wallet, isLoading: walletLoading } = useWallet(profile?.id);
   const { data: transactions, isLoading: txLoading } = useWalletTransactions(wallet?.id);
 
-  const completedOrders = (orders || []).filter(o => o.order_status === 'completed');
+  const now = new Date();
+  const periodCutoff = new Date(now);
+  if (period === 'week') periodCutoff.setDate(now.getDate() - 7);
+  else if (period === 'month') periodCutoff.setDate(now.getDate() - 30);
+  else periodCutoff.setFullYear(now.getFullYear() - 1);
+
+  const ordersInPeriod = (orders || []).filter(o => {
+    if (!o.created_at) return true;
+    return new Date(o.created_at) >= periodCutoff;
+  });
+  const completedOrders = ordersInPeriod.filter(o => o.order_status === 'completed');
   const totalEarnings = completedOrders.reduce((sum, o) => sum + o.vendor_payout, 0);
-  const pendingAmount = (orders || [])
+  const pendingAmount = ordersInPeriod
     .filter(o => o.payment_status === 'escrow')
     .reduce((sum, o) => sum + o.vendor_payout, 0);
-  const refundedAmount = (orders || [])
+  const refundedAmount = ordersInPeriod
     .filter(o => o.payment_status === 'refunded')
     .reduce((sum, o) => sum + o.vendor_payout, 0);
   const completedJobs = completedOrders.length;
@@ -37,6 +47,8 @@ export default function VendorEarningsPage() {
       <div className="bg-white/90 backdrop-blur-lg px-4 pt-6 pb-4 border-b border-stone-100 sticky top-0 z-20">
         <h1 className="font-heading text-xl font-bold text-stone-800">Pendapatan</h1>
       </div>
+
+      <div className="h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent mx-4" />
 
       <div className="p-4 space-y-4">
         {isLoading ? (
@@ -133,10 +145,10 @@ export default function VendorEarningsPage() {
                     <p className="text-sm">Belum ada transaksi</p>
                   </div>
                 ) : transactions.map(tx => (
-                  <div key={tx.id} className="flex items-center justify-between px-5 py-4 hover:bg-stone-50/50 transition-colors">
+                  <div key={tx.id} className="flex items-center justify-between px-5 py-4 hover:bg-stone-50/50 transition-colors group">
                     <div className="flex items-center gap-3">
                       <div className={cn(
-                        'w-11 h-11 rounded-xl flex items-center justify-center shadow-sm',
+                        'w-10 h-10 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-200',
                         tx.type === 'payment' || tx.type === 'topup' ? 'bg-gradient-to-br from-emerald-100 to-emerald-50' : 'bg-gradient-to-br from-red-100 to-red-50'
                       )}>
                         {tx.type === 'payment' || tx.type === 'topup' ? (

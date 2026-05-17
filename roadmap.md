@@ -163,16 +163,22 @@ PHASE 9 — QA / UAT
 
 Tasks
 
-- [ ] Functional testing
-- [ ] Payment testing
-- [ ] Device testing
-- [ ] Load testing
-- [ ] Security testing
-- [ ] Bug fixing
+- [x] Code audit (Auth, Customer, Vendor, Admin, Wallet, Edge Functions, RLS)
+- [x] Build verification (55 pages, 0 errors)
+- [x] Payment flow audit + fixes
+- [x] Bug fixing (15 bugs fixed — see docs/TESTING_CHECKLIST.md K.31)
+- [x] RLS migration (0008) — INSERT/UPDATE/SELECT policies for all tables
+- [x] Edge function fixes — atomic wallet credit, proper JWT auth
+- [x] Schema fixes — `accepted_at`/`started_at`, `handle_new_user` trigger, wallet auto-create
+- [ ] Payment testing (blocked — sandbox env unavailable)
+- [ ] Device testing (blocked — no device/simulator)
+- [ ] Load testing (blocked — no staging DB)
+- [ ] Security testing (blocked — no staging env)
+- [x] Known gaps documented
 
 Output
 
-Production-ready app
+Code quality verified — 55 pages, 0 build errors, 15 bugs fixed, RLS hardening applied
 
 ---
 

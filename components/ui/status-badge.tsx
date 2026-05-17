@@ -11,19 +11,19 @@ import {
   LucideIcon,
 } from "lucide-react"
 
-const orderStatusConfig: Record<string, { bg: string; text: string; icon: LucideIcon }> = {
-  pending: { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
-  accepted: { bg: "bg-blue-100", text: "text-blue-700", icon: Check },
-  in_progress: { bg: "bg-blue-100", text: "text-blue-700", icon: RefreshCw },
-  completed: { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle },
-  cancelled: { bg: "bg-red-100", text: "text-red-700", icon: XCircle },
+const orderStatusConfig: Record<string, { bg: string; text: string; border: string; icon: LucideIcon }> = {
+  pending: { bg: "bg-amber-50/80", text: "text-amber-700", border: "border border-amber-200/50", icon: Clock },
+  accepted: { bg: "bg-blue-50/80", text: "text-blue-700", border: "border border-blue-200/50", icon: Check },
+  in_progress: { bg: "bg-emerald-50/80", text: "text-emerald-700", border: "border border-emerald-200/50", icon: RefreshCw },
+  completed: { bg: "bg-stone-100/80", text: "text-stone-600", border: "border border-stone-200/50", icon: CheckCircle },
+  cancelled: { bg: "bg-red-50/80", text: "text-red-600", border: "border border-red-200/50", icon: XCircle },
 }
 
-const paymentStatusConfig: Record<string, { bg: string; text: string; icon: LucideIcon }> = {
-  unpaid: { bg: "bg-yellow-100", text: "text-yellow-700", icon: AlertCircle },
-  escrow: { bg: "bg-blue-100", text: "text-blue-700", icon: Shield },
-  released: { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle },
-  refunded: { bg: "bg-red-100", text: "text-red-700", icon: RotateCcw },
+const paymentStatusConfig: Record<string, { bg: string; text: string; border: string; icon: LucideIcon }> = {
+  unpaid: { bg: "bg-amber-50/80", text: "text-amber-700", border: "border border-amber-200/50", icon: AlertCircle },
+  escrow: { bg: "bg-blue-50/80", text: "text-blue-700", border: "border border-blue-200/50", icon: Shield },
+  released: { bg: "bg-emerald-50/80", text: "text-emerald-700", border: "border border-emerald-200/50", icon: CheckCircle },
+  refunded: { bg: "bg-red-50/80", text: "text-red-600", border: "border border-red-200/50", icon: RotateCcw },
 }
 
 const labels: Record<string, string> = {
@@ -56,9 +56,10 @@ function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
+        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm",
         item.bg,
         item.text,
+        item.border,
         className
       )}
     >

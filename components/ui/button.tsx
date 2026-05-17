@@ -10,6 +10,8 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         pill: "rounded-full bg-primary text-primary-foreground h-12 px-8 [a]:hover:bg-primary/80",
+        premium: "rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white h-12 px-8 shadow-md hover:from-emerald-600 hover:to-emerald-700 active:scale-[0.97]",
+        "outline-emerald": "rounded-xl border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 h-12",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:

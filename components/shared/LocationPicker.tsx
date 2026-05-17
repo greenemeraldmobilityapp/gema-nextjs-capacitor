@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { MapPin, Crosshair, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const JAKARTA = { lat: -6.2088, lng: 106.8456 };
 
@@ -10,14 +11,19 @@ export default function LocationPicker({
   lat,
   lng,
   onChange,
+  label = 'Lokasi Usaha',
+  coverageRadius,
 }: {
   lat: number | null;
   lng: number | null;
   onChange: (lat: number, lng: number) => void;
+  label?: string;
+  coverageRadius?: number;
 }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
+  const circleRef = useRef<L.Circle | null>(null);
   const [loadingGeo, setLoadingGeo] = useState(false);
   const [mapReady, setMapReady] = useState(false);
 
@@ -72,6 +78,31 @@ export default function LocationPicker({
     };
   }, []);
 
+  useEffect(() => {
+    if (!mapReady || !mapInstanceRef.current || lat === null || lng === null) return;
+    if (!coverageRadius || coverageRadius <= 0) {
+      if (circleRef.current) {
+        circleRef.current.remove();
+        circleRef.current = null;
+      }
+      return;
+    }
+    const L = (window as any).L;
+    if (!L) return;
+    if (circleRef.current) {
+      circleRef.current.setLatLng([lat, lng]);
+      circleRef.current.setRadius(coverageRadius * 1000);
+    } else {
+      circleRef.current = L.circle([lat, lng], {
+        radius: coverageRadius * 1000,
+        color: '#10b981',
+        fillColor: '#10b981',
+        fillOpacity: 0.1,
+        weight: 2,
+      }).addTo(mapInstanceRef.current);
+    }
+  }, [mapReady, lat, lng, coverageRadius]);
+
   const handleGeolocate = () => {
     if (!navigator.geolocation) return;
     setLoadingGeo(true);
@@ -87,8 +118,11 @@ export default function LocationPicker({
         }
         setLoadingGeo(false);
       },
-      () => setLoadingGeo(false),
-      { timeout: 10000, enableHighAccuracy: true }
+      () => {
+        setLoadingGeo(false);
+        toast.error('Gagal mendapatkan lokasi. Pastikan GPS aktif.');
+      },
+      { timeout: 10000, enableHighAccuracy: true, maximumAge: 30000 }
     );
   };
 
@@ -103,10 +137,12 @@ export default function LocationPicker({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <MapPin size={18} className="text-emerald-600" />
-        <span className="text-sm font-semibold text-gray-700">Lokasi Usaha</span>
-      </div>
+      {label && (
+        <div className="flex items-center gap-2">
+          <MapPin size={18} className="text-emerald-600" />
+          <span className="text-sm font-semibold text-gray-700">{label}</span>
+        </div>
+      )}
 
       <div ref={mapRef} className="w-full h-56 rounded-xl overflow-hidden shadow-sm border" />
 

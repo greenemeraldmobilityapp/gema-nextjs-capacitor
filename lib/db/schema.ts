@@ -13,6 +13,15 @@ export const users = pgTable('users', {
   roleFrozen: boolean('role_frozen').default(false).notNull(),
   lat: doublePrecision('lat'),
   lng: doublePrecision('lng'),
+  addressStreet: text('address_street'),
+  addressRt: text('address_rt'),
+  addressRw: text('address_rw'),
+  addressVillage: text('address_village'),
+  addressDistrict: text('address_district'),
+  addressCity: text('address_city'),
+  addressProvince: text('address_province'),
+  addressPostalCode: text('address_postal_code'),
+  addressFull: text('address_full'),
   isOnline: boolean('is_online').default(false),
   avatarUrl: text('avatar_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -26,6 +35,8 @@ export const vendorProfiles = pgTable('vendor_profiles', {
   totalJobs: integer('total_jobs').default(0),
   isVerified: boolean('is_verified').default(false),
   avatarUrl: text('avatar_url'),
+  coverageRadius: integer('coverage_radius').default(5),
+  operatingHours: jsonb('operating_hours'),
 });
 
 export const services = pgTable('services', {
@@ -35,6 +46,7 @@ export const services = pgTable('services', {
   category: text('category').notNull(),
   price: integer('price').notNull(),
   description: text('description'),
+  imageUrl: text('image_url'),
 });
 
 export const orders = pgTable('orders', {
@@ -56,6 +68,8 @@ export const orders = pgTable('orders', {
   orderStatus: orderStatusEnum('order_status').default('pending').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  acceptedAt: timestamp('accepted_at'),
+  startedAt: timestamp('started_at'),
   completedAt: timestamp('completed_at'),
   cancelledAt: timestamp('cancelled_at'),
 });

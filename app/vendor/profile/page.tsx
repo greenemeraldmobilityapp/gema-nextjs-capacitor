@@ -1,14 +1,14 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User, Star, Shield, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Wallet, PlusCircle, MapPin } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
 import { useWallet } from '@/lib/services/useWallet';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { cn } from '@/lib/utils';
 
 const supabase = createClient();
 
@@ -18,18 +18,22 @@ export default function VendorProfilePage() {
   const setProfile = useAuthStore((s) => s.setProfile);
   const { data: vendor, isLoading, error } = useVendor(profile?.id);
   const { data: wallet } = useWallet(profile?.id);
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => { setAvatarError(false); }, [vendor?.avatar_url]);
 
   const handleLogout = async () => {
+    if (!window.confirm('Yakin ingin keluar dari akun ini?')) return;
     await supabase.auth.signOut();
     setProfile(null);
     router.push('/login');
   };
 
   const menuItems = [
-    { icon: User, label: 'Edit Profil', href: '/vendor/profile/edit' },
-    { icon: Briefcase, label: 'Portofolio', href: '/vendor/portfolio' },
-    { icon: MapPin, label: 'Alamat & Area Layanan', href: '/vendor/profile/address' },
-    { icon: Settings, label: 'Pengaturan', href: '#' },
+    { icon: User, label: 'Edit Profil', subtitle: 'Nama, spesialisasi, bio', href: '/vendor/profile/edit' },
+    { icon: Briefcase, label: 'Portofolio', subtitle: 'Daftar layanan & karya', href: '/vendor/portfolio' },
+    { icon: MapPin, label: 'Alamat & Area Layanan', subtitle: 'Lokasi & koordinat', href: '/vendor/profile/address' },
+    { icon: Settings, label: 'Pengaturan', subtitle: 'Preferensi akun', href: '/vendor/settings' },
   ];
 
   if (isLoading) {
@@ -45,90 +49,125 @@ export default function VendorProfilePage() {
       <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 text-stone-400">
         <AlertCircle size={48} className="mb-3 opacity-50" />
         <p className="font-medium">Gagal memuat profil</p>
+        <p className="text-xs text-stone-400 mt-1">{error.message}</p>
+      </div>
+    );
+  }
+
+  if (!vendor) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 text-stone-400">
+        <User size={48} className="mb-3 opacity-50" />
+        <p className="font-medium">Profil belum lengkap</p>
+        <p className="text-sm text-stone-400 mt-1">Lengkapi profil Anda terlebih dahulu</p>
+        <Link href="/vendor/profile/edit" className="mt-4 inline-flex items-center justify-center h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 transition-colors">
+          Lengkapi Profil
+        </Link>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">
-      <div className="bg-white/90 backdrop-blur-lg px-4 pt-6 pb-4 border-b border-stone-100 sticky top-0 z-20">
-        <h1 className="font-heading text-xl font-bold text-stone-800">Profil</h1>
+      <div className="relative bg-gradient-to-b from-emerald-700 to-emerald-600 pt-10 pb-6 text-white rounded-b-[24px] shadow-lg shadow-emerald-900/20 overflow-hidden">
+        <div className="px-6 pb-4">
+          <div className="flex flex-col items-center">
+            <div className="relative w-24 h-24 mx-auto mb-3">
+              {vendor.avatar_url && !avatarError ? (
+                <img src={vendor.avatar_url} alt="Avatar" onError={() => setAvatarError(true)} className="w-24 h-24 rounded-full object-cover ring-4 ring-white/30 shadow-lg" />
+              ) : (
+                <div className="w-24 h-24 rounded-full ring-4 ring-white/30 shadow-lg overflow-hidden flex items-center justify-center bg-gradient-to-br from-emerald-400 to-emerald-600">
+                  <User size={40} className="text-white" />
+                </div>
+              )}
+            </div>
+            <h1 className="text-xl font-heading font-bold">{vendor?.users?.full_name || profile?.full_name || 'Vendor'}</h1>
+            <p className="text-emerald-100 text-sm">{vendor?.specialization || 'Belum diatur'}</p>
+            <div className="flex items-center gap-4 mt-3">
+              <div className="flex items-center gap-1 text-yellow-300">
+                <Star size={16} fill="currentColor" />
+                <span className="font-semibold text-white">{vendor?.rating?.toFixed(1) || '0.0'}</span>
+              </div>
+              <div className="flex items-center gap-1 text-emerald-100">
+                <Briefcase size={16} />
+                <span className="text-white">{vendor?.total_jobs || 0} Proyek</span>
+              </div>
+              {vendor?.is_verified && (
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white border border-white/20">
+                  <Shield size={14} />
+                  <span className="text-xs font-semibold">Terverifikasi</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <svg className="absolute bottom-0 left-0 w-full h-6" viewBox="0 0 1440 48" fill="none" preserveAspectRatio="none">
+          <path d="M0 48C240 48 480 0 720 0C960 0 1200 48 1440 48V48H0V48Z" fill="#FAFAF9" />
+        </svg>
       </div>
 
-      <div className="p-4 space-y-4">
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant text-center">
-          <div className="relative w-24 h-24 mx-auto mb-4">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-md flex items-center justify-center">
-              <User size={40} className="text-emerald-600" />
-            </div>
-          </div>
-          <h2 className="font-heading text-xl font-bold text-stone-800">{vendor?.users?.full_name || profile?.full_name || 'Vendor'}</h2>
-          <p className="text-sm text-stone-500">{vendor?.specialization || 'Belum diatur'}</p>
-          <div className="flex items-center justify-center gap-4 mt-3 text-sm">
-            <div className="flex items-center gap-1 text-yellow-500">
-              <Star size={16} fill="currentColor" />
-              <span className="font-semibold text-stone-800">{vendor?.rating?.toFixed(1) || '0.0'}</span>
-            </div>
-            <div className="flex items-center gap-1 text-stone-400">
-              <Briefcase size={16} />
-              <span className="text-stone-800">{vendor?.total_jobs || 0} Proyek</span>
-            </div>
-            {vendor?.is_verified && (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/80 text-amber-700 border border-amber-200/50">
-                <Shield size={14} className="w-3.5 h-3.5" />
-                <span className="text-xs font-semibold">Terverifikasi</span>
-              </div>
-            )}
-          </div>
-          {vendor?.users?.email && (
-            <p className="text-xs text-stone-400 mt-3">{vendor.users.email}</p>
-          )}
-        </div>
-
-        <div className="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 rounded-3xl p-5 shadow-lg overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-transparent" />
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <Wallet size={22} className="text-white" />
-              </div>
-              <div>
-                <p className="text-xs text-emerald-100">Saldo GemaPay</p>
-                <p className="font-heading text-2xl font-bold text-white">Rp {(wallet?.balance || 0).toLocaleString()}</p>
-              </div>
-            </div>
-            <button className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center hover:bg-white/30 transition-all shadow-md">
-              <PlusCircle size={22} className="text-white" />
-            </button>
-          </div>
-        </div>
-
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-elegant divide-y divide-stone-100">
-          {menuItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="flex items-center justify-between px-5 py-4.5 hover:bg-stone-50/80 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-stone-100 to-stone-50 shadow-sm flex items-center justify-center">
-                  <item.icon size={18} className="text-stone-600" />
+      <div className="p-4 space-y-4 -mt-2">
+        <Card className="rounded-2xl border-none shadow-sm overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-500 text-white relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/10 pointer-events-none" />
+          <CardContent className="p-4 relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <Wallet size={24} />
                 </div>
-                <span className="text-sm font-medium text-stone-800">{item.label}</span>
+                <div>
+                  <p className="text-emerald-100 text-xs">Saldo GemaPay</p>
+                  <p className="font-heading text-xl font-bold">Rp {(wallet?.balance || 0).toLocaleString()}</p>
+                </div>
               </div>
-              <ChevronRight size={18} className="text-stone-400" />
-            </Link>
-          ))}
-        </div>
+              <div className="flex gap-2">
+                <Link href="/wallet/withdraw" className="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors">
+                  Tarik Saldo
+                </Link>
+                <Link href="/wallet" className="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors">
+                  Riwayat
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        <Button
-          variant="outline"
+        <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
+          <CardContent className="p-0">
+            {menuItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className="flex items-center gap-4 p-4 hover:bg-stone-50 transition-all duration-200 group"
+              >
+                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 group-hover:scale-110 transition-transform duration-200">
+                  <item.icon size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-stone-900 text-sm group-hover:text-emerald-600 transition-colors duration-200">{item.label}</p>
+                  {item.subtitle && (
+                    <p className="text-xs text-stone-400 mt-0.5">{item.subtitle}</p>
+                  )}
+                </div>
+                <ChevronRight size={18} className="text-stone-300 shrink-0 group-hover:translate-x-0.5 transition-transform duration-200" />
+              </Link>
+            ))}
+            <div className="h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent mx-4" />
+          </CardContent>
+        </Card>
+
+        <Card
+          className="rounded-2xl border-none shadow-sm overflow-hidden cursor-pointer hover:shadow-md hover:shadow-red-500/10 transition-all duration-200"
           onClick={handleLogout}
-          className="w-full h-12 rounded-xl border-2 border-red-200/50 text-red-600 hover:bg-red-50/50 flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm"
         >
-          <LogOut size={18} />
-          Keluar
-        </Button>
+          <CardContent className="p-4 flex items-center gap-4 group">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-200">
+              <LogOut size={20} className="text-white" />
+            </div>
+            <span className="font-medium text-red-600 group-hover:text-red-700 transition-colors duration-200">Keluar</span>
+            <ChevronRight size={18} className="text-red-300 shrink-0 ml-auto group-hover:translate-x-0.5 transition-transform duration-200" />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ export type VendorProfile = {
     phone: string | null;
     lat: number | null;
     lng: number | null;
+    address_full?: string | null;
   };
 };
 
@@ -44,10 +45,10 @@ export function useVendor(vendorId: string | undefined) {
         .from('vendor_profiles')
         .select('*, users(full_name, email, phone, lat, lng)')
         .eq('user_id', vendorId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      return data as VendorProfile;
+      return data as VendorProfile | null;
     },
     enabled: !!vendorId,
   });
@@ -114,7 +115,7 @@ export function useNearbyVendors(lat?: number, lng?: number) {
       if (lat !== undefined && lng !== undefined) {
         vendors = vendors
           .map((v) => {
-            if (v.users?.lat && v.users?.lng) {
+            if (v.users?.lat !== null && v.users?.lat !== undefined && v.users?.lng !== null && v.users?.lng !== undefined) {
               return {
                 ...v,
                 distance: haversineDistance(lat, lng, v.users.lat, v.users.lng),

@@ -7,6 +7,17 @@ interface UserProfile {
   role: 'customer' | 'vendor' | 'admin' | null;
   phone?: string | null;
   avatar_url?: string | null;
+  address_street?: string | null;
+  address_rt?: string | null;
+  address_rw?: string | null;
+  address_village?: string | null;
+  address_district?: string | null;
+  address_city?: string | null;
+  address_province?: string | null;
+  address_postal_code?: string | null;
+  address_full?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 interface AuthState {

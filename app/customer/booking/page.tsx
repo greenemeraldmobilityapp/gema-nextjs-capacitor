@@ -137,13 +137,19 @@ function BookingContent() {
           <>
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-900 px-1">Lokasi Pengerjaan</label>
-              <div className="bg-white p-4 rounded-2xl shadow-sm flex gap-3 items-start relative">
-                <MapPin size={20} className="text-emerald-500 mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-bold text-gray-900 text-sm">Alamat Anda</p>
-                  <p className="text-sm text-gray-500 leading-snug mt-1">Atur alamat di halaman profil</p>
+              <Link href="/customer/profile/address" className="block">
+                <div className="bg-white p-4 rounded-2xl shadow-sm flex gap-3 items-start relative hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-pointer border-2 border-transparent">
+                  <MapPin size={20} className="text-emerald-500 mt-0.5 shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900 text-sm">Alamat Anda</p>
+                    {profile?.address_full ? (
+                      <p className="text-sm text-gray-500 leading-snug mt-1">{profile.address_full}</p>
+                    ) : (
+                      <p className="text-sm text-gray-500 leading-snug mt-1">Atur alamat di halaman profil</p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </Link>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -292,7 +298,7 @@ function BookingContent() {
                     service_name: service.title,
                     scheduled_date: selectedDate,
                     scheduled_time: selectedTime || null,
-                    service_address: 'Alamat Anda (Atur di profil)',
+                    service_address: profile?.address_full || 'Alamat Anda (Atur di profil)',
                     notes: notes || null,
                     base_amount: service.price,
                     platform_fee: platformFee,

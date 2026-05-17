@@ -22,7 +22,7 @@ export default function VendorPortfolioPage() {
       <header className="bg-white/90 backdrop-blur-lg px-4 pt-6 pb-4 border-b border-stone-100 sticky top-0 z-20 flex items-center justify-between">
         <h1 className="font-heading text-xl font-bold text-stone-800">Portofolio</h1>
         <Link href="/vendor/portfolio/add">
-          <Button className="h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md gap-1.5">
+          <Button variant="premium" size="lg" className="gap-1.5">
             <Plus size={18} />
             Tambah
           </Button>
@@ -48,8 +48,8 @@ export default function VendorPortfolioPage() {
             <p className="font-medium">Belum ada portofolio</p>
             <p className="text-sm mt-1">Tambahkan layanan yang Anda tawarkan</p>
             <Link href="/vendor/portfolio/add" className="mt-4">
-              <Button className="h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md">
-                <Plus size={18} className="mr-1" />
+              <Button variant="premium" size="lg">
+                <Plus size={18} />
                 Tambah Portofolio
               </Button>
             </Link>

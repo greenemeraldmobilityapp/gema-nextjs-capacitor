@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 import { useWallet } from '@/lib/services/useWallet';
 import { createClient } from '@/lib/supabase/client';
+import { compressImage, deleteExistingAvatar } from '@/lib/image-utils';
 import { toast } from 'sonner';
 
 const primaryMenu = [
@@ -54,11 +55,14 @@ export default function ProfilePage() {
 
     try {
       const supabase = createClient();
-      const ext = file.name.split('.').pop();
-      const filePath = `${profile.id}/avatar.${ext}`;
+      const compressedBlob = await compressImage(file);
+      const filePath = `${profile.id}/avatar.jpg`;
+
+      await deleteExistingAvatar(supabase, profile.id);
+
       await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
 
       const { data: urlData } = supabase.storage
         .from('avatars')
@@ -79,6 +83,11 @@ export default function ProfilePage() {
   };
 
   const initial = profile?.full_name?.charAt(0)?.toUpperCase() || 'P';
+  const addressSubtitle = profile?.address_full
+    ? profile.address_full.length > 30
+      ? profile.address_full.slice(0, 30) + '...'
+      : profile.address_full
+    : 'Atur alamat pengerjaan';
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -112,6 +121,9 @@ export default function ProfilePage() {
             <p className="text-emerald-100 text-sm">{profile?.email || ''}</p>
             {profile?.phone && (
               <p className="text-emerald-200 text-xs mt-1">{profile.phone}</p>
+            )}
+            {profile?.address_full && (
+              <p className="text-emerald-200 text-xs mt-2 max-w-[280px] truncate">{profile.address_full}</p>
             )}
           </div>
         </div>
@@ -165,7 +177,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-900 text-sm group-hover:text-emerald-600 transition-colors duration-200">{item.label}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{item.subtitle}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{item.label === 'Alamat' ? addressSubtitle : item.subtitle}</p>
                 </div>
                 <ChevronRight size={18} className="text-gray-300 shrink-0 group-hover:translate-x-0.5 transition-transform duration-200" />
               </Link>

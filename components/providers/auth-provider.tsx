@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 const supabase = createClient();
 import { useAuthStore } from '@/store/auth';
 
+const ADDRESS_COLS = 'address_street, address_rt, address_rw, address_village, address_district, address_city, address_province, address_postal_code, address_full, lat, lng';
+
 async function ensureProfileExists(userId: string, email: string, userMetadata?: { full_name?: string; name?: string; role?: string }) {
   const fullName = userMetadata?.full_name || userMetadata?.name || email.split('@')[0] || 'User';
   const role = userMetadata?.role || 'customer';
@@ -38,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('id, email, full_name, role, phone, avatar_url')
+          .select(`id, email, full_name, role, phone, avatar_url, ${ADDRESS_COLS}`)
           .eq('id', userId)
           .single();
 
@@ -53,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (inserted) {
               const { data: retryData, error: retryError } = await supabase
                 .from('users')
-                .select('id, email, full_name, role, phone, avatar_url')
+                .select(`id, email, full_name, role, phone, avatar_url, ${ADDRESS_COLS}`)
                 .eq('id', userId)
                 .single();
 
@@ -65,6 +67,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   role: retryData.role as 'customer' | 'vendor' | 'admin',
                   phone: retryData.phone,
                   avatar_url: retryData.avatar_url,
+                  address_street: retryData.address_street,
+                  address_rt: retryData.address_rt,
+                  address_rw: retryData.address_rw,
+                  address_village: retryData.address_village,
+                  address_district: retryData.address_district,
+                  address_city: retryData.address_city,
+                  address_province: retryData.address_province,
+                  address_postal_code: retryData.address_postal_code,
+                  address_full: retryData.address_full,
+                  lat: retryData.lat,
+                  lng: retryData.lng,
                 });
                 if (mounted) setLoading(false);
                 return;
@@ -85,6 +98,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: data.role as 'customer' | 'vendor' | 'admin',
             phone: data.phone,
             avatar_url: data.avatar_url,
+            address_street: data.address_street,
+            address_rt: data.address_rt,
+            address_rw: data.address_rw,
+            address_village: data.address_village,
+            address_district: data.address_district,
+            address_city: data.address_city,
+            address_province: data.address_province,
+            address_postal_code: data.address_postal_code,
+            address_full: data.address_full,
+            lat: data.lat,
+            lng: data.lng,
           });
         }
       } catch (err) {

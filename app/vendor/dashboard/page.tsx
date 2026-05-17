@@ -1,13 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useVendorOrders } from '@/lib/services/useOrders';
 import { useWallet } from '@/lib/services/useWallet';
-import { cn } from '@/lib/utils';
 
 export default function VendorDashboard() {
   const profile = useAuthStore((s) => s.profile);
@@ -17,7 +16,6 @@ export default function VendorDashboard() {
   const completedOrders = (orders || []).filter(o => o.order_status === 'completed');
   const pendingOrders = (orders || []).filter(o => o.order_status === 'pending');
   const inProgressOrders = (orders || []).filter(o => o.order_status === 'in_progress');
-  const totalEarnings = completedOrders.reduce((sum, o) => sum + o.vendor_payout, 0);
   const completedJobs = completedOrders.length;
 
   const now = new Date();
@@ -29,27 +27,28 @@ export default function VendorDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-stone-50">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-stone-100 via-stone-50/60 to-stone-50">
         <Loader2 size={24} className="animate-spin text-stone-400" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full w-full bg-stone-50 pb-8">
-      <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-4 pt-10 pb-14 rounded-b-[2rem] shadow-lg relative overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-gradient-to-b from-stone-100 via-stone-50/60 to-stone-50 pb-8">
+      <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-4 pt-10 pb-14 rounded-b-[24px] shadow-lg shadow-emerald-900/20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-transparent to-transparent" />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex items-center justify-between mb-2">
           <div>
-            <h1 className="font-heading text-2xl font-bold text-white">Hello, {profile?.full_name?.split(' ')[0] || 'Vendor'}!</h1>
-            <p className="text-emerald-100 text-sm">Ringkasan hari ini</p>
+            <h1 className="font-heading text-2xl font-bold text-white drop-shadow-sm">Hello, {profile?.full_name?.split(' ')[0] || 'Vendor'}!</h1>
+            <p className="text-emerald-100/80 text-sm">Ringkasan hari ini</p>
           </div>
           <div className="relative">
             <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
               <Bell size={20} className="text-white" />
             </div>
             {pendingOrders.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-emerald-600 flex items-center justify-center text-[10px] font-bold text-white">
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-emerald-600 flex items-center justify-center text-[10px] font-bold text-white animate-pulse">
                 {pendingOrders.length > 9 ? '9+' : pendingOrders.length}
               </span>
             )}
@@ -57,7 +56,7 @@ export default function VendorDashboard() {
         </div>
       </div>
 
-      <div className="px-4 -mt-8 space-y-6">
+      <div className="px-4 -mt-8 space-y-5">
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50/80 backdrop-blur-sm border border-red-200/50 text-red-700 rounded-xl text-sm">
             <AlertCircle size={16} />
@@ -65,56 +64,78 @@ export default function VendorDashboard() {
           </div>
         )}
 
-        <Card className={cn(
-          "rounded-3xl shadow-elegant overflow-hidden",
-          monthlyEarnings > 0 ? "bg-gradient-to-br from-emerald-500 to-emerald-700" : "bg-white/90 backdrop-blur-sm"
-        )}>
-          <CardHeader className={cn(
-            "pb-2",
-            monthlyEarnings > 0 ? "bg-gradient-to-r from-white/10 to-transparent" : "bg-gradient-to-br from-stone-50 to-white"
-          )}>
-            <CardTitle className={cn(
-              "text-sm font-semibold flex items-center gap-2",
-              monthlyEarnings > 0 ? "text-white/90" : "text-stone-600"
-            )}>
-              <TrendingUp size={16} />
-              Pendapatan Bulan Ini
-            </CardTitle>
-          </CardHeader>
-          <CardContent className={cn(
-            "pt-4 pb-6",
-            monthlyEarnings > 0 ? "bg-gradient-to-r from-white/10 to-transparent text-white" : "bg-gradient-to-br from-stone-50 to-white"
-          )}>
-            <div className="text-3xl font-bold font-heading">Rp {monthlyEarnings.toLocaleString()}</div>
-            <p className={cn(
-              "text-xs font-semibold mt-1",
-              monthlyEarnings > 0 ? "text-emerald-100" : "text-stone-500"
-            )}>
-              Saldo: Rp {(wallet?.balance || 0).toLocaleString()}
-            </p>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-white/90 backdrop-blur-sm">
-            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-100 to-amber-50 shadow-sm flex items-center justify-center mb-3">
-                <Clock size={22} className="text-amber-600" />
+        <div className="rounded-3xl shadow-elegant overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-700 relative">
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/5 pointer-events-none" />
+          <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle at 75% 30%, white 2px, transparent 2px)', backgroundSize: '24px 24px' }} />
+          <div className="relative p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <TrendingUp size={16} className="text-white" />
               </div>
-              <div className="text-2xl font-bold text-stone-800">{pendingOrders.length}</div>
-              <p className="text-xs text-stone-500 font-medium">Pesanan Baru</p>
-            </CardContent>
-          </Card>
-          <Card className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-white/90 backdrop-blur-sm">
-            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm flex items-center justify-center mb-3">
-                <CheckCircle size={22} className="text-emerald-600" />
+              <span className="text-white/80 text-sm font-semibold">Pendapatan Bulan Ini</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold font-heading text-white drop-shadow-sm">Rp {monthlyEarnings.toLocaleString()}</div>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <div className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+                  <p className="text-emerald-200/80 text-xs">Saldo GemaPay: Rp {(wallet?.balance || 0).toLocaleString()}</p>
+                </div>
               </div>
-              <div className="text-2xl font-bold text-stone-800">{completedJobs}</div>
-              <p className="text-xs text-stone-500 font-medium">Pesanan Selesai</p>
-            </CardContent>
-          </Card>
+              <Link
+                href="/wallet/withdraw"
+                className="shrink-0 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-5 py-2.5 rounded-full transition-all duration-200 shadow-lg shadow-emerald-900/20 backdrop-blur-sm"
+              >
+                Tarik Saldo
+              </Link>
+            </div>
+          </div>
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="sm:col-span-2 sm:row-span-2 rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-amber-50 to-amber-100/60 border border-amber-200/40 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-t from-amber-200/10 to-transparent pointer-events-none" />
+            <div className="relative p-5 h-full flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 shadow-lg shadow-amber-200/50 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Clock size={22} className="text-white" />
+                </div>
+                {pendingOrders.length > 0 && (
+                  <span className="text-xs font-semibold text-amber-700 bg-amber-200/60 rounded-full px-3 py-1 backdrop-blur-sm">
+                    {pendingOrders.length > 1 ? `${pendingOrders.length} pesanan` : '1 pesanan'}
+                  </span>
+                )}
+              </div>
+              <div className="mt-auto">
+                <div className="text-4xl font-bold font-heading text-amber-900 drop-shadow-sm">{pendingOrders.length}</div>
+                <p className="text-amber-700 text-sm font-bold mt-1">Pesanan Baru</p>
+                <p className="text-amber-500 text-xs mt-0.5">Menunggu konfirmasi Anda</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100/40 border border-emerald-200/40 relative overflow-hidden group">
+            <div className="relative p-5">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-200/50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                <CheckCircle size={20} className="text-white" />
+              </div>
+              <div className="text-2xl font-bold font-heading text-emerald-900">{completedJobs}</div>
+              <p className="text-emerald-700 text-xs font-bold mt-0.5">Pesanan Selesai</p>
+            </div>
+          </div>
+
+          <div className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-stone-50 to-stone-100/60 border border-stone-200/50 relative overflow-hidden group">
+            <div className="relative p-5">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-stone-400 to-stone-500 shadow-lg shadow-stone-200/50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                <Activity size={20} className="text-white" />
+              </div>
+              <div className="text-2xl font-bold font-heading text-stone-800">{inProgressOrders.length}</div>
+              <p className="text-stone-500 text-xs font-bold mt-0.5">Sedang Berjalan</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent" />
 
         {pendingOrders.length > 0 && (
           <div>
@@ -124,27 +145,46 @@ export default function VendorDashboard() {
                 Lihat semua
               </Link>
             </div>
-            {pendingOrders.slice(0, 3).map(order => (
+            {pendingOrders.slice(0, 5).map(order => (
               <Link key={order.id} href={`/vendor/orders/detail?id=${order.id}`}>
-                <Card className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer mb-3 bg-amber-50/30 border border-amber-100/50">
-                  <CardContent className="p-4">
+                <div className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer mb-3 bg-gradient-to-r from-amber-50/60 via-white to-white border border-amber-100/40 relative overflow-hidden group">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-amber-400 to-amber-500 rounded-l-xl" />
+                  <div className="p-4 pl-5">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-semibold text-stone-800">{order.service_name}</h3>
+                        <h3 className="font-semibold text-stone-800 group-hover:text-emerald-600 transition-colors duration-200">{order.service_name}</h3>
                         <p className="text-xs text-stone-400 mt-0.5">{order.service_address}</p>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right shrink-0 ml-3">
                         <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString()}</span>
                       </div>
                     </div>
-                    <Button variant="pill" size="lg" className="w-full shadow-md bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700">
-                      Terima
+                    <Button variant="premium" size="lg" className="w-full shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-shadow duration-200">
+                      Terima Pesanan
                     </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </Link>
             ))}
           </div>
+        )}
+
+        {pendingOrders.length === 0 && inProgressOrders.length === 0 && completedJobs === 0 && (
+          <Card className="rounded-3xl border-none shadow-sm overflow-hidden bg-gradient-to-br from-stone-50 to-white">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-stone-100 to-stone-200 flex items-center justify-center mx-auto mb-4">
+                <Activity size={28} className="text-stone-400" />
+              </div>
+              <h3 className="font-bold text-stone-700">Selamat datang di GEMA!</h3>
+              <p className="text-sm text-stone-400 mt-1">Pesanan pertama Anda akan muncul di sini</p>
+              <Link
+                href="/vendor/profile/edit"
+                className="mt-4 inline-flex items-center justify-center h-10 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-6 transition-all duration-200 shadow-lg shadow-emerald-500/20"
+              >
+                Lengkapi Profil
+              </Link>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

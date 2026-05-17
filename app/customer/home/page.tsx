@@ -9,6 +9,7 @@ import { SkeletonList } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import { useVendors, useNearbyVendors } from '@/lib/services/useVendors';
 import { useActivePromos } from '@/lib/services/usePromos';
+import { useWallet } from '@/lib/services/useWallet';
 import { useAuthStore } from '@/store/auth';
 import type { VendorProfile } from '@/lib/services/useVendors';
 
@@ -39,6 +40,7 @@ export default function CustomerHome() {
   const { data: vendors, isLoading, error } = useVendors();
   const { data: nearbyVendors } = useNearbyVendors(userLocation?.lat, userLocation?.lng);
   const { data: promos, isLoading: promosLoading } = useActivePromos();
+  const { data: wallet } = useWallet(profile?.id);
   const promo = promos?.[0];
 
   const displayVendors = (userLocation ? nearbyVendors : vendors) || [];
@@ -117,7 +119,7 @@ export default function CustomerHome() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] text-emerald-100/60 leading-tight">Saldo GemaPay</p>
-              <p className="font-heading text-base text-white font-bold">Rp 250.000</p>
+              <p className="font-heading text-base text-white font-bold">Rp {(wallet?.balance || 0).toLocaleString('id-ID')}</p>
             </div>
             <div className="flex items-center gap-1.5 bg-white/20 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full hover:bg-white/30 transition-colors shrink-0">
               <PlusCircle size={12} />
@@ -246,7 +248,7 @@ export default function CustomerHome() {
             />
           )}
 
-          {!isLoading && displayVendors.length > 0 && (
+          {!isLoading && displayVendors.length > 0 && viewMode === 'list' && (
             <div className="space-y-3">
               {vendorCards(displayVendors)}
             </div>

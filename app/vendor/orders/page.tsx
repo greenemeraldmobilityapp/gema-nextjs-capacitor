@@ -49,6 +49,8 @@ export default function VendorOrdersPage() {
         </div>
       </div>
 
+      <div className="h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent mx-4" />
+
       <div className="flex-1 p-4 space-y-3">
         {isLoading ? (
           <div className="flex items-center justify-center py-16 text-stone-400">
@@ -72,11 +74,11 @@ export default function VendorOrdersPage() {
           <Link
             key={order.id}
             href={`/vendor/orders/detail?id=${order.id}`}
-            className="block bg-white/90 backdrop-blur-sm rounded-3xl p-4 shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+            className="block bg-white/90 backdrop-blur-sm rounded-3xl p-4 shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1">
-                <h3 className="font-semibold text-stone-800">{order.service_name}</h3>
+                <h3 className="font-semibold text-stone-800 group-hover:text-emerald-600 transition-colors duration-200">{order.service_name}</h3>
                 <p className="text-sm text-stone-500 mt-0.5">{order.customer?.full_name || 'Pelanggan'}</p>
               </div>
               <div className={cn('px-3 py-1 rounded-full text-xs font-semibold', statusLabel[order.order_status].color)}>
@@ -89,8 +91,8 @@ export default function VendorOrdersPage() {
             </div>
             <div className="flex items-center justify-between pt-3 border-t border-stone-100">
               <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString()}</span>
-              <span className="text-xs text-stone-400 flex items-center gap-0.5">
-                {order.scheduled_date ? new Date(order.scheduled_date).toLocaleDateString('id-ID') : ''}{order.scheduled_time ? ` ${order.scheduled_time}` : ''} <ChevronRight size={14} />
+              <span className="text-xs text-stone-400 flex items-center gap-0.5 group-hover:text-stone-600 transition-colors duration-200">
+                {order.scheduled_date ? new Date(order.scheduled_date).toLocaleDateString('id-ID') : ''}{order.scheduled_time ? ` ${order.scheduled_time}` : ''} <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform duration-200" />
               </span>
             </div>
           </Link>

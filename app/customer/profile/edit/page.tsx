@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth';
 import { createClient } from '@/lib/supabase/client';
+import { compressImage, deleteExistingAvatar } from '@/lib/image-utils';
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -44,11 +45,14 @@ export default function EditProfilePage() {
 
     try {
       const supabase = createClient();
-      const ext = file.name.split('.').pop();
-      const filePath = `${profile.id}/avatar.${ext}`;
+      const compressedBlob = await compressImage(file);
+      const filePath = `${profile.id}/avatar.jpg`;
+
+      await deleteExistingAvatar(supabase, profile.id);
+
       await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
 
       const { data: urlData } = supabase.storage
         .from('avatars')
@@ -57,6 +61,7 @@ export default function EditProfilePage() {
       const avatarUrl = urlData?.publicUrl || null;
       if (avatarUrl) {
         await supabase.from('users').update({ avatar_url: avatarUrl }).eq('id', profile.id);
+        setProfile({ ...profile, avatar_url: avatarUrl });
       }
 
       toast.success('Foto profil berhasil diperbarui');

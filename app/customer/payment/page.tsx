@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
+import { useOrder } from '@/lib/services/useOrders';
 import { useWallet } from '@/lib/services/useWallet';
 import { useAuthStore } from '@/store/auth';
 import { createClient } from '@/lib/supabase/client';
@@ -28,7 +28,6 @@ function PaymentContent() {
   const profile = useAuthStore((s) => s.profile);
   const { data: order, isLoading, error } = useOrder(orderId);
   const { data: wallet } = useWallet(profile?.id);
-  const updatePayment = useUpdateOrderStatus();
 
   const [selectedMethod, setSelectedMethod] = useState<string>('qris');
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
@@ -66,7 +65,7 @@ function PaymentContent() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-safe">
       <div className="bg-emerald-600 text-white p-4 pt-8 sticky top-0 z-10 shadow-sm flex items-center gap-3 shrink-0">
-        <Link href={`/customer/booking?service_id=${order.service_id}`} className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
+        <Link href={`/customer/booking?serviceId=${order.service_id}&vendorId=${order.vendor_id}`} className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
           <ArrowLeft size={20} />
         </Link>
         <span className="font-heading font-bold text-lg">Pilih Pembayaran</span>
@@ -120,10 +119,21 @@ function PaymentContent() {
 
       <div className="p-4 bg-white border-t shrink-0">
         <Button
-          disabled={updatePayment.isPending || isCreatingInvoice}
+          disabled={isCreatingInvoice}
           onClick={async () => {
             setIsCreatingInvoice(true);
             try {
+              if (selectedMethod === 'wallet') {
+                const supabase = createClient();
+                const { error: payError } = await supabase
+                  .from('orders')
+                  .update({ payment_status: 'escrow' })
+                  .eq('id', order.id);
+                if (payError) throw payError;
+                toast.success('Pembayaran berhasil!');
+                router.push(`/customer/payment/success?order_id=${order.id}`);
+                return;
+              }
               const supabase = createClient();
               const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-invoice`;
               const { data: { session } } = await supabase.auth.getSession();
@@ -149,7 +159,7 @@ function PaymentContent() {
           }}
           className="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-lg font-heading font-bold shadow-sm"
         >
-          {isCreatingInvoice ? 'Mengarahkan ke pembayaran...' : updatePayment.isPending ? 'Memproses...' : 'Konfirmasi Pembayaran'}
+          {isCreatingInvoice ? 'Memproses pembayaran...' : 'Konfirmasi Pembayaran'}
         </Button>
       </div>
     </div>

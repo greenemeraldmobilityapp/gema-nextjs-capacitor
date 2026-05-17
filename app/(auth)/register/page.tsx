@@ -80,6 +80,14 @@ function RegisterContent() {
       }
 
       if (role === 'vendor') {
+        const { error: vendorError } = await supabase.from('vendor_profiles').insert({
+          user_id: authData.user.id,
+          specialization: '',
+          bio: '',
+        });
+        if (vendorError && !vendorError.message?.includes('duplicate')) {
+          console.error('Gagal buat vendor profile:', vendorError);
+        }
         router.push('/vendor/dashboard');
       } else {
         router.push('/customer/home');

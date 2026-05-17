@@ -63,7 +63,7 @@ export default function VendorMap({
         drawMarker: true,
         flyTo: true,
         showCompass: true,
-        locateOptions: { enableHighAccuracy: true },
+        locateOptions: { enableHighAccuracy: true, timeout: 10000 },
       }).addTo(map);
 
       await import('leaflet.markercluster');

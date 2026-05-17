@@ -20,9 +20,24 @@ export type Order = {
   total_amount: number;
   payment_status: 'unpaid' | 'escrow' | 'released' | 'refunded';
   order_status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  created_at: string;
   completed_at: string | null;
   cancelled_at: string | null;
-  customer?: { full_name: string; phone: string | null } | null;
+  customer?: {
+    full_name: string;
+    phone: string | null;
+    address_street?: string | null;
+    address_rt?: string | null;
+    address_rw?: string | null;
+    address_village?: string | null;
+    address_district?: string | null;
+    address_city?: string | null;
+    address_province?: string | null;
+    address_postal_code?: string | null;
+    address_full?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+  } | null;
 };
 
 export function useCustomerOrders(customerId: string | undefined) {
@@ -50,7 +65,7 @@ export function useVendorOrders(vendorId: string | undefined) {
       if (!vendorId) return [];
       const { data, error } = await supabase
         .from('orders')
-        .select('*, customer:customer_id(full_name)')
+        .select('*, customer:customer_id(full_name, phone, address_street, address_rt, address_rw, address_village, address_district, address_city, address_province, address_postal_code, address_full, lat, lng)')
         .eq('vendor_id', vendorId)
         .order('scheduled_date', { ascending: false });
 
@@ -68,7 +83,7 @@ export function useOrder(orderId: string | undefined) {
       if (!orderId) return null;
       const { data, error } = await supabase
         .from('orders')
-        .select('*, customer:customer_id(full_name, phone)')
+        .select('*, customer:customer_id(full_name, phone, address_street, address_rt, address_rw, address_village, address_district, address_city, address_province, address_postal_code, address_full, lat, lng)')
         .eq('id', orderId)
         .single();
 

@@ -1143,3 +1143,125 @@ Migration ini membuat function `is_admin()` + semua RLS policies untuk admin.
 | 10 | Submit success | Toast.success "Portofolio berhasil ditambahkan" + redirect ke `/vendor/portfolio` |
 | 11 | Submit error | Toast.error "Gagal menambahkan portofolio" |
 
+---
+
+#### K.29. Vendor UI/UX Refinement — Session 2 & 6 (Luxury/Professional Enhancement)
+
+##### K.29.1. Components
+
+| # | Element | Spec |
+|---|---------|------|
+| 1 | `StatusBadge` component | Luxury: `bg-*-50/80 text-*-* border border-*-200/50 rounded-full px-2.5 py-0.5 shadow-sm` for all statuses |
+| 2 | `Button` — premium variant | `rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white h-12 shadow-md hover:from-emerald-600 hover:to-emerald-700 active:scale-[0.97]` |
+| 3 | `Button` — outline-emerald variant | `rounded-xl border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 h-12` |
+
+##### K.29.2. Vendor Edit Profile (`/vendor/profile/edit`)
+
+| # | Element | Spec |
+|---|---------|------|
+| 1 | Background | `bg-stone-50` |
+| 2 | Header | `bg-white/90 backdrop-blur-lg border-b border-stone-100` sticky z-20, `font-heading text-lg font-bold text-stone-800` |
+| 3 | Back button | `rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200` |
+| 4 | Photo card | `bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant text-center` |
+| 5 | Avatar | `w-24 h-24 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-md` |
+| 6 | Camera button | `w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full shadow-md hover:from-emerald-600 hover:to-emerald-700` |
+| 7 | Labels | `text-xs font-semibold text-stone-500 uppercase tracking-wider` |
+| 8 | Inputs | `h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200` |
+| 9 | Textarea | `bg-stone-50 border-stone-200 rounded-xl text-stone-800 placeholder:text-stone-400 focus:border-emerald-400 focus:ring-4` |
+| 10 | Form card | `bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant` |
+| 11 | Location card | `bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm` |
+| 12 | Submit button | Variant `premium`, full width |
+
+##### K.29.3. Vendor Orders Detail (`/vendor/orders/detail`)
+
+| # | Element | Spec |
+|---|---------|------|
+| 1 | Background | `bg-stone-50` |
+| 2 | Header | `bg-white/90 backdrop-blur-lg border-b border-stone-100`, `font-heading` title, back button stone colors |
+| 3 | All cards | `bg-white/90 backdrop-blur-sm rounded-3xl p-4/5 shadow-elegant` |
+| 4 | Progress stepper | Active step `bg-emerald-600 text-white shadow-emerald-600/25`, inactive `bg-stone-200 text-stone-400` |
+| 5 | Text colors | `text-stone-800` (primary), `text-stone-500` (secondary), `text-stone-400` (muted) |
+| 6 | Chat card | `rounded-3xl shadow-elegant hover:shadow-lifted transition-all`, chat icon `w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm` |
+| 7 | Payment section | `border-t border-stone-100`, total `text-emerald-600` |
+| 8 | Action bar | `fixed bottom-0 z-50 backdrop-blur-xl bg-white/90 border-t border-stone-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]` |
+| 9 | Action buttons | Decline: `border-red-200/50 text-red-600 hover:bg-red-50/50`; Primary: variant `premium` |
+
+##### K.29.4. Verification Pages
+
+| Page | Spec |
+|------|------|
+| Intro | `bg-stone-50`, icon `w-28 h-28 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-full shadow-lg`, steps `rounded-2xl bg-gradient-to-br from-emerald-50 to-white shadow-sm`, CTA `premium` variant |
+| KTP | `bg-stone-50`, header glass, back btn stone, form `bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant`, labels uppercase, inputs stone, upload dashed `border-stone-200 bg-stone-50`, submit `premium` |
+| Certification | Same luxury treatment as KTP; skip btn `border-2 border-stone-200`, submit `premium` |
+| Review | `bg-stone-50`, status icon `w-28 h-28 rounded-full shadow-lg` with `*-50/80 bg border *-200/50`, title `text-stone-800`, desc `text-stone-500`, CTA `premium` |
+
+##### K.29.5. Vendor Address (`/vendor/profile/address`)
+
+| # | Element | Spec |
+|---|---------|------|
+| 1 | Background | `bg-stone-50` |
+| 2 | Header | Glass morphism (`bg-white/90 backdrop-blur-lg`), stone colors, `font-heading` title |
+| 3 | Back button | `rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200` |
+| 4 | Section cards | `bg-white/90 backdrop-blur-sm rounded-3xl p-5 shadow-elegant` |
+| 5 | Section icons | `w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm` |
+| 6 | Labels | `text-xs font-semibold text-stone-500 uppercase tracking-wider` |
+| 7 | Inputs | `h-12 bg-stone-50 border-stone-200 rounded-xl` with emerald focus ring |
+| 8 | Map container | `h-52 bg-stone-100 rounded-2xl shadow-inner` |
+| 9 | Time pickers | `rounded-lg border border-stone-200 bg-stone-50 shadow-sm` with emerald focus ring |
+| 10 | Save button | Variant `premium`, container `bg-white/90 backdrop-blur-lg border-t border-stone-100` |
+
+---
+
+### K.31. Phase 9 — QA/UAT Code Audit & Bug Fixes (15 Mei 2026)
+
+#### K.31.1. Audit Results
+
+| Area | Files Audited | Critical Bugs | High Bugs | Medium Bugs | Clean Files |
+|------|---------------|---------------|-----------|-------------|-------------|
+| Auth Flow | 6 files | 0 | 3 | 4 | auth store |
+| Customer Pages | 13 files | 1 | 2 | 2 | vendor detail, review, chat |
+| Vendor Pages | 15 files | 6 | 4 | 3 | portfolio, chat list |
+| Admin + Wallet | 14 files | 4 | 3 | 2 | disputes, orders, transactions |
+| Edge Functions | 3 files | 2 | 3 | 2 | — |
+| RLS + Schema | 10 migrations | 3 | 4 | 2 | — |
+
+#### K.31.2. Bugs Fixed in This Session
+
+| ID | Bug | File | Status |
+|----|-----|------|--------|
+| F1 | Vendor profile error "Gagal memuat profil" — no vendor_profiles row created at registration | `app/(auth)/register/page.tsx` | ✅ Fixed — auto-create on register |
+| F2 | `useVendor` crashes on missing profile (`.single()` vs `.maybeSingle()`) | `lib/services/useVendors.ts` | ✅ Fixed — changed to `maybeSingle()` |
+| F3 | Build error — conflicting `next.config.js` + `next.config.ts` | root directory | ✅ Fixed — removed duplicate `.js` |
+| F4 | Vendor order "Complete" action never updates `order_status` — missing mutation key | `app/vendor/orders/detail/page.tsx` | ✅ Fixed — added `complete` mutation |
+| F5 | Vendor order chat link goes to list page, not detail | `app/vendor/orders/detail/page.tsx` | ✅ Fixed — `/chat/detail` |
+| F6 | Earnings period selector purely cosmetic — no date filtering | `app/vendor/earnings/page.tsx` | ✅ Fixed — filters by period |
+| F7 | Customer home hardcoded wallet balance Rp 250.000 | `app/customer/home/page.tsx` | ✅ Fixed — uses `useWallet` |
+| F8 | Map/list toggle renders both views simultaneously | `app/customer/home/page.tsx` | ✅ Fixed — added `viewMode === 'list'` |
+| F9 | Customer payment GemaPay always calls Xendit; dead mutation code; wrong back link | `app/customer/payment/page.tsx` | ✅ Fixed — wallet branch, removed dead code, fixed params |
+| F10 | Vendor address not persisted to DB (lat/lng only) | `app/vendor/profile/address/page.tsx` | ✅ Fixed — saves address_full |
+| F11 | Verification review page status hardcoded as `pending` | `app/vendor/verification/review/page.tsx` | ✅ Fixed — reads `is_verified` from DB |
+| F12 | Verification KTP blob URL memory leak | `app/vendor/verification/ktp/page.tsx` | ✅ Fixed — `revokeObjectURL` cleanup |
+| F13 | `useVendors` falsy check excludes lat=0/lng=0 | `lib/services/useVendors.ts` | ✅ Fixed — strict null check |
+| F14 | `Order` type missing `created_at` | `lib/services/useOrders.ts` | ✅ Fixed — added to type |
+| F15 | `VendorProfile.users` missing `address_full` | `lib/services/useVendors.ts` | ✅ Fixed — added to type |
+
+#### K.31.3. Known Gaps — Fixed in Phase 9.1 (15 Mei 2026)
+
+| Gap | Description | Fix | Status |
+|-----|-------------|-----|--------|
+| RLS: Missing INSERT/UPDATE policies on all tables | Frontend mutations fail with 403 | Migration 0008 — 40+ policies across 10 tables | ✅ Fixed |
+| Edge Function: Race condition in wallet update (read-then-write) | Concurrent releases overwrite each other | Atomic `credit_wallet` RPC function | ✅ Fixed |
+| Edge Function: release-payment deprecated JWT endpoint | Legacy `/auth/v1/user` endpoint | Migrated to `supabase.auth.getUser()` | ✅ Fixed |
+| `accepted_at`/`started_at` columns missing from `orders` | Milestone timestamps never shown | Added to schema + migration 0008 | ✅ Fixed |
+| `handle_new_user` trigger | Google OAuth auto-creates user rows | Trigger `on_auth_user_created` in migration 0008 | ✅ Fixed |
+| Auto-create wallet on registration | No wallet row for new users | Trigger `on_user_created_wallet` in migration 0008 | ✅ Fixed |
+| Duplicate migration 0004/0005 | 0005 fails if 0004 ran first | Added `IF NOT EXISTS` to 0005 | ✅ Fixed |
+
+#### K.31.4. Remaining Known Gaps (New Feature — Phase 10+)
+
+| Gap | Description | Requires |
+|-----|-------------|----------|
+| Verification flow: No DB schema for KTP/certification documents | Upload stubs store nothing permanently | New `verification_documents` table + Storage bucket |
+| `coverageRadius` and `operatingHours` not persisted | Vendor address form data lost on reload | Schema migration |
+| Migration 0008 not yet applied to production DB | RLS policies are inert until migration runs | `supabase db push` or manual apply |
+

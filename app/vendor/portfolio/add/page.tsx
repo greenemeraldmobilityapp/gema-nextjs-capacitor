@@ -116,7 +116,9 @@ export default function VendorAddPortfolioPage() {
         <Button
           type="submit"
           disabled={createService.isPending}
-          className="w-full h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md disabled:opacity-50 transition-all duration-200"
+          variant="premium"
+          size="lg"
+          className="w-full disabled:opacity-50"
         >
           {createService.isPending ? (
             <span className="flex items-center gap-2"><Loader2 size={20} className="animate-spin" /> Menyimpan...</span>
