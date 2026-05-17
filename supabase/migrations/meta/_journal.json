@@ -50,6 +50,13 @@
       "when": 1778974855389,
       "tag": "0006_complex_mongu",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779046449232,
+      "tag": "0007_careful_gladiator",
+      "breakpoints": true
     }
   ]
 }

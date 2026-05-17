@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Upload, X } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, Loader2, Upload, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/auth';
-import { useCreateService } from '@/lib/services/useVendors';
+import { useVendorServices, useUpdateService, useDeleteService } from '@/lib/services/useVendors';
 import { createClient } from '@/lib/supabase/client';
 import { compressImage } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
@@ -24,10 +24,17 @@ const CATEGORIES = [
   { id: 'pest-control', label: 'Pest Control' },
 ];
 
-export default function VendorAddPortfolioPage() {
+function EditForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const profile = useAuthStore((s) => s.profile);
-  const createService = useCreateService();
+  const { data: services, isLoading: loadingServices } = useVendorServices(profile?.id);
+  const updateService = useUpdateService();
+  const deleteService = useDeleteService();
+
+  const serviceId = searchParams.get('id');
+const service = services?.find((s) => s.id === serviceId);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -37,7 +44,23 @@ export default function VendorAddPortfolioPage() {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [existingImage, setExistingImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  useEffect(() => {
+    if (service) {
+      setFormData({
+        title: service.title,
+        category: service.category,
+        price: service.price.toString(),
+        description: service.description || '',
+      });
+      if (service.image_url) {
+        setExistingImage(service.image_url);
+      }
+    }
+  }, [service]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -54,6 +77,7 @@ export default function VendorAddPortfolioPage() {
     }
 
     setImageFile(file);
+    setExistingImage(null);
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
@@ -62,11 +86,12 @@ export default function VendorAddPortfolioPage() {
   const removeImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setExistingImage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const uploadImage = async (vendorId: string): Promise<string | null> => {
-    if (!imageFile) return null;
+    if (!imageFile) return existingImage || null;
 
     const supabase = createClient();
     const compressed = await compressImage(imageFile);
@@ -82,7 +107,7 @@ export default function VendorAddPortfolioPage() {
 
     if (uploadError) {
       toast.error('Gagal mengunggah gambar');
-      return null;
+      return existingImage || null;
     }
 
     const { data: urlData } = supabase.storage
@@ -94,7 +119,7 @@ export default function VendorAddPortfolioPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile?.id) return;
+    if (!profile?.id || !service) return;
     if (!formData.category) {
       toast.error('Pilih kategori terlebih dahulu');
       return;
@@ -104,24 +129,57 @@ export default function VendorAddPortfolioPage() {
     try {
       const imageUrl = await uploadImage(profile.id);
 
-      await createService.mutateAsync({
+      await updateService.mutateAsync({
+        id: service.id,
         vendor_id: profile.id,
         title: formData.title,
         category: formData.category,
         price: Number(formData.price),
-        description: formData.description || undefined,
+        description: formData.description || null,
         image_url: imageUrl,
       });
-      toast.success('Portofolio berhasil ditambahkan');
+      toast.success('Portofolio berhasil diperbarui');
       router.push('/vendor/portfolio');
     } catch {
-      toast.error('Gagal menambahkan portofolio');
+      toast.error('Gagal memperbarui portofolio');
     } finally {
       setUploading(false);
     }
   };
 
-  const isPending = createService.isPending || uploading;
+  const handleDelete = async () => {
+    if (!profile?.id || !service) return;
+
+    try {
+      await deleteService.mutateAsync({ id: service.id, vendor_id: profile.id });
+      toast.success('Portofolio berhasil dihapus');
+      router.push('/vendor/portfolio');
+    } catch {
+      toast.error('Gagal menghapus portofolio');
+    }
+  };
+
+  if (loadingServices) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-stone-50">
+        <Loader2 size={24} className="animate-spin text-stone-400" />
+      </div>
+    );
+  }
+
+  if (!service) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 text-stone-400">
+        <p className="font-medium">Portofolio tidak ditemukan</p>
+        <Link href="/vendor/portfolio" className="mt-4 text-sm text-emerald-600 hover:underline">
+          Kembali
+        </Link>
+      </div>
+    );
+  }
+
+  const previewUrl = imagePreview || existingImage;
+  const isPending = updateService.isPending || uploading;
 
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">
@@ -130,7 +188,7 @@ export default function VendorAddPortfolioPage() {
           <Link href="/vendor/portfolio" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="font-heading text-lg font-bold text-stone-800">Tambah Portofolio</h1>
+          <h1 className="font-heading text-lg font-bold text-stone-800">Edit Portofolio</h1>
         </div>
       </header>
 
@@ -138,9 +196,9 @@ export default function VendorAddPortfolioPage() {
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant space-y-5">
           <div className="space-y-2">
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Gambar Layanan</label>
-            {imagePreview ? (
+            {previewUrl ? (
               <div className="relative rounded-2xl overflow-hidden border border-stone-200">
-                <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" />
+                <img src={previewUrl} alt="Preview" className="w-full h-48 object-cover" />
                 <button
                   type="button"
                   onClick={removeImage}
@@ -226,18 +284,66 @@ export default function VendorAddPortfolioPage() {
           </div>
         </div>
 
-        <Button
-          type="submit"
-          disabled={isPending}
-          variant="premium"
-          size="lg"
-          className="w-full disabled:opacity-50"
-        >
-          {isPending ? (
-            <span className="flex items-center gap-2"><Loader2 size={20} className="animate-spin" /> Menyimpan...</span>
-          ) : 'Simpan Portofolio'}
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            type="submit"
+            disabled={isPending}
+            variant="premium"
+            size="lg"
+            className="flex-1 disabled:opacity-50"
+          >
+            {isPending ? (
+              <span className="flex items-center gap-2"><Loader2 size={20} className="animate-spin" /> Menyimpan...</span>
+            ) : 'Simpan Perubahan'}
+          </Button>
+
+          {confirmDelete ? (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={() => setConfirmDelete(false)}
+                className="h-12 rounded-xl border-stone-200"
+              >
+                Batal
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="lg"
+                onClick={handleDelete}
+                disabled={deleteService.isPending}
+                className="h-12 rounded-xl"
+              >
+                {deleteService.isPending ? (
+                  <Loader2 size={20} className="animate-spin" />
+                ) : (
+                  <Trash2 size={20} />
+                )}
+              </Button>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={() => setConfirmDelete(true)}
+              className="h-12 rounded-xl border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
+            >
+              <Trash2 size={20} />
+            </Button>
+          )}
+        </div>
       </form>
     </div>
+  );
+}
+
+export default function VendorEditPortfolioPage() {
+  return (
+    <Suspense>
+      <EditForm />
+    </Suspense>
   );
 }

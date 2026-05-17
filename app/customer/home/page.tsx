@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, PlusCircle, ChevronRight, Sparkles, Search, ArrowUpRight } from 'lucide-react';
+import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, PlusCircle, ChevronRight, Sparkles, Search, ArrowUpRight, Cable, Hammer, Bug, Thermometer } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
@@ -20,6 +20,10 @@ const categories = [
   { id: '2', title: 'Teknisi Listrik', icon: Zap, color: 'bg-yellow-100 text-yellow-600', slug: 'teknisi-listrik' },
   { id: '3', title: 'Plumbing', icon: Droplets, color: 'bg-blue-100 text-blue-600', slug: 'plumbing' },
   { id: '4', title: 'Cat & Interior', icon: Paintbrush, color: 'bg-purple-100 text-purple-600', slug: 'cat-interior' },
+  { id: '5', title: 'AC & Kulkas', icon: Thermometer, color: 'bg-cyan-100 text-cyan-600', slug: 'ac-kulkas' },
+  { id: '6', title: 'Elektronik', icon: Cable, color: 'bg-pink-100 text-pink-600', slug: 'elektronik' },
+  { id: '7', title: 'Furniture', icon: Hammer, color: 'bg-amber-100 text-amber-600', slug: 'furniture' },
+  { id: '8', title: 'Pest Control', icon: Bug, color: 'bg-lime-100 text-lime-600', slug: 'pest-control' },
 ];
 
 export default function CustomerHome() {

@@ -61,6 +61,7 @@ export type Service = {
   category: string;
   price: number;
   description: string | null;
+  image_url: string | null;
 };
 
 export function useVendorServices(vendorId: string | undefined) {
@@ -141,10 +142,56 @@ export function useCreateService() {
       category: string;
       price: number;
       description?: string;
+      image_url?: string | null;
     }) => {
       const { error } = await supabase
         .from('services')
         .insert(service);
+
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-services', variables.vendor_id] });
+    },
+  });
+}
+
+export function useUpdateService() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (service: {
+      id: string;
+      vendor_id: string;
+      title?: string;
+      category?: string;
+      price?: number;
+      description?: string | null;
+      image_url?: string | null;
+    }) => {
+      const { id, vendor_id, ...updates } = service;
+      const { error } = await supabase
+        .from('services')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-services', variables.vendor_id] });
+    },
+  });
+}
+
+export function useDeleteService() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { id: string; vendor_id: string }) => {
+      const { error } = await supabase
+        .from('services')
+        .delete()
+        .eq('id', params.id);
 
       if (error) throw error;
     },
