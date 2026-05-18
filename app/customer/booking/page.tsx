@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Loader2, CalendarDays, Clock, Wallet, Building2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Loader2, CalendarDays, Clock, Wallet, Building2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useCreateOrder } from '@/lib/services/useOrders';
+import { useWallet } from '@/lib/services/useWallet';
 import { useAuthStore } from '@/store/auth';
 
 const supabase = createClient();
@@ -26,13 +27,14 @@ function BookingContent() {
   const vendorId = searchParams.get('vendorId') || '';
   const serviceId = searchParams.get('serviceId') || '';
   const profile = useAuthStore((s) => s.profile);
+  const { data: wallet } = useWallet(profile?.id);
   const createOrder = useCreateOrder();
   const [notes, setNotes] = useState('');
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0]
   );
   const [selectedTime, setSelectedTime] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'gemapay' | 'transfer'>('gemapay');
+  const [paymentMethod, setPaymentMethod] = useState<'gemapay' | 'transfer' | 'xendit'>('gemapay');
 
   const { data: service, isLoading } = useQuery({
     queryKey: ['service', serviceId],
@@ -229,7 +231,7 @@ function BookingContent() {
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-gray-900 text-sm">GEMA Pay</p>
-                    <p className="text-xs text-gray-500">Saldo: Rp 250.000</p>
+                    <p className="text-xs text-gray-500">Saldo: Rp {(wallet?.balance || 0).toLocaleString('id-ID')}</p>
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                     paymentMethod === 'gemapay' ? 'border-emerald-500' : 'border-gray-300'
@@ -257,6 +259,28 @@ function BookingContent() {
                     paymentMethod === 'transfer' ? 'border-emerald-500' : 'border-gray-300'
                   }`}>
                     {paymentMethod === 'transfer' && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />}
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('xendit')}
+                  className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left ${
+                    paymentMethod === 'xendit'
+                      ? 'border-emerald-500 bg-emerald-50'
+                      : 'border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center shrink-0">
+                    <ExternalLink size={20} className="text-indigo-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900 text-sm">Xendit</p>
+                    <p className="text-xs text-gray-500">Kartu, QRIS, Virtual Account</p>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    paymentMethod === 'xendit' ? 'border-emerald-500' : 'border-gray-300'
+                  }`}>
+                    {paymentMethod === 'xendit' && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />}
                   </div>
                 </button>
               </div>
