@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { useWallet, useRequestWithdraw } from '@/lib/services/useWallet';
+import { createClient } from '@/lib/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 
 const banks = [
@@ -33,19 +35,33 @@ export default function WithdrawPage() {
   const numericAmount = parseInt(amount.replace(/\D/g, ''), 10) || 0;
   const balance = wallet?.balance || 0;
   const isValid = numericAmount >= 10000 && numericAmount <= balance && bank && accountNumber.length >= 8 && accountHolder;
+  const queryClient = useQueryClient();
 
-  const handleSubmit = () => {
-    if (!wallet?.id) {
-      toast.error('Dompet tidak ditemukan');
-      return;
-    }
+  const handleSubmit = async () => {
     if (numericAmount > balance) {
       toast.error('Saldo tidak mencukupi');
       return;
     }
+
+    let walletId = wallet?.id;
+    if (!walletId) {
+      const supabase = createClient();
+      const { data: newWallet, error: createErr } = await supabase
+        .from('wallets')
+        .insert({ user_id: profile?.id, balance: 0 })
+        .select()
+        .single();
+      if (createErr || !newWallet) {
+        toast.error('Dompet tidak ditemukan');
+        return;
+      }
+      walletId = newWallet.id;
+      queryClient.invalidateQueries({ queryKey: ['wallet', profile?.id] });
+    }
+
     withdraw.mutate(
       {
-        walletId: wallet.id,
+        walletId: walletId!,
         amount: numericAmount,
         bankName: banks.find((b) => b.value === bank)?.label || bank,
         accountNumber,

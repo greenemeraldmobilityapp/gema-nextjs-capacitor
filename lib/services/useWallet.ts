@@ -57,79 +57,6 @@ export function useWalletTransactions(walletId: string | undefined) {
   });
 }
 
-export function useCreateWallet() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (userId: string) => {
-      const { data, error } = await supabase
-        .from('wallets')
-        .insert({ user_id: userId, balance: 0 })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as Wallet;
-    },
-    onSuccess: (_data, userId) => {
-      queryClient.invalidateQueries({ queryKey: ['wallet', userId] });
-    },
-  });
-}
-
-export function useAddTransaction() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (tx: {
-      wallet_id: string;
-      type: string;
-      amount: number;
-      status: string;
-    }) => {
-      const { error } = await supabase
-        .from('wallet_transactions')
-        .insert(tx);
-
-      if (error) throw error;
-    },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['wallet-transactions', variables.wallet_id] });
-    },
-  });
-}
-
-export function useRequestTopup() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      walletId,
-      amount,
-    }: {
-      walletId: string;
-      amount: number;
-    }) => {
-      const { data, error } = await supabase
-        .from('wallet_transactions')
-        .insert({
-          wallet_id: walletId,
-          type: 'topup',
-          amount,
-          status: 'pending',
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as WalletTransaction;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['wallet-transactions', data.wallet_id] });
-    },
-  });
-}
-
 export function useRequestWithdraw() {
   const queryClient = useQueryClient();
 
@@ -147,25 +74,19 @@ export function useRequestWithdraw() {
       accountNumber: string;
       accountHolder: string;
     }) => {
-      const { data, error } = await supabase
-        .from('wallet_transactions')
-        .insert({
-          wallet_id: walletId,
-          type: 'withdrawal',
-          amount: -amount,
-          status: 'pending',
-          bank_name: bankName,
-          account_number: accountNumber,
-          account_holder: accountHolder,
-        })
-        .select()
-        .single();
+      const { data, error } = await supabase.rpc('request_withdrawal', {
+        p_wallet_id: walletId,
+        p_amount: amount,
+        p_bank_name: bankName,
+        p_account_number: accountNumber,
+        p_account_holder: accountHolder,
+      });
 
       if (error) throw error;
-      return data as WalletTransaction;
+      return data as { id: string };
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['wallet-transactions', data.wallet_id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] });
     },
   });
 }
@@ -200,11 +121,28 @@ export function useApproveWithdrawDisbursement() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal memproses disbursement');
+
+      // Deduct wallet balance (amount is negative for withdrawals)
+      const { data: wallet } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('id', walletId)
+        .single();
+
+      const newBalance = (wallet?.balance || 0) + amount;
+      const { error: walletError } = await supabase
+        .from('wallets')
+        .update({ balance: newBalance })
+        .eq('id', walletId);
+
+      if (walletError) throw walletError;
+
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-transactions'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] });
     },
   });
 }

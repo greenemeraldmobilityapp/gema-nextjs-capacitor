@@ -1,31 +1,43 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 import { Wallet, ArrowUpRight, ArrowDownRight, CheckCircle2, Clock, Loader2, AlertCircle, Plus, Gift, Banknote, Sparkles, TrendingUp, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
-import { useWallet, useWalletTransactions, useCreateWallet } from '@/lib/services/useWallet';
+import { useWallet, useWalletTransactions } from '@/lib/services/useWallet';
+import { createClient } from '@/lib/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import { Skeleton, SkeletonList } from '@/components/ui/skeleton';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
 
 export default function WalletPage() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
   const { data: wallet, isLoading: walletLoading, error: walletError } = useWallet(profile?.id);
   const { data: transactions, isLoading: txLoading } = useWalletTransactions(wallet?.id);
-  const createWallet = useCreateWallet();
+  const queryClient = useQueryClient();
+  const creating = useRef(false);
 
   useEffect(() => {
-    if (!walletLoading && !wallet && !walletError && profile?.id) {
-      createWallet.mutate(profile.id, {
-        onError: (err) => toast.error(err.message || 'Gagal membuat dompet'),
-      });
+    if (!walletLoading && !walletError && !wallet && profile?.id && !creating.current) {
+      creating.current = true;
+      (async () => {
+        const supabase = createClient();
+        const { error } = await supabase
+          .from('wallets')
+          .insert({ user_id: profile.id, balance: 0 });
+        if (error) {
+          console.error('Auto-create wallet failed:', error);
+        } else {
+          queryClient.invalidateQueries({ queryKey: ['wallet', profile.id] });
+        }
+        creating.current = false;
+      })();
     }
-  }, [walletLoading, wallet, walletError, profile?.id]);
+  }, [walletLoading, walletError, wallet, profile?.id, queryClient]);
 
-  const isLoading = walletLoading || createWallet.isPending;
+  const isLoading = walletLoading;
   const error = walletError;
 
   const formattedDate = (d: string) =>

@@ -23,10 +23,6 @@ export default function TopupPage() {
   const numericAmount = parseInt(amount.replace(/\D/g, ''), 10) || 0;
 
   const handleSubmit = async () => {
-    if (!wallet?.id) {
-      toast.error('Dompet tidak ditemukan');
-      return;
-    }
     if (numericAmount < 10000) {
       toast.error('Minimal top up Rp 10.000');
       return;
@@ -39,6 +35,19 @@ export default function TopupPage() {
       const token = session?.access_token;
       if (!token) throw new Error('Sesi tidak ditemukan. Silakan login ulang.');
 
+      let walletId = wallet?.id;
+      if (!walletId) {
+        const { data: newWallet, error: createErr } = await supabase
+          .from('wallets')
+          .insert({ user_id: profile?.id, balance: 0 })
+          .select()
+          .single();
+        if (createErr || !newWallet) {
+          throw new Error('Dompet tidak ditemukan');
+        }
+        walletId = newWallet.id;
+      }
+
       const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-topup-invoice`;
       const res = await fetch(functionUrl, {
         method: 'POST',
@@ -46,7 +55,7 @@ export default function TopupPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ wallet_id: wallet.id, amount: numericAmount }),
+        body: JSON.stringify({ wallet_id: walletId, amount: numericAmount }),
       });
 
       const data = await res.json();
