@@ -569,7 +569,9 @@ npx supabase functions logs xendit-webhook --tail
 
 > **Flow Topup:** User input amount → `create-topup-invoice` EF buat transaksi + invoice Xendit → redirect ke Xendit → bayar → webhook `xendit-webhook` detect `topup_<tx_id>` → `status: success` + **balance otomatis bertambah**
 >
-> **Flow Withdraw:** User request withdrawal (pending) → Admin approve → `create-disbursement` EF → Xendit Disbursement API → kirim dana ke rekening user
+> **Flow Withdraw (Manual):** User request withdrawal (pending) → Admin approve → `create-disbursement` EF → debit balance → Xendit Disbursement API → kirim dana ke rekening user
+>
+> **Flow Withdraw (Auto):** Verified vendor request withdrawal → auto-call `create-disbursement` EF → debit balance → Xendit → dana langsung dikirim (skip admin)
 
 | Langkah | Skenario | Expected Result |
 |---------|----------|----------------|
@@ -586,12 +588,14 @@ npx supabase functions logs xendit-webhook --tail
 | 11 | Tap "Tarik" | Redirect ke `/wallet/withdraw` |
 | 12 | Isi jumlah, pilih bank, isi rekening, isi nama | Tombol "Tarik" aktif |
 | 13 | Tap "Tarik" | Toast sukses, transaksi "Tertunda" muncul |
-| 14 | Login sebagai Admin, buka `/admin/transactions` | Transaksi withdrawal pending tampil dengan bank info |
-| 15 | Admin tap **"Setujui"** pada withdrawal | Memanggil `create-disbursement` EF → Xendit Disbursement API |
-| 16 | Jika disbursement sukses | Toast "Disbursement berhasil dikirim ke Xendit", status jadi `success` |
-| 17 | Jika disbursement gagal (saldo Xendit tidak cukup) | Toast error, status tetap `pending` |
-| 18 | Cek validasi: jumlah > saldo | Error "Melebihi saldo tersedia" |
-| 19 | Cek validasi: jumlah < Rp 10.000 | Tombol disabled |
+| 14 | **Verified vendor:** buka `/wallet/withdraw` | Zap icon + info "dana dikirim otomatis", langsung panggil EF |
+| 15 | **Unverified vendor:** buka `/wallet/withdraw` | Clock icon + info "diproses admin 1-3 hari", status pending |
+| 16 | Login sebagai Admin, buka `/admin/transactions` | Transaksi withdrawal pending tampil dengan bank info |
+| 17 | Admin tap **"Setujui"** pada withdrawal | Panggil `create-disbursement` EF → debit balance (server-side) → Xendit |
+| 18 | Jika disbursement sukses | Toast "Disbursement berhasil dikirim ke Xendit", status `success` |
+| 19 | Jika disbursement gagal | EF **refund otomatis** balance, toast error, status tetap `pending` |
+| 20 | Cek validasi: jumlah > saldo | Error "Melebihi saldo tersedia" |
+| 21 | Cek validasi: jumlah < Rp 10.000 | Toast "Minimal penarikan Rp 10.000" |
 
 ### K.16.1. Topup via Xendit — Direct Edge Function Test (Supabase CLI)
 
@@ -1414,14 +1418,15 @@ Migration ini membuat function `is_admin()` + semua RLS policies untuk admin.
 | 3 | Tap "Tarik" | Insert `wallet_transactions` (type=withdrawal, status=pending, bank_name, account_number terisi) |
 | 4 | Login sebagai Admin, buka `/admin/transactions` | Transaksi withdrawal pending tampil dengan info bank |
 | 5 | Admin tap **"Setujui"** | Panggil `create-disbursement` EF |
-| 6 | EF verify JWT admin + admin role | 403 jika bukan admin |
+| 6 | EF verify JWT + role (admin OR verified vendor w/ amount ≤ 5jt) | 403 jika tidak authorized |
 | 7 | EF validasi: type=withdrawal, status=pending, bank details lengkap | Validasi lolos |
-| 8 | EF panggil Xendit Disbursement API `POST /v2/disbursements` | Request body: bank_code, account_number, account_holder_name, amount |
-| 9 | Xendit return success | Transaction status = 'success', toast "Disbursement berhasil dikirim" |
-| 10 | Cek wallet vendor | Balance sudah terpotong (amount negative di transaction) |
-| 11 | Xendit return error (invalid bank, insufficient balance, dll) | Transaction tetap pending, toast error dari Xendit |
-| 12 | **Error:** Transaksi sudah diproses sebelumnya | EF return 400 "Transaction already processed" |
-| 13 | **Error:** Transaksi bukan withdrawal | EF return 400 "Not a withdrawal transaction" |
+| 8 | EF: **debit balance** via `credit_wallet(p_wallet_id, -amount)` | Balance terpotong (server-side, atomic) |
+| 9 | EF panggil Xendit Disbursement API `POST /v2/disbursements` | Request body: bank_code, account_number, account_holder_name, amount |
+| 10 | Xendit return success | Transaction status = 'success' |
+| 11 | Xendit return error → EF **refund** via `credit_wallet(p_wallet_id, +amount)` | Balance kembali, tx tetap pending |
+| 12 | Cek wallet vendor | Balance sudah terpotong (server-side) |
+| 13 | **Error:** Transaksi sudah diproses sebelumnya | EF return 400 "Transaction already processed" |
+| 14 | **Error:** Transaksi bukan withdrawal | EF return 400 "Not a withdrawal transaction" |
 
 #### K.33.4. Regression — Topup Manual (via Admin) masih berfungsi
 
@@ -1430,6 +1435,84 @@ Migration ini membuat function `is_admin()` + semua RLS policies untuk admin.
 | 1 | Insert `wallet_transactions` langsung: `INSERT INTO wallet_transactions (wallet_id, type, amount, status) VALUES ('<WALLET_ID>', 'topup', 25000, 'pending')` | Transaksi pending muncul di admin |
 | 2 | Admin tap "Setujui" untuk topup manual | Menggunakan `useApproveTransaction` (bukan disbursement), balance bertambah |
 | 3 | **Regression:** Topup Xendit tetap terproses via webhook | Kedua flow tidak konflik |
+
+### K.34. Withdraw Refactor — Server-side Deduction + Auto-Disburse (18 Mei 2026)
+
+> **3 perubahan besar:** (1) Balance deduction dipindah dari client ke `create-disbursement` EF, (2) Verified vendor auto-disburse (skip admin), (3) Disbursement webhook handler + refund otomatis.
+
+#### K.34.1. Balance Deduction Server-Side (Atomic)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Admin tap "Setujui" untuk withdrawal pending | Panggil `create-disbursement` EF |
+| 2 | EF: **debit balance** via `credit_wallet(p_wallet_id, -amount)` | Balance terpotong SEBELUM panggil Xendit |
+| 3 | EF: panggil Xendit Disbursement API | Xendit process |
+| 4 | Xendit sukses → EF update status `success` | Balance sudah terpotong, tidak ada double-debit |
+| 5 | Xendit gagal → EF **refund** via `credit_wallet(p_wallet_id, +amount)` | Balance kembali seperti semula |
+| 6 | Cek `useApproveWithdrawDisbursement` client | **Tidak ada** balance deduction di client — hanya panggil EF |
+| 7 | **Regression:** Admin approve topup manual | Tidak terpengaruh — masih pakai `useApproveTransaction` |
+
+#### K.34.2. Auto-Disburse untuk Verified Vendor
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Login sebagai **verified vendor** (is_verified=true), buka `/wallet/withdraw` | Info "Vendor terverifikasi — dana dikirim otomatis" muncul |
+| 2 | Isi jumlah Rp 50.000 (di bawah Rp 5.000.000) | Tombol berlabel "Tarik Rp 50.000" |
+| 3 | Tap "Tarik" | Create pending tx via RPC → langsung panggil `create-disbursement` EF |
+| 4 | EF: auth check — vendor verified, amount ≤ 5jt, tx milik vendor sendiri → **allow** | 200 OK, balance terpotong |
+| 5 | Toast "Penarikan berhasil! Dana dikirim ke rekening Anda" | Redirect ke `/wallet` |
+| 6 | Cek wallet balance | Terpotong otomatis |
+| 7 | Cek `wallet_transactions` | Status = `success` (langsung, tanpa pending) |
+| 8 | **Flow tanpa auto-disburse:** Login sebagai vendor **unverified** | Info "Penarikan diproses oleh admin" |
+| 9 | Unverified vendor tap "Tarik" | Status = `pending`, perlu admin approve |
+| 10 | **Threshold:** Verified vendor request Rp 6.000.000 (di atas 5jt) | Harus pending + admin approve (auto-disburse skip) |
+
+#### K.34.3. Disbursement Webhook — Xendit Callback
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Xendit kirim callback `status=COMPLETED` dengan `external_id=wd_{tx_id}` | Webhook log "Disbursement completed", tidak ada perubahan status |
+| 2 | Xendit kirim callback `status=FAILED` dengan `external_id=wd_{tx_id}` | Webhook cek status tx → refund balance via `credit_wallet` |
+| 3 | Cek wallet setelah refund | Balance kembali (amount direfund) |
+| 4 | Cek `wallet_transactions` setelah refund | Status jadi `failed` |
+| 5 | **Idempotency:** Kirim callback FAILED dua kali | Kedua kalinya skip (status already 'failed') |
+
+#### K.34.4. Withdraw Page — UX Improvements
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/wallet/withdraw` sebagai **verified vendor** | Zap icon + "Vendor terverifikasi — dana dikirim otomatis" |
+| 2 | Buka `/wallet/withdraw` sebagai **unverified vendor** | Clock icon + "Penarikan diproses oleh admin" |
+| 3 | Isi amount valid | Summary card: Ringkasan (penarikan, biaya gratis, sisa saldo) |
+| 4 | Summary info box: auto vs manual | Auto: "dana langsung dikirim", Manual: "admin akan memproses 1-3 hari" |
+| 5 | Balance 0 + unverified | Info card: "Lengkapi verifikasi untuk penarikan otomatis" |
+| 6 | Bank select | BottomSheetSelect (bukan native `<select>`) |
+| 7 | **Error:** Amount > balance | "Melebihi saldo tersedia", tombol disabled |
+| 8 | **Error:** Amount < 10.000 | Toast "Minimal penarikan Rp 10.000" |
+
+#### K.34.5. Regression — Withdraw Flow End-to-End
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Flow lengkap: User request → pending tx → Admin approve → EF debit → Xendit → success | Semua langkah berjalan, balance terpotong sekali |
+| 2 | Flow auto: Verified vendor request → auto-disburse → Xendit → success | Balance terpotong, tx langsung success |
+| 3 | Flow gagal: Xendit error → EF refund → balance kembali | Balance tidak hilang, tx tetap pending |
+| 4 | Flow webhook: Xendit FAILED callback → refund otomatis | Balance refund, tx status failed |
+| 5 | **Idempotency:** Semua panggilan idempoten | Tidak ada double-debit, double-refund, atau double-credit |
+
+#### K.34.6. Deploy & Verify Updated Edge Functions
+
+```bash
+# Deploy updated functions
+npx supabase functions deploy create-disbursement
+npx supabase functions deploy xendit-webhook
+
+# Verify logs
+npx supabase functions logs create-disbursement --tail
+npx supabase functions logs xendit-webhook --tail
+```
+
+---
 
 #### K.33.5. Deploy & Verify Edge Functions via Supabase CLI
 

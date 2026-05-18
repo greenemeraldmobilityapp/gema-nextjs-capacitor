@@ -3,6 +3,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 const XENDIT_SECRET_KEY = Deno.env.get('XENDIT_SECRET_KEY')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const AUTO_DISBURSE_MAX = 5_000_000
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,6 +21,54 @@ const supabaseFetch = (path: string, options: RequestInit = {}) =>
     },
   })
 
+async function verifyUser(authHeader: string | null): Promise<{ id: string; role: string; isVerified: boolean }> {
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw { status: 401, message: 'Unauthorized' }
+  }
+  const token = authHeader.slice(7)
+  const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_SERVICE_ROLE_KEY },
+  })
+  if (!userRes.ok) {
+    throw { status: 401, message: 'Invalid token' }
+  }
+  const user = await userRes.json()
+
+  const profileRes = await supabaseFetch(`/users?id=eq.${user.id}&select=role`)
+  const profileData = await profileRes.json()
+  const role = profileData?.[0]?.role || 'customer'
+
+  let isVerified = false
+  if (role === 'vendor') {
+    const vendorRes = await supabaseFetch(`/vendor_profiles?user_id=eq.${user.id}&select=is_verified`)
+    const vendorData = await vendorRes.json()
+    isVerified = vendorData?.[0]?.is_verified === true
+  }
+
+  return { id: user.id, role, isVerified }
+}
+
+async function deductBalance(txId: string, walletId: string, amount: number): Promise<void> {
+  const rpcRes = await supabaseFetch(`/rpc/credit_wallet`, {
+    method: 'POST',
+    body: JSON.stringify({ p_wallet_id: walletId, p_amount: -amount }),
+  })
+  if (!rpcRes.ok) {
+    const errBody = await rpcRes.text()
+    throw new Error(`Gagal debit saldo: ${errBody}`)
+  }
+}
+
+async function refundBalance(walletId: string, amount: number): Promise<void> {
+  const rpcRes = await supabaseFetch(`/rpc/credit_wallet`, {
+    method: 'POST',
+    body: JSON.stringify({ p_wallet_id: walletId, p_amount: amount }),
+  })
+  if (!rpcRes.ok) {
+    console.error(`Refund failed for wallet ${walletId}: ${await rpcRes.text()}`)
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -27,35 +76,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      )
-    }
-
-    const token = authHeader.slice(7)
-    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_SERVICE_ROLE_KEY },
-    })
-    if (!userRes.ok) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      )
-    }
-
-    const user = await userRes.json()
-
-    // Verify admin role
-    const profileRes = await supabaseFetch(`/users?id=eq.${user.id}&select=role`)
-    const profileData = await profileRes.json()
-    if (profileData?.[0]?.role !== 'admin') {
-      return new Response(
-        JSON.stringify({ error: 'Forbidden: admin only' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      )
-    }
+    const caller = await verifyUser(authHeader)
 
     const { tx_id } = await req.json()
     if (!tx_id) {
@@ -65,7 +86,6 @@ serve(async (req) => {
       )
     }
 
-    // Get transaction details
     const txRes = await supabaseFetch(
       `/wallet_transactions?id=eq.${tx_id}&select=*,wallets!inner(user_id)`,
     )
@@ -101,8 +121,31 @@ serve(async (req) => {
     }
 
     const amount = Math.abs(tx.amount)
+    const walletId = tx.wallet_id
 
-    // Call Xendit Disbursement API
+    // Authorization: admin always allowed
+    // Verified vendor allowed if amount ≤ threshold AND tx belongs to them
+    const isOwner = tx.wallets?.user_id === caller.id
+    if (caller.role !== 'admin') {
+      if (caller.role !== 'vendor' || !caller.isVerified || amount > AUTO_DISBURSE_MAX || !isOwner) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden: admin only, or verified vendor with amount ≤ Rp 5.000.000' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
+      }
+    }
+
+    // Step 1: Deduct wallet balance (atomic, server-side)
+    try {
+      await deductBalance(tx_id, walletId, amount)
+    } catch (deductErr) {
+      return new Response(
+        JSON.stringify({ error: `Gagal debit saldo: ${deductErr.message}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    // Step 2: Call Xendit Disbursement API
     const disbursementBody: Record<string, unknown> = {
       external_id: `wd_${tx_id}`,
       amount,
@@ -124,29 +167,23 @@ serve(async (req) => {
     const xenditData = await xenditRes.json()
 
     if (!xenditRes.ok) {
+      // Refund balance since Xendit failed
       console.error('Xendit disbursement error:', xenditData)
+      await refundBalance(walletId, amount)
       return new Response(
-        JSON.stringify({ error: xenditData.message || 'Gagal memproses disbursement' }),
+        JSON.stringify({
+          error: xenditData.message || 'Gagal memproses disbursement',
+          xendit_status: xenditData.status,
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
-    // Update transaction to success
-    const walletId = tx.wallet_id
+    // Step 3: Update transaction to success
     await supabaseFetch(`/wallet_transactions?id=eq.${tx_id}`, {
       method: 'PATCH',
       body: JSON.stringify({ status: 'success' }),
     })
-
-    // Wallet balance was already deducted when transaction was created
-    // (amount was stored as negative), so no need to deduct again.
-    // If balance was NOT pre-deducted, uncomment below:
-    // const walletRes = await supabaseFetch(`/wallets?id=eq.${walletId}&select=balance`)
-    // const walletData = await walletRes.json()
-    // await supabaseFetch(`/wallets?id=eq.${walletId}`, {
-    //   method: 'PATCH',
-    //   body: JSON.stringify({ balance: (walletData?.[0]?.balance || 0) - amount }),
-    // })
 
     console.log(`Disbursement ${tx_id} processed: ${amount} to ${tx.bank_name} ${tx.account_number}`)
 
@@ -161,8 +198,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('create-disbursement error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      JSON.stringify({ error: error.message || error }),
+      { status: error.status || 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   }
 })

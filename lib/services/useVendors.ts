@@ -10,6 +10,8 @@ export type VendorProfile = {
   rating: number;
   total_jobs: number;
   is_verified: boolean;
+  verification_status: string | null;
+  rejection_reason: string | null;
   avatar_url: string | null;
   users?: {
     full_name: string;

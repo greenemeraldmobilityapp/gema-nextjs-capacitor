@@ -38,7 +38,7 @@ export default function AdminTransactions() {
   const handleApprove = async (tx: { id: string; wallet_id: string; amount: number; type: string }) => {
     try {
       if (tx.type === 'withdrawal') {
-        await approveWithdraw.mutateAsync({ txId: tx.id, walletId: tx.wallet_id, amount: tx.amount });
+        await approveWithdraw.mutateAsync({ txId: tx.id });
         toast.success('Disbursement berhasil dikirim ke Xendit');
       } else {
         await approveTx.mutateAsync({ txId: tx.id, walletId: tx.wallet_id, amount: tx.amount });

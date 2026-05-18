@@ -7,12 +7,16 @@ import { ArrowLeft, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/store/auth';
+import { useSubmitKtp } from '@/lib/services/useVerification';
 import { toast } from 'sonner';
 
 const supabase = createClient();
 
 export default function KtpVerificationPage() {
   const router = useRouter();
+  const profile = useAuthStore((s) => s.profile);
+  const submitKtp = useSubmitKtp();
   const [formData, setFormData] = useState({ nik: '', name: '' });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -35,6 +39,7 @@ export default function KtpVerificationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profile?.id) return;
     setSaving(true);
     try {
       let fileUrl = '';
@@ -46,13 +51,22 @@ export default function KtpVerificationPage() {
           const { error: uploadError } = await supabase.storage
             .from('verification')
             .upload(filePath, file);
-          if (!uploadError) {
-            const { data: urlData } = supabase.storage.from('verification').getPublicUrl(filePath);
-            fileUrl = urlData?.publicUrl || '';
-          }
+          if (uploadError) throw new Error(uploadError.message || 'Gagal upload foto KTP');
+          const { data: urlData } = supabase.storage.from('verification').getPublicUrl(filePath);
+          fileUrl = urlData?.publicUrl || '';
         }
       }
-      toast.success('Dokumen KTP berhasil diupload');
+
+      if (!fileUrl) throw new Error('Gagal mendapatkan URL file KTP');
+
+      await submitKtp.mutateAsync({
+        userId: profile.id,
+        nik: formData.nik,
+        ktpName: formData.name,
+        ktpUrl: fileUrl,
+      });
+
+      toast.success('Dokumen KTP berhasil disimpan');
       router.push('/vendor/verification/certification');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Gagal upload KTP';

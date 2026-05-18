@@ -2,15 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Loader2, AlertCircle, CheckCircle, XCircle, Search, Store, Clock, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAllVendors, useVerifyVendor } from '@/lib/services/useAdmin';
-import { toast } from 'sonner';
+import { Loader2, AlertCircle, CheckCircle, XCircle, Search, Store, Clock, User, ChevronRight } from 'lucide-react';
+import { useAllVendors } from '@/lib/services/useAdmin';
 import { cn } from '@/lib/utils';
 
 export default function AdminVendors() {
   const { data: vendors, isLoading, error } = useAllVendors();
-  const verifyVendor = useVerifyVendor();
   const [filter, setFilter] = useState<'all' | 'pending' | 'verified'>('all');
   const [search, setSearch] = useState('');
 
@@ -23,15 +20,6 @@ export default function AdminVendors() {
     const q = search.toLowerCase();
     return v.users?.full_name?.toLowerCase().includes(q) || v.specialization?.toLowerCase().includes(q);
   });
-
-  const handleVerify = async (userId: string, verified: boolean) => {
-    try {
-      await verifyVendor.mutateAsync({ userId, verified });
-      toast.success(verified ? 'Vendor berhasil diverifikasi' : 'Vendor dinonaktifkan');
-    } catch {
-      toast.error('Gagal memperbarui status vendor');
-    }
-  };
 
   if (isLoading) {
     return (
@@ -47,7 +35,7 @@ export default function AdminVendors() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">Vendor</h1>
-            <p className="text-emerald-100 text-sm">Kelola verifikasi vendor</p>
+            <p className="text-emerald-100 text-sm">Review verifikasi & kelola vendor</p>
           </div>
           <Link href="/admin/profile" className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors shrink-0">
             <User size={20} />
@@ -100,62 +88,45 @@ export default function AdminVendors() {
           </div>
         )}
 
-        {filteredVendors.map((vendor) => (
-          <div key={vendor.user_id} className="bg-white rounded-xl shadow-sm p-4 space-y-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-gray-900 truncate">{vendor.users?.full_name || 'Unknown'}</h3>
-                <p className="text-sm text-gray-500">{vendor.users?.email}</p>
-                {vendor.specialization && (
-                  <p className="text-xs text-gray-400 mt-1">{vendor.specialization}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {vendor.is_verified ? (
-                  <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                    <CheckCircle size={12} />
-                    Aktif
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-xs font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
-                    <Clock size={12} />
-                    Tertunda
-                  </span>
-                )}
-              </div>
-            </div>
+        {filteredVendors.map((vendor) => {
+          const statusLabel = vendor.is_verified
+            ? { label: 'Terverifikasi', color: 'text-emerald-600 bg-emerald-50', icon: CheckCircle }
+            : vendor.verification_status === 'rejected'
+            ? { label: 'Ditolak', color: 'text-red-600 bg-red-50', icon: XCircle }
+            : { label: 'Tertunda', color: 'text-orange-600 bg-orange-50', icon: Clock };
+          const StatusIcon = statusLabel.icon;
 
-            <div className="flex items-center gap-3 text-xs text-gray-500">
-              <span>⭐ {vendor.rating?.toFixed(1) || '0.0'}</span>
-              <span>{vendor.total_jobs || 0} pekerjaan</span>
-            </div>
+          return (
+            <Link
+              key={vendor.user_id}
+              href={`/admin/vendors/detail?id=${vendor.user_id}`}
+              className="block bg-white rounded-xl shadow-sm p-4 space-y-3 hover:shadow-md transition-shadow cursor-pointer"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-gray-900 truncate">{vendor.users?.full_name || 'Unknown'}</h3>
+                  <p className="text-sm text-gray-500">{vendor.users?.email}</p>
+                  {vendor.specialization && (
+                    <p className="text-xs text-gray-400 mt-1">{vendor.specialization}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${statusLabel.color}`}>
+                    <StatusIcon size={12} />
+                    {statusLabel.label}
+                  </span>
+                  <ChevronRight size={16} className="text-gray-300" />
+                </div>
+              </div>
 
-            <div className="flex gap-2">
-              {!vendor.is_verified ? (
-                <Button
-                  className="flex-1 h-9 bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={() => handleVerify(vendor.user_id, true)}
-                  disabled={verifyVendor.isPending}
-                >
-                  {verifyVendor.isPending ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
-                  Setujui
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  className="flex-1 h-9 border-red-200 text-red-600 hover:bg-red-50"
-                  onClick={() => handleVerify(vendor.user_id, false)}
-                  disabled={verifyVendor.isPending}
-                >
-                  <XCircle size={14} />
-                  Nonaktifkan
-                </Button>
-              )}
-            </div>
-          </div>
-        ))}
+              <div className="flex items-center gap-3 text-xs text-gray-500">
+                <span>⭐ {vendor.rating?.toFixed(1) || '0.0'}</span>
+                <span>{vendor.total_jobs || 0} pekerjaan</span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
 }
-

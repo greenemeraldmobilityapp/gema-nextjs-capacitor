@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity, User } from 'lucide-react';
+import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity, User, Image, MessageCircle, ShieldCheck, Star, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
 import { useVendorOrders } from '@/lib/services/useOrders';
 import { useWallet } from '@/lib/services/useWallet';
+import { useVendorReviews } from '@/lib/services/useReviews';
 import { toast } from 'sonner';
 
 export default function VendorDashboard() {
@@ -16,7 +17,13 @@ export default function VendorDashboard() {
   const { data: orders, isLoading, error } = useVendorOrders(profile?.id);
   const { data: wallet } = useWallet(profile?.id);
   const { data: vendor } = useVendor(profile?.id);
+  const { data: reviews } = useVendorReviews(profile?.id);
   const [avatarError, setAvatarError] = useState(false);
+
+  const avgRating = reviews && reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length)
+    : 0;
+  const latestReview = reviews?.[0];
 
   useEffect(() => { setAvatarError(false); }, [vendor?.avatar_url]);
 
@@ -119,48 +126,116 @@ export default function VendorDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="sm:col-span-2 sm:row-span-2 rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-amber-50 to-amber-100/60 border border-amber-200/40 relative overflow-hidden group">
+        <div className="grid grid-cols-3 gap-2">
+          <Link href="/vendor/orders" className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-amber-50 to-amber-100/60 border border-amber-200/40 relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-t from-amber-200/10 to-transparent pointer-events-none" />
-            <div className="relative p-5 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 shadow-lg shadow-amber-200/50 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Clock size={22} className="text-white" />
+            <div className="relative p-3 flex flex-col items-center text-center">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 shadow-lg shadow-amber-200/50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
+                <Clock size={18} className="text-white" />
+              </div>
+              <div className="text-xl font-bold font-heading text-amber-900 drop-shadow-sm">{pendingOrders.length}</div>
+              <p className="text-amber-700 text-[10px] font-bold mt-0.5">Pesanan Baru</p>
+              <p className="text-amber-500 text-[9px] mt-0.5">Menunggu</p>
+            </div>
+          </Link>
+
+          <Link href="/vendor/orders" className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100/40 border border-emerald-200/40 relative overflow-hidden group">
+            <div className="relative p-3 flex flex-col items-center text-center">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-200/50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
+                <CheckCircle size={18} className="text-white" />
+              </div>
+              <div className="text-xl font-bold font-heading text-emerald-900">{completedJobs}</div>
+              <p className="text-emerald-700 text-[10px] font-bold mt-0.5">Selesai</p>
+              <p className="text-emerald-500 text-[9px] mt-0.5">{thisMonthOrders.length} bulan ini</p>
+            </div>
+          </Link>
+
+          <Link href="/vendor/orders" className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-stone-50 to-stone-100/60 border border-stone-200/50 relative overflow-hidden group">
+            <div className="relative p-3 flex flex-col items-center text-center">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-stone-400 to-stone-500 shadow-lg shadow-stone-200/50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
+                <Activity size={18} className="text-white" />
+              </div>
+              <div className="text-xl font-bold font-heading text-stone-800">{inProgressOrders.length}</div>
+              <p className="text-stone-500 text-[10px] font-bold mt-0.5">Berjalan</p>
+              <p className="text-stone-400 text-[9px] mt-0.5">Sedang dikerjakan</p>
+            </div>
+          </Link>
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto -mx-4 px-4 scrollbar-none">
+          <Link href="/vendor/portfolio" className="flex items-center gap-2.5 shrink-0 bg-white/90 backdrop-blur-sm border border-stone-200/60 rounded-2xl px-4 py-3 hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200 min-h-12">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-sky-400 to-sky-500 shadow-md flex items-center justify-center shrink-0">
+              <Image size={16} className="text-white" />
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-stone-800">Portfolio</p>
+              <p className="text-[10px] text-stone-400">Atur karya</p>
+            </div>
+          </Link>
+          <Link href="/vendor/chat" className="flex items-center gap-2.5 shrink-0 bg-white/90 backdrop-blur-sm border border-stone-200/60 rounded-2xl px-4 py-3 hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200 min-h-12">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 shadow-md flex items-center justify-center shrink-0">
+              <MessageCircle size={16} className="text-white" />
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-stone-800">Chat</p>
+              <p className="text-[10px] text-stone-400">Percakapan</p>
+            </div>
+          </Link>
+          <Link href="/vendor/verification" className="flex items-center gap-2.5 shrink-0 bg-white/90 backdrop-blur-sm border border-stone-200/60 rounded-2xl px-4 py-3 hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200 min-h-12">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 shadow-md flex items-center justify-center shrink-0">
+              <ShieldCheck size={16} className="text-white" />
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-stone-800">Verifikasi</p>
+              <p className="text-[10px] text-stone-400">KYC & Sertifikat</p>
+            </div>
+          </Link>
+          <Link href="/vendor/earnings" className="flex items-center gap-2.5 shrink-0 bg-white/90 backdrop-blur-sm border border-stone-200/60 rounded-2xl px-4 py-3 hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200 min-h-12">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-400 to-violet-500 shadow-md flex items-center justify-center shrink-0">
+              <TrendingUp size={16} className="text-white" />
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-stone-800">Earnings</p>
+              <p className="text-[10px] text-stone-400">Riwayat</p>
+            </div>
+          </Link>
+        </div>
+
+        <Link href="/vendor/reviews" className="block rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 bg-white/90 backdrop-blur-sm border border-stone-200/40 overflow-hidden group">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 shadow-md flex items-center justify-center">
+                  <Star size={15} className="text-white" />
                 </div>
-                {pendingOrders.length > 0 && (
-                  <span className="text-xs font-semibold text-amber-700 bg-amber-200/60 rounded-full px-3 py-1 backdrop-blur-sm">
-                    {pendingOrders.length > 1 ? `${pendingOrders.length} pesanan` : '1 pesanan'}
-                  </span>
+                <span className="text-sm font-bold text-stone-800">Rating & Ulasan</span>
+              </div>
+              <ChevronRight size={16} className="text-stone-400 group-hover:translate-x-0.5 transition-transform duration-200" />
+            </div>
+            {reviews && reviews.length > 0 ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <span className="text-2xl font-bold text-amber-500">{avgRating.toFixed(1)}</span>
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        size={12}
+                        className={star <= Math.round(avgRating) ? 'text-amber-400 fill-amber-400' : 'text-stone-200'}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <span className="text-xs text-stone-500">{reviews.length} ulasan</span>
+                {latestReview?.review_text && (
+                  <span className="text-[10px] text-stone-400 truncate flex-1 text-right">&ldquo;{latestReview.review_text}&rdquo;</span>
                 )}
               </div>
-              <div className="mt-auto">
-                <div className="text-4xl font-bold font-heading text-amber-900 drop-shadow-sm">{pendingOrders.length}</div>
-                <p className="text-amber-700 text-sm font-bold mt-1">Pesanan Baru</p>
-                <p className="text-amber-500 text-xs mt-0.5">Menunggu konfirmasi Anda</p>
-              </div>
-            </div>
+            ) : (
+              <p className="text-xs text-stone-400">Belum ada ulasan. Ajak pelanggan memberi ulasan setelah pesanan selesai.</p>
+            )}
           </div>
-
-          <div className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100/40 border border-emerald-200/40 relative overflow-hidden group">
-            <div className="relative p-5">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-200/50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
-                <CheckCircle size={20} className="text-white" />
-              </div>
-              <div className="text-2xl font-bold font-heading text-emerald-900">{completedJobs}</div>
-              <p className="text-emerald-700 text-xs font-bold mt-0.5">Pesanan Selesai</p>
-            </div>
-          </div>
-
-          <div className="rounded-3xl shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-stone-50 to-stone-100/60 border border-stone-200/50 relative overflow-hidden group">
-            <div className="relative p-5">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-stone-400 to-stone-500 shadow-lg shadow-stone-200/50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
-                <Activity size={20} className="text-white" />
-              </div>
-              <div className="text-2xl font-bold font-heading text-stone-800">{inProgressOrders.length}</div>
-              <p className="text-stone-500 text-xs font-bold mt-0.5">Sedang Berjalan</p>
-            </div>
-          </div>
-        </div>
+        </Link>
 
         <div className="h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent" />
 

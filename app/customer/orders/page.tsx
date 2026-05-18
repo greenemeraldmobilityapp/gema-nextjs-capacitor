@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Clock, XCircle, MessageSquare, ArrowRight, Package, History } from 'lucide-react';
+import { Clock, XCircle, MessageSquare, ArrowRight, Package, History, Star } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -72,6 +72,13 @@ export default function OrdersPage() {
                   <MessageSquare size={18} />
                 </div>
               </Link>
+              {order.order_status === 'completed' && (
+                <Link href={`/customer/review?order_id=${order.id}`}>
+                  <div className="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-600 hover:bg-yellow-100 transition-colors" title="Beri Ulasan">
+                    <Star size={18} />
+                  </div>
+                </Link>
+              )}
               <Link href={`/customer/orders/detail?id=${order.id}`}>
                 <Button variant="pill" size="sm" className="h-10 px-5 text-xs shadow-sm">
                   Lihat Detail <ArrowRight size={14} />

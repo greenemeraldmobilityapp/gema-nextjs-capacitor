@@ -15,16 +15,17 @@ export type Review = {
   customer?: { full_name: string } | null;
 };
 
-export function useVendorReviews(vendorId: string | undefined) {
+export function useVendorReviews(vendorId: string | undefined, limit = 50) {
   return useQuery({
-    queryKey: ['vendor-reviews', vendorId],
+    queryKey: ['vendor-reviews', vendorId, limit],
     queryFn: async () => {
       if (!vendorId) return [];
       const { data, error } = await supabase
         .from('reviews')
         .select('*, customer:customer_id(full_name)')
         .eq('vendor_id', vendorId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
       if (error) throw error;
       return data as Review[];
@@ -61,6 +62,7 @@ export function useCreateReview() {
       vendor_id: string;
       rating: number;
       review_text?: string;
+      review_image?: string;
     }) => {
       const { error: insertError } = await supabase
         .from('reviews')
@@ -70,9 +72,57 @@ export function useCreateReview() {
           vendor_id: review.vendor_id,
           rating: review.rating,
           review_text: review.review_text || null,
+          review_image: review.review_image || null,
         });
 
       if (insertError) throw insertError;
+
+      const { data: reviews } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('vendor_id', review.vendor_id);
+
+      if (reviews && reviews.length > 0) {
+        const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+        const { error: updateError } = await supabase
+          .from('vendor_profiles')
+          .update({ rating: Math.round(avgRating * 10) / 10 })
+          .eq('user_id', review.vendor_id);
+
+        if (updateError) throw updateError;
+      }
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-reviews', variables.vendor_id] });
+      queryClient.invalidateQueries({ queryKey: ['order-review', variables.order_id] });
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      queryClient.invalidateQueries({ queryKey: ['vendor', variables.vendor_id] });
+    },
+  });
+}
+
+export function useUpdateReview() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (review: {
+      id: string;
+      order_id: string;
+      vendor_id: string;
+      rating: number;
+      review_text?: string;
+      review_image?: string;
+    }) => {
+      const { error } = await supabase
+        .from('reviews')
+        .update({
+          rating: review.rating,
+          review_text: review.review_text || null,
+          review_image: review.review_image || null,
+        })
+        .eq('id', review.id);
+
+      if (error) throw error;
 
       const { data: reviews } = await supabase
         .from('reviews')

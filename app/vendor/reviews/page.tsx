@@ -1,28 +1,17 @@
 'use client';
 
-import { Suspense, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, Star, MessageSquare, Loader2, AlertCircle, Camera, X } from 'lucide-react';
+import { ArrowLeft, Star, MessageSquare, Loader2, AlertCircle, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuthStore } from '@/store/auth';
 import { useVendorReviews } from '@/lib/services/useReviews';
-import { useVendor } from '@/lib/services/useVendors';
 
 const FILTERS = ['Semua', '5★', '4★', '3★', '2★', '1★', 'Dengan Foto'];
 
-export default function ReviewsPage() {
-  return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-gray-50"><Loader2 size={24} className="animate-spin text-gray-400" /></div>}>
-      <ReviewsContent />
-    </Suspense>
-  );
-}
-
-function ReviewsContent() {
-  const searchParams = useSearchParams();
-  const vendorId = searchParams.get('vendor_id') || '';
-  const { data: vendor } = useVendor(vendorId);
-  const { data: reviews, isLoading, error } = useVendorReviews(vendorId);
+export default function VendorReviewsPage() {
+  const profile = useAuthStore((s) => s.profile);
+  const { data: reviews, isLoading, error } = useVendorReviews(profile?.id);
   const [filter, setFilter] = useState('Semua');
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
@@ -51,7 +40,7 @@ function ReviewsContent() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <div className="bg-emerald-600 text-white p-4 pt-8 sticky top-0 z-10 shadow-sm flex items-center gap-3 shrink-0">
-        <Link href={`/customer/vendor?id=${vendorId}`} className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
+        <Link href="/vendor/dashboard" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
           <ArrowLeft size={20} />
         </Link>
         <span className="font-heading font-bold text-lg">Ulasan & Feedback</span>
@@ -75,7 +64,7 @@ function ReviewsContent() {
           <div className="flex flex-col items-center py-16 text-gray-400">
             <MessageSquare size={48} className="mb-3 opacity-50" />
             <p className="font-medium">Belum ada ulasan</p>
-            <p className="text-sm mt-1">Belum ada pelanggan yang memberikan ulasan</p>
+            <p className="text-sm mt-1">Ajak pelanggan memberi ulasan setelah pesanan selesai</p>
           </div>
         ) : (
           <>

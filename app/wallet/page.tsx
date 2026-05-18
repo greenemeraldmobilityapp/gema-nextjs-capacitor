@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Wallet, ArrowUpRight, ArrowDownRight, CheckCircle2, Clock, Loader2, AlertCircle, Plus, Gift, Banknote, Sparkles, TrendingUp, ArrowLeft } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownRight, CheckCircle2, Clock, Loader2, AlertCircle, Plus, Gift, Banknote, Sparkles, TrendingUp, ArrowLeft, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -143,6 +143,12 @@ export default function WalletPage() {
                 <button onClick={() => router.push('/wallet/vouchers')} className="text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-full px-3 py-1.5 flex items-center gap-1 hover:bg-emerald-100 transition-colors cursor-pointer">
                   <Gift size={13} />
                   Promo Saya
+                </button>
+              </div>
+              <div className="px-4 py-2 border-b border-gray-50 flex gap-2">
+                <button onClick={() => router.push('/wallet/accounts')} className="text-xs font-medium text-gray-500 bg-gray-50 rounded-full px-3 py-1.5 flex items-center gap-1 hover:bg-gray-100 transition-colors cursor-pointer">
+                  <Building2 size={12} />
+                  Rekening Saya
                 </button>
               </div>
               <div className="divide-y divide-gray-50">

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import type { VerificationSubmission } from './useVerification';
 
 const supabase = createClient();
 
@@ -70,6 +71,8 @@ export type AdminVendor = {
   rating: number;
   total_jobs: number;
   is_verified: boolean;
+  verification_status: string | null;
+  rejection_reason: string | null;
   avatar_url: string | null;
   created_at?: string;
   users: {
@@ -111,6 +114,111 @@ export function useVerifyVendor() {
       queryClient.invalidateQueries({ queryKey: ['admin-vendors'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
       queryClient.invalidateQueries({ queryKey: ['vendors'] });
+    },
+  });
+}
+
+export type AdminVendorDetail = AdminVendor & {
+  verification_submissions: VerificationSubmission[];
+};
+
+export function useVendorDetail(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['admin-vendor-detail', userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data: vendor, error: vendorError } = await supabase
+        .from('vendor_profiles')
+        .select('*, users(full_name, email, phone, created_at)')
+        .eq('user_id', userId)
+        .single();
+
+      if (vendorError) throw vendorError;
+
+      const { data: submissions, error: subError } = await supabase
+        .from('verification_submissions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('submitted_at', { ascending: false });
+
+      if (subError) throw subError;
+
+      return { ...vendor, verification_submissions: submissions || [] } as AdminVendorDetail;
+    },
+    enabled: !!userId,
+  });
+}
+
+export function useApproveVerification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ submissionId, userId, adminId }: { submissionId: string; userId: string; adminId: string }) => {
+      const { error: subError } = await supabase
+        .from('verification_submissions')
+        .update({
+          status: 'approved',
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: adminId,
+        })
+        .eq('id', submissionId);
+
+      if (subError) throw subError;
+
+      const { error: vendorError } = await supabase
+        .from('vendor_profiles')
+        .update({
+          is_verified: true,
+          verification_status: 'approved',
+          rejection_reason: null,
+        })
+        .eq('user_id', userId);
+
+      if (vendorError) throw vendorError;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-vendor-detail', variables.userId] });
+      queryClient.invalidateQueries({ queryKey: ['admin-vendors'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      queryClient.invalidateQueries({ queryKey: ['vendor', variables.userId] });
+    },
+  });
+}
+
+export function useRejectVerification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ submissionId, userId, adminId, reason }: { submissionId: string; userId: string; adminId: string; reason: string }) => {
+      const { error: subError } = await supabase
+        .from('verification_submissions')
+        .update({
+          status: 'rejected',
+          rejection_reason: reason,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: adminId,
+        })
+        .eq('id', submissionId);
+
+      if (subError) throw subError;
+
+      const { error: vendorError } = await supabase
+        .from('vendor_profiles')
+        .update({
+          is_verified: false,
+          verification_status: 'rejected',
+          rejection_reason: reason,
+        })
+        .eq('user_id', userId);
+
+      if (vendorError) throw vendorError;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-vendor-detail', variables.userId] });
+      queryClient.invalidateQueries({ queryKey: ['admin-vendors'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['vendor', variables.userId] });
     },
   });
 }

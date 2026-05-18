@@ -15,6 +15,23 @@ const supabaseFetch = (path: string, options: RequestInit = {}) =>
     },
   })
 
+async function creditWallet(walletId: string, amount: number): Promise<boolean> {
+  const rpcRes = await supabaseFetch(`/rpc/credit_wallet`, {
+    method: 'POST',
+    body: JSON.stringify({ p_wallet_id: walletId, p_amount: amount }),
+  })
+  if (rpcRes.ok) return true
+  // Fallback: direct update
+  const walletRes = await supabaseFetch(`/wallets?id=eq.${walletId}&select=balance`)
+  const walletData = await walletRes.json()
+  const currentBalance = walletData?.[0]?.balance || 0
+  const updateRes = await supabaseFetch(`/wallets?id=eq.${walletId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ balance: currentBalance + amount }),
+  })
+  return updateRes.ok
+}
+
 serve(async (req) => {
   try {
     const callbackToken = req.headers.get('x-callback-token')
@@ -25,7 +42,9 @@ serve(async (req) => {
 
     const body = await req.json()
 
-    // payment_session webhook (new format with event wrapper)
+    // ------------------------------------------------------------------
+    // 1. payment_session webhook (new format with event wrapper)
+    // ------------------------------------------------------------------
     if (body.event) {
       const event = body.event
       console.log(`Webhook received: event=${event}`)
@@ -43,21 +62,70 @@ serve(async (req) => {
       return new Response('OK', { status: 200 })
     }
 
-    // Invoice webhook (legacy format)
     const { external_id, status } = body
 
     if (!external_id) {
-      return new Response('Missing external_id', { status: 400 })
+      // Might be a raw disbursement callback without external_id
+      console.log('Webhook without external_id:', JSON.stringify(body))
+      return new Response('OK', { status: 200 })
     }
 
     console.log(`Webhook received: external_id=${external_id}, status=${status}`)
 
+    // ------------------------------------------------------------------
+    // 2. DISBURSEMENT CALLBACK (external_id format: wd_{tx_id})
+    // ------------------------------------------------------------------
+    if (external_id.startsWith('wd_')) {
+      const txId = external_id.replace('wd_', '')
+
+      if (status === 'COMPLETED') {
+        // Log success — transaction already marked success in create-disbursement EF
+        console.log(`Disbursement ${txId} completed by Xendit`)
+      } else if (status === 'FAILED') {
+        console.log(`Disbursement ${txId} failed by Xendit`)
+
+        // Get transaction to check current status
+        const txRes = await supabaseFetch(
+          `/wallet_transactions?id=eq.${txId}&select=status,wallet_id,amount`,
+        )
+        const txData = await txRes.json()
+        const tx = txData?.[0]
+        if (!tx) {
+          console.error(`Disbursement tx ${txId} not found`)
+          return new Response('Transaction not found', { status: 404 })
+        }
+
+        // Skip if already handled
+        if (tx.status === 'failed') {
+          console.log(`Disbursement ${txId} already marked failed, skipping`)
+          return new Response('OK', { status: 200 })
+        }
+
+        // Refund wallet balance (amount is negative, so we add abs(amount) to refund)
+        const refundAmount = Math.abs(tx.amount)
+        await creditWallet(tx.wallet_id, refundAmount)
+
+        // Mark transaction as failed
+        await supabaseFetch(`/wallet_transactions?id=eq.${txId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'failed' }),
+        })
+
+        console.log(`Disbursement ${txId} refunded ${refundAmount} to wallet ${tx.wallet_id}`)
+      } else {
+        console.log(`Unhandled disbursement status: ${status} for ${external_id}`)
+      }
+
+      return new Response('OK', { status: 200 })
+    }
+
+    // ------------------------------------------------------------------
+    // 3. INVOICE WEBHOOK — TOPUP FLOW (external_id starts with 'topup_')
+    // ------------------------------------------------------------------
     if (status === 'PAID') {
-      // --- TOPUP FLOW ---
       if (external_id.startsWith('topup_')) {
         const txId = external_id.replace('topup_', '')
 
-        // Idempotency: skip if already processed
         const checkRes = await supabaseFetch(
           `/wallet_transactions?id=eq.${txId}&select=status`,
         )
@@ -67,7 +135,6 @@ serve(async (req) => {
           return new Response('OK', { status: 200 })
         }
 
-        // Get transaction details
         const txRes = await supabaseFetch(
           `/wallet_transactions?id=eq.${txId}&select=wallet_id,amount`,
         )
@@ -78,42 +145,23 @@ serve(async (req) => {
           return new Response('Transaction not found', { status: 404 })
         }
 
-        // Update transaction to success
         await supabaseFetch(`/wallet_transactions?id=eq.${txId}`, {
           method: 'PATCH',
           body: JSON.stringify({ status: 'success' }),
         })
 
-        // Credit wallet balance
-        const rpcRes = await supabaseFetch(`/rpc/credit_wallet`, {
-          method: 'POST',
-          body: JSON.stringify({
-            p_wallet_id: tx.wallet_id,
-            p_amount: tx.amount,
-          }),
-        })
-
-        if (!rpcRes.ok) {
-          // Fallback: direct balance update
-          const walletRes = await supabaseFetch(
-            `/wallets?id=eq.${tx.wallet_id}&select=balance`,
-          )
-          const walletData = await walletRes.json()
-          const currentBalance = walletData?.[0]?.balance || 0
-          await supabaseFetch(`/wallets?id=eq.${tx.wallet_id}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ balance: currentBalance + tx.amount }),
-          })
+        const credited = await creditWallet(tx.wallet_id, tx.amount)
+        if (credited) {
+          console.log(`Topup ${txId} processed: ${tx.amount} credited to wallet ${tx.wallet_id}`)
+        } else {
+          console.error(`Topup ${txId}: failed to credit wallet ${tx.wallet_id}`)
         }
-
-        console.log(`Topup ${txId} processed: ${tx.amount} credited to wallet ${tx.wallet_id}`)
         return new Response('OK', { status: 200 })
       }
 
-      // --- ORDER PAYMENT FLOW (existing) ---
+      // --- ORDER PAYMENT FLOW ---
       const orderId = external_id
 
-      // Idempotency: skip if already processed
       const checkRes = await supabaseFetch(
         `/orders?id=eq.${orderId}&select=payment_status`,
       )
@@ -125,7 +173,6 @@ serve(async (req) => {
         return new Response('OK', { status: 200 })
       }
 
-      // Only set payment_status to escrow — wallet credit happens on completion
       await supabaseFetch(`/orders?id=eq.${orderId}`, {
         method: 'PATCH',
         body: JSON.stringify({ payment_status: 'escrow' }),

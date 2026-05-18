@@ -5,7 +5,7 @@ export const orderStatusEnum = pgEnum('order_status', ['pending', 'accepted', 'i
 export const paymentStatusEnum = pgEnum('payment_status', ['unpaid', 'escrow', 'released', 'refunded']);
 
 export const users = pgTable('users', {
-  id: uuid('id').primaryKey(), // Using Supabase auth.users ID
+  id: uuid('id').primaryKey(),
   fullName: text('full_name').notNull(),
   email: text('email').notNull().unique(),
   phone: text('phone'),
@@ -34,9 +34,28 @@ export const vendorProfiles = pgTable('vendor_profiles', {
   rating: doublePrecision('rating').default(0),
   totalJobs: integer('total_jobs').default(0),
   isVerified: boolean('is_verified').default(false),
+  verificationStatus: text('verification_status').default('none'),
+  rejectionReason: text('rejection_reason'),
   avatarUrl: text('avatar_url'),
   coverageRadius: integer('coverage_radius').default(5),
   operatingHours: jsonb('operating_hours'),
+});
+
+export const verificationSubmissions = pgTable('verification_submissions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id).notNull(),
+  status: text('status').default('pending').notNull(),
+  nik: text('nik').notNull(),
+  ktpName: text('ktp_name').notNull(),
+  ktpUrl: text('ktp_url').notNull(),
+  certificateUrl: text('certificate_url'),
+  certificateName: text('certificate_name'),
+  certificateIssuer: text('certificate_issuer'),
+  certificateYear: integer('certificate_year'),
+  rejectionReason: text('rejection_reason'),
+  submittedAt: timestamp('submitted_at').defaultNow().notNull(),
+  reviewedAt: timestamp('reviewed_at'),
+  reviewedBy: uuid('reviewed_by').references(() => users.id),
 });
 
 export const services = pgTable('services', {
@@ -95,7 +114,7 @@ export const reviews = pgTable('reviews', {
   orderId: uuid('order_id').references(() => orders.id).notNull(),
   customerId: uuid('customer_id').references(() => users.id).notNull(),
   vendorId: uuid('vendor_id').references(() => vendorProfiles.userId).notNull(),
-  rating: integer('rating').notNull(), // 1 to 5
+  rating: integer('rating').notNull(),
   reviewText: text('review_text'),
   reviewImage: text('review_image'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -110,9 +129,9 @@ export const wallets = pgTable('wallets', {
 export const walletTransactions = pgTable('wallet_transactions', {
   id: uuid('id').primaryKey().defaultRandom(),
   walletId: uuid('wallet_id').references(() => wallets.id).notNull(),
-  type: text('type').notNull(), // 'topup', 'withdrawal', 'payment', 'escrow_release'
+  type: text('type').notNull(),
   amount: integer('amount').notNull(),
-  status: text('status').notNull(), // 'pending', 'success', 'failed'
+  status: text('status').notNull(),
   bankName: text('bank_name'),
   accountNumber: text('account_number'),
   accountHolder: text('account_holder'),
@@ -146,11 +165,23 @@ export const fraudAlerts = pgTable('fraud_alerts', {
   resolvedAt: timestamp('resolved_at'),
 });
 
+export const savedBankAccounts = pgTable('saved_bank_accounts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id).notNull(),
+  bankCode: text('bank_code').notNull(),
+  bankName: text('bank_name').notNull(),
+  accountNumber: text('account_number').notNull(),
+  accountHolder: text('account_holder').notNull(),
+  isPrimary: boolean('is_primary').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 export const disputes = pgTable('disputes', {
   id: uuid('id').primaryKey().defaultRandom(),
   orderId: uuid('order_id').references(() => orders.id).notNull(),
   openedBy: uuid('opened_by').references(() => users.id).notNull(),
-  status: text('status').default('open').notNull(), // 'open', 'resolved'
+  status: text('status').default('open').notNull(),
   resolution: text('resolution'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

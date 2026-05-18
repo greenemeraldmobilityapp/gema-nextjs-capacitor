@@ -3,11 +3,12 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Calendar, Clock, Phone, MessageSquare, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Clock, Phone, MessageSquare, Loader2, AlertCircle, ChevronRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
+import { useOrderReview } from '@/lib/services/useReviews';
 import { useAuthStore } from '@/store/auth';
 import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,6 +20,7 @@ function OrderDetailContent() {
   const router = useRouter();
   const id = searchParams.get('id') || '';
   const { data: order, isLoading, error } = useOrder(id);
+  const { data: review } = useOrderReview(id);
   const updateStatus = useUpdateOrderStatus();
   const queryClient = useQueryClient();
   const profile = useAuthStore((s) => s.profile);
@@ -247,6 +249,30 @@ function OrderDetailContent() {
             </div>
           </div>
         </div>
+
+        {order.order_status === 'completed' && review && (
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-5 shadow-elegant">
+            <h2 className="font-semibold text-stone-800 mb-3 flex items-center gap-2">
+              <Star size={16} className="text-yellow-500 fill-yellow-500" />
+              Ulasan Pelanggan
+            </h2>
+            <div className="flex items-center gap-1 mb-2">
+              {[1, 2, 3, 4, 5].map(s => (
+                <Star key={s} size={16} className={s <= review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-stone-200'} />
+              ))}
+            </div>
+            {review.review_text && (
+              <p className="text-sm text-stone-600 leading-relaxed">&ldquo;{review.review_text}&rdquo;</p>
+            )}
+            {review.review_image && (
+              <img
+                src={review.review_image}
+                alt="Foto ulasan"
+                className="mt-3 w-24 h-24 rounded-xl object-cover border border-stone-200"
+              />
+            )}
+          </div>
+        )}
 
         {order.order_status === 'in_progress' && (
           <div className="px-4">

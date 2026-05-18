@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Clock, MapPin, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -16,8 +17,10 @@ const statusLabel: Record<string, { text: string; color: string }> = {
   cancelled: { text: 'Dibatalkan', color: 'bg-red-50/80 text-red-600 border border-red-200/50' },
 };
 
-export default function VendorOrdersPage() {
-  const [tab, setTab] = useState<'active' | 'history'>('active');
+function OrdersContent() {
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'history' ? 'history' : 'active';
+  const [tab, setTab] = useState<'active' | 'history'>(initialTab);
   const profile = useAuthStore((s) => s.profile);
   const { data: orders, isLoading, error } = useVendorOrders(profile?.id);
 
@@ -107,5 +110,13 @@ export default function VendorOrdersPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+export default function VendorOrdersPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-stone-50"><Loader2 size={24} className="animate-spin text-stone-400" /></div>}>
+      <OrdersContent />
+    </Suspense>
   );
 }

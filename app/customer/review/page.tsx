@@ -1,16 +1,19 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Star, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Star, Loader2, AlertCircle, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FileUpload } from '@/components/ui/file-upload';
 import { toast } from 'sonner';
 import { useOrder } from '@/lib/services/useOrders';
-import { useCreateReview, useOrderReview } from '@/lib/services/useReviews';
+import { useCreateReview, useUpdateReview, useOrderReview } from '@/lib/services/useReviews';
 import { useAuthStore } from '@/store/auth';
+import { createClient } from '@/lib/supabase/client';
+import { compressImage } from '@/lib/image-utils';
 
 export default function ReviewPage() {
   return (
@@ -28,10 +31,21 @@ function ReviewContent() {
   const { data: order, isLoading } = useOrder(orderId);
   const { data: existingReview } = useOrderReview(orderId);
   const createReview = useCreateReview();
+  const updateReview = useUpdateReview();
+  const [editMode, setEditMode] = useState(false);
 
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(existingReview?.rating || 0);
   const [hoverRating, setHoverRating] = useState(0);
-  const [reviewText, setReviewText] = useState('');
+  const [reviewText, setReviewText] = useState(existingReview?.review_text || '');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (existingReview) {
+      setRating(existingReview.rating);
+      setReviewText(existingReview.review_text || '');
+    }
+  }, [existingReview]);
 
   if (isLoading) {
     return (
@@ -53,45 +67,117 @@ function ReviewContent() {
     );
   }
 
-  if (existingReview) {
+  if (existingReview && !editMode) {
     return (
       <div className="flex flex-col min-h-screen bg-gray-50">
         <div className="bg-emerald-600 text-white p-4 pt-8 sticky top-0 z-10 shadow-sm flex items-center gap-3 shrink-0">
           <Link href={`/customer/orders/detail?id=${orderId}`} className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
             <ArrowLeft size={20} />
           </Link>
-          <span className="font-heading font-bold text-lg">Beri Ulasan</span>
+          <span className="font-heading font-bold text-lg">Ulasan Anda</span>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-400">
-          <AlertCircle size={48} className="mb-3 opacity-50" />
-          <p className="font-medium text-gray-600">Anda sudah memberikan ulasan untuk pesanan ini</p>
-          <Link href={`/customer/orders/detail?id=${orderId}`} className="mt-4 text-sm text-emerald-600 font-medium">Kembali ke detail pesanan</Link>
+          <div className="flex items-center gap-1 mb-4">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <Star key={s} size={32} className={s <= existingReview.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'} />
+            ))}
+          </div>
+          {existingReview.review_text && (
+            <p className="text-sm text-gray-600 mb-4 max-w-md">&ldquo;{existingReview.review_text}&rdquo;</p>
+          )}
+          {existingReview.review_image && (
+            <img src={existingReview.review_image} alt="Foto ulasan" className="w-24 h-24 rounded-xl object-cover mb-4 border" />
+          )}
+          <p className="font-medium text-gray-600 mb-2">Anda sudah memberikan ulasan untuk pesanan ini</p>
+          <button
+            onClick={() => setEditMode(true)}
+            className="mt-2 text-sm font-semibold text-emerald-600 bg-emerald-50 rounded-full px-5 py-2 hover:bg-emerald-100 transition-colors cursor-pointer"
+          >
+            Edit Ulasan
+          </button>
+          <Link href={`/customer/orders/detail?id=${orderId}`} className="mt-3 text-sm text-gray-400 font-medium">Kembali ke detail pesanan</Link>
         </div>
       </div>
     );
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (rating === 0 || !profile) return;
 
-    createReview.mutate(
-      {
-        order_id: orderId,
-        customer_id: profile.id,
-        vendor_id: order.vendor_id,
-        rating,
-        review_text: reviewText.trim() || undefined,
-      },
-      {
-        onSuccess: () => {
-          toast.success('Ulasan berhasil dikirim');
-          router.push('/customer/orders');
-        },
-        onError: (err) => {
-          toast.error(err.message || 'Gagal mengirim ulasan');
-        },
+    setIsUploading(true);
+    try {
+      let reviewImageUrl: string | undefined = existingReview?.review_image || undefined;
+
+      if (imageFile) {
+        const supabase = createClient();
+        const compressed = await compressImage(imageFile);
+        const fileName = `review/${profile.id}/${Date.now()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from('review-images')
+          .upload(fileName, compressed, {
+            contentType: 'image/jpeg',
+            upsert: true,
+          });
+
+        if (uploadError) {
+          toast.error('Gagal mengunggah gambar');
+          setIsUploading(false);
+          return;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('review-images')
+          .getPublicUrl(fileName);
+
+        reviewImageUrl = urlData?.publicUrl || undefined;
       }
-    );
+
+      if (existingReview) {
+        updateReview.mutate(
+          {
+            id: existingReview.id,
+            order_id: orderId,
+            vendor_id: order.vendor_id,
+            rating,
+            review_text: reviewText.trim() || undefined,
+            review_image: reviewImageUrl,
+          },
+          {
+            onSuccess: () => {
+              toast.success('Ulasan berhasil diperbarui');
+              setEditMode(false);
+            },
+            onError: (err) => {
+              toast.error(err.message || 'Gagal memperbarui ulasan');
+            },
+          }
+        );
+      } else {
+        createReview.mutate(
+          {
+            order_id: orderId,
+            customer_id: profile.id,
+            vendor_id: order.vendor_id,
+            rating,
+            review_text: reviewText.trim() || undefined,
+            review_image: reviewImageUrl,
+          },
+          {
+            onSuccess: () => {
+              toast.success('Ulasan berhasil dikirim');
+              router.push('/customer/orders');
+            },
+            onError: (err) => {
+              toast.error(err.message || 'Gagal mengirim ulasan');
+            },
+          }
+        );
+      }
+    } catch {
+      toast.error('Gagal memproses gambar');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -142,19 +228,32 @@ function ReviewContent() {
               placeholder="Bagikan pengalaman Anda (opsional)..."
               className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none resize-none h-28"
             />
+
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Camera size={14} className="text-gray-400" />
+                <p className="text-xs text-gray-400 font-medium">Tambahkan Foto (opsional)</p>
+              </div>
+              <FileUpload
+                value={imageFile}
+                onChange={setImageFile}
+                accept="image/*"
+                maxSize={5 * 1024 * 1024}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>
 
       <div className="p-4 bg-white border-t shrink-0">
         <Button
-          disabled={rating === 0 || createReview.isPending}
+          disabled={rating === 0 || createReview.isPending || updateReview.isPending || isUploading}
           onClick={handleSubmit}
           variant="pill"
           size="lg"
           className="w-full shadow-sm disabled:opacity-50"
         >
-          {createReview.isPending ? 'Mengirim...' : 'Kirim Ulasan'}
+          {isUploading || createReview.isPending ? 'Mengirim...' : updateReview.isPending ? 'Memperbarui...' : existingReview ? 'Simpan Perubahan' : 'Kirim Ulasan'}
         </Button>
       </div>
     </div>

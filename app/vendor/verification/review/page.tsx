@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Clock, ShieldCheck, XCircle, Loader2 } from 'lucide-react';
+import { Clock, ShieldCheck, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
-import { useVendor } from '@/lib/services/useVendors';
+import { useLatestSubmission } from '@/lib/services/useVerification';
 
 const statusViews: Record<string, { icon: typeof Clock; bg: string; border: string; iconColor: string; title: string; desc: string[]; cta: { label: string; href: string } }> = {
   pending: {
@@ -14,7 +13,7 @@ const statusViews: Record<string, { icon: typeof Clock; bg: string; border: stri
     desc: ['Tim GEMA akan memeriksa dokumen Anda dalam 1-3 hari kerja.', 'Kami akan memberi tahu Anda melalui notifikasi setelah verifikasi selesai.'],
     cta: { label: 'Kembali ke Dashboard', href: '/vendor/dashboard' },
   },
-  success: {
+  approved: {
     icon: ShieldCheck, bg: 'bg-emerald-50/80', border: 'border border-emerald-200/50', iconColor: 'text-emerald-600',
     title: 'Verifikasi Berhasil!',
     desc: ['Akun Anda telah terverifikasi. Sekarang Anda bisa menerima pesanan dengan lebih banyak kepercayaan.'],
@@ -30,18 +29,19 @@ const statusViews: Record<string, { icon: typeof Clock; bg: string; border: stri
 
 export default function VerificationReviewPage() {
   const profile = useAuthStore((s) => s.profile);
-  const { data: vendor, isLoading } = useVendor(profile?.id);
-  const [loadState, setLoadState] = useState(true);
+  const { data: submission, isLoading } = useLatestSubmission(profile?.id);
 
-  const actualStatus = vendor?.is_verified === true ? 'success' : 'pending';
-  const [status, setStatus] = useState<'pending' | 'success' | 'rejected'>(actualStatus);
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-stone-50">
+        <Loader2 size={24} className="animate-spin text-stone-400" />
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    if (!isLoading) {
-      setStatus(actualStatus);
-      setLoadState(false);
-    }
-  }, [isLoading, actualStatus]);
+  const status = submission?.status === 'approved' ? 'approved'
+    : submission?.status === 'rejected' ? 'rejected'
+    : 'pending';
 
   const view = statusViews[status];
   const Icon = view.icon;
@@ -60,6 +60,18 @@ export default function VerificationReviewPage() {
         {view.desc.map((d, i) => (
           <p key={i} className={`text-sm text-stone-500 max-w-xs ${i > 0 ? 'mt-1' : 'mb-2'}`}>{d}</p>
         ))}
+
+        {status === 'rejected' && submission?.rejection_reason && (
+          <div className="mt-4 w-full max-w-xs bg-red-50/80 border border-red-200/50 rounded-2xl p-4 text-left">
+            <div className="flex items-start gap-2">
+              <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-bold text-red-700 mb-1">Alasan Penolakan:</p>
+                <p className="text-sm text-red-600">{submission.rejection_reason}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mt-8 w-full max-w-xs">
           <Link href={view.cta.href}>
