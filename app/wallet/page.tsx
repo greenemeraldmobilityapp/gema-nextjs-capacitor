@@ -1,14 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
 import { Wallet, ArrowUpRight, ArrowDownRight, CheckCircle2, Clock, Loader2, AlertCircle, Plus, Gift, Banknote, Sparkles, TrendingUp, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
 import { useWallet, useWalletTransactions } from '@/lib/services/useWallet';
-import { createClient } from '@/lib/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
 import { Skeleton, SkeletonList } from '@/components/ui/skeleton';
 
 export default function WalletPage() {
@@ -16,26 +13,6 @@ export default function WalletPage() {
   const profile = useAuthStore((s) => s.profile);
   const { data: wallet, isLoading: walletLoading, error: walletError } = useWallet(profile?.id);
   const { data: transactions, isLoading: txLoading } = useWalletTransactions(wallet?.id);
-  const queryClient = useQueryClient();
-  const creating = useRef(false);
-
-  useEffect(() => {
-    if (!walletLoading && !walletError && !wallet && profile?.id && !creating.current) {
-      creating.current = true;
-      (async () => {
-        const supabase = createClient();
-        const { error } = await supabase
-          .from('wallets')
-          .insert({ user_id: profile.id, balance: 0 });
-        if (error) {
-          console.error('Auto-create wallet failed:', error);
-        } else {
-          queryClient.invalidateQueries({ queryKey: ['wallet', profile.id] });
-        }
-        creating.current = false;
-      })();
-    }
-  }, [walletLoading, walletError, wallet, profile?.id, queryClient]);
 
   const isLoading = walletLoading;
   const error = walletError;
@@ -86,7 +63,14 @@ export default function WalletPage() {
           <div className="flex flex-col items-center py-16 text-red-400">
             <AlertCircle size={48} className="mb-3 opacity-50" />
             <p className="font-medium">Gagal memuat dompet</p>
-            <p className="text-sm text-gray-400 mt-1">Pastikan Anda memiliki wallet yang sudah dibuat</p>
+            <p className="text-sm text-gray-400 mt-1">Lakukan Top Up untuk membuat dompet</p>
+            <Button
+              onClick={() => router.push('/wallet/topup')}
+              variant="premium"
+              className="mt-4"
+            >
+              <Plus size={18} /> Top Up
+            </Button>
           </div>
         ) : (
           <>
