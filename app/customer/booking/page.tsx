@@ -326,7 +326,7 @@ function BookingContent() {
                     notes: notes || null,
                     base_amount: service.price,
                     platform_fee: platformFee,
-                    vendor_payout: service.price - platformFee,
+                    vendor_payout: service.price - Math.round(service.price * 0.1),
                     total_amount: totalAmount,
                   },
                   {

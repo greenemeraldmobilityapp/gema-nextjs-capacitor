@@ -95,7 +95,10 @@ export default function VendorOrdersPage() {
               <span className="truncate">{order.service_address}</span>
             </div>
             <div className="flex items-center justify-between pt-3 border-t border-stone-100">
-              <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString()}</span>
+              <div>
+                <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString()}</span>
+                <p className="text-[10px] text-stone-400 mt-0.5">Pendapatan Anda</p>
+              </div>
               <span className="text-xs text-stone-400 flex items-center gap-0.5 group-hover:text-stone-600 transition-colors duration-200">
                 {order.scheduled_date ? new Date(order.scheduled_date).toLocaleDateString('id-ID') : ''}{order.scheduled_time ? ` ${order.scheduled_time}` : ''} <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform duration-200" />
               </span>

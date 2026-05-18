@@ -84,11 +84,46 @@ Admin
 
 ---
 
-5. Revenue Model
+5. Revenue Model — Dual Transparent Fee
 
-Platform Fee
+GEMA menerapkan model fee dua sisi (dual-side fee) dengan persentase berbeda dan transparan per pihak. Masing-masing pihak hanya mengetahui fee-nya sendiri, bukan fee pihak lain.
 
-5–15% per transaction
+Customer Fee
+
+- Biaya platform: +5% dari harga jasa (base_amount)
+- Customer membayar: base_amount + 5%
+- Tampilan di customer: "Biaya Platform (5%)" pada rincian pembayaran
+
+Vendor Fee
+
+- Biaya platform: -10% dari harga jasa (base_amount)
+- Vendor menerima: base_amount - 10%
+- Tampilan di vendor: "Biaya Platform (10%)" pada rincian pembayaran
+
+Ilustrasi Transaksi
+
+Harga jasa: Rp 150.000
+Customer bayar: Rp 150.000 + Rp 7.500 (5%) = Rp 157.500
+Vendor terima: Rp 150.000 - Rp 15.000 (10%) = Rp 135.000
+Platform peroleh: Rp 7.500 + Rp 15.000 = Rp 22.500 (15% dari base)
+
+Prinsip
+
+- Customer tidak melihat fee vendor
+- Vendor tidak melihat fee customer
+- Fee dipotong otomatis saat escrow release
+- Platform fee dicatat di tabel orders (platform_fee, vendor_payout)
+- Tidak ada biaya tersembunyi di luar yang ditampilkan
+
+Dasar Hukum & Dokumentasi
+
+- Fee structure ini wajib dicantumkan di:
+  - Syarat & Ketentuan (S&K) pengguna
+  - Kebijakan Privasi
+  - Halaman bantuan (FAQ)
+  - Tampilan checkout customer (transparan)
+  - Tampilan rincian pesanan vendor (transparan)
+- Perubahan fee structure harus melalui persetujuan pengguna via notifikasi in-app
 
 Vendor Subscription (future)
 

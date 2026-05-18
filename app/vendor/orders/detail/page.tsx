@@ -238,12 +238,12 @@ function OrderDetailContent() {
               <span className="text-stone-800">Rp {order.base_amount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-stone-500">Biaya Platform</span>
-              <span className="text-stone-800">Rp {order.platform_fee.toLocaleString()}</span>
+              <span className="text-stone-500">Biaya Platform (10%)</span>
+              <span className="text-stone-800">-Rp {Math.round(order.base_amount * 0.1).toLocaleString()}</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-stone-100 font-bold">
-              <span className="text-stone-800">Total</span>
-              <span className="text-emerald-600">Rp {order.total_amount.toLocaleString()}</span>
+              <span className="text-stone-800">Pendapatan Anda</span>
+              <span className="text-emerald-600">Rp {order.vendor_payout.toLocaleString()}</span>
             </div>
           </div>
         </div>

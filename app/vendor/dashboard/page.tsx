@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity } from 'lucide-react';
+import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
+import { useVendor } from '@/lib/services/useVendors';
 import { useVendorOrders } from '@/lib/services/useOrders';
 import { useWallet } from '@/lib/services/useWallet';
 import { toast } from 'sonner';
@@ -14,6 +15,10 @@ export default function VendorDashboard() {
   const profile = useAuthStore((s) => s.profile);
   const { data: orders, isLoading, error } = useVendorOrders(profile?.id);
   const { data: wallet } = useWallet(profile?.id);
+  const { data: vendor } = useVendor(profile?.id);
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => { setAvatarError(false); }, [vendor?.avatar_url]);
 
   const completedOrders = (orders || []).filter(o => o.order_status === 'completed');
   const pendingOrders = (orders || []).filter(o => o.order_status === 'pending');
@@ -45,12 +50,28 @@ export default function VendorDashboard() {
         <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-transparent to-transparent" />
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         <div className="relative flex items-center justify-between mb-2">
-          <div>
-            <h1 className="font-heading text-2xl font-bold text-white drop-shadow-sm">Hello, {profile?.full_name?.split(' ')[0] || 'Vendor'}!</h1>
-            <p className="text-emerald-100/80 text-sm">Ringkasan hari ini</p>
+          <div className="flex items-center gap-3">
+            <Link href="/vendor/profile" className="shrink-0 group/avatar">
+              {vendor?.avatar_url && !avatarError ? (
+                <img
+                  src={vendor.avatar_url}
+                  alt="Avatar"
+                  onError={() => setAvatarError(true)}
+                  className="w-11 h-11 rounded-full object-cover ring-2 ring-white/40 shadow-lg transition-all duration-300 group-hover/avatar:ring-4 group-hover/avatar:ring-white/60"
+                />
+              ) : (
+                <div className="w-11 h-11 rounded-full ring-2 ring-white/40 shadow-lg flex items-center justify-center bg-gradient-to-br from-emerald-400 to-emerald-600 transition-all duration-300 group-hover/avatar:ring-4 group-hover/avatar:ring-white/60">
+                  <User size={18} className="text-white" />
+                </div>
+              )}
+            </Link>
+            <div>
+              <h1 className="font-heading text-2xl font-bold text-white drop-shadow-sm">Hello, {profile?.full_name?.split(' ')[0] || 'Vendor'}!</h1>
+              <p className="text-emerald-100/80 text-sm">{vendor?.specialization || 'Ringkasan hari ini'}</p>
+            </div>
           </div>
-          <div className="relative">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+          <Link href="/vendor/orders" className="relative group/bell">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 group-hover/bell:bg-white/30 group-hover/bell:scale-110">
               <Bell size={20} className="text-white" />
             </div>
             {pendingOrders.length > 0 && (
@@ -58,7 +79,7 @@ export default function VendorDashboard() {
                 {pendingOrders.length > 9 ? '9+' : pendingOrders.length}
               </span>
             )}
-          </div>
+          </Link>
         </div>
       </div>
 
@@ -163,6 +184,7 @@ export default function VendorDashboard() {
                       </div>
                       <div className="text-right shrink-0 ml-3">
                         <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString()}</span>
+                        <p className="text-[10px] text-stone-400">Pendapatan Anda</p>
                       </div>
                     </div>
                     <Button variant="premium" size="lg" className="w-full shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-shadow duration-200">
