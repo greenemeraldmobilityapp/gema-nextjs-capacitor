@@ -55,7 +55,7 @@ export default function TopupPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ wallet_id: walletId, amount: numericAmount }),
+        body: JSON.stringify({ wallet_id: walletId, amount: numericAmount, origin: window.location.origin }),
       });
 
       const data = await res.json();

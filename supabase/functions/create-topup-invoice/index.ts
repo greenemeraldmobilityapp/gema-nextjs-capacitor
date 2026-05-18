@@ -3,7 +3,6 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 const XENDIT_SECRET_KEY = Deno.env.get('XENDIT_SECRET_KEY')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const APP_URL = Deno.env.get('APP_URL') || 'http://localhost:3000'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,13 +26,14 @@ serve(async (req) => {
   }
 
   try {
-    const { wallet_id, amount } = await req.json()
+    const { wallet_id, amount, origin } = await req.json()
     if (!wallet_id || !amount) {
       return new Response(
         JSON.stringify({ error: 'wallet_id and amount are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
+    const baseUrl = origin || 'http://localhost:3000'
 
     if (amount < 10000) {
       return new Response(
@@ -77,8 +77,8 @@ serve(async (req) => {
         external_id: externalId,
         amount,
         description: `Top Up GEMA Wallet - Rp ${amount.toLocaleString('id-ID')}`,
-        success_redirect_url: `${APP_URL}/wallet/topup/success?tx_id=${transaction.id}`,
-        failure_redirect_url: `${APP_URL}/wallet/topup`,
+        success_redirect_url: `${baseUrl}/wallet/topup/success?tx_id=${transaction.id}`,
+        failure_redirect_url: `${baseUrl}/wallet/topup`,
         currency: 'IDR',
       }),
     })
