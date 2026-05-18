@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Loader2, AlertCircle, ArrowLeftRight, CheckCircle, XCircle, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAllTransactions, useApproveTransaction, useRejectTransaction } from '@/lib/services/useAdmin';
+import { useApproveWithdrawDisbursement } from '@/lib/services/useWallet';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +26,7 @@ const statusLabels: Record<string, string> = {
 export default function AdminTransactions() {
   const { data: transactions, isLoading, error } = useAllTransactions();
   const approveTx = useApproveTransaction();
+  const approveWithdraw = useApproveWithdrawDisbursement();
   const rejectTx = useRejectTransaction();
   const [filter, setFilter] = useState<'all' | 'pending' | 'success' | 'failed'>('all');
 
@@ -33,12 +35,18 @@ export default function AdminTransactions() {
     return t.status === filter;
   });
 
-  const handleApprove = async (tx: { id: string; wallet_id: string; amount: number }) => {
+  const handleApprove = async (tx: { id: string; wallet_id: string; amount: number; type: string }) => {
     try {
-      await approveTx.mutateAsync({ txId: tx.id, walletId: tx.wallet_id, amount: tx.amount });
-      toast.success('Transaksi berhasil disetujui');
-    } catch {
-      toast.error('Gagal menyetujui transaksi');
+      if (tx.type === 'withdrawal') {
+        await approveWithdraw.mutateAsync({ txId: tx.id, walletId: tx.wallet_id, amount: tx.amount });
+        toast.success('Disbursement berhasil dikirim ke Xendit');
+      } else {
+        await approveTx.mutateAsync({ txId: tx.id, walletId: tx.wallet_id, amount: tx.amount });
+        toast.success('Transaksi berhasil disetujui');
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Gagal menyetujui transaksi';
+      toast.error(msg);
     }
   };
 
@@ -138,7 +146,7 @@ export default function AdminTransactions() {
                 <Button
                   className="flex-1 h-9 bg-emerald-600 hover:bg-emerald-700 text-white"
                   onClick={() => handleApprove(tx)}
-                  disabled={approveTx.isPending}
+                  disabled={tx.type === 'withdrawal' ? approveWithdraw.isPending : approveTx.isPending}
                 >
                   <CheckCircle size={14} /> Setujui
                 </Button>

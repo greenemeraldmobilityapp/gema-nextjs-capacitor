@@ -44,15 +44,75 @@ serve(async (req) => {
     }
 
     // Invoice webhook (legacy format)
-    const { external_id: orderId, status } = body
+    const { external_id, status } = body
 
-    if (!orderId) {
+    if (!external_id) {
       return new Response('Missing external_id', { status: 400 })
     }
 
-    console.log(`Webhook received: order=${orderId}, status=${status}`)
+    console.log(`Webhook received: external_id=${external_id}, status=${status}`)
 
     if (status === 'PAID') {
+      // --- TOPUP FLOW ---
+      if (external_id.startsWith('topup_')) {
+        const txId = external_id.replace('topup_', '')
+
+        // Idempotency: skip if already processed
+        const checkRes = await supabaseFetch(
+          `/wallet_transactions?id=eq.${txId}&select=status`,
+        )
+        const existing = await checkRes.json()
+        if (existing?.[0]?.status === 'success') {
+          console.log(`Topup ${txId} already processed, skipping`)
+          return new Response('OK', { status: 200 })
+        }
+
+        // Get transaction details
+        const txRes = await supabaseFetch(
+          `/wallet_transactions?id=eq.${txId}&select=wallet_id,amount`,
+        )
+        const txData = await txRes.json()
+        const tx = txData?.[0]
+        if (!tx) {
+          console.error(`Topup transaction ${txId} not found`)
+          return new Response('Transaction not found', { status: 404 })
+        }
+
+        // Update transaction to success
+        await supabaseFetch(`/wallet_transactions?id=eq.${txId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'success' }),
+        })
+
+        // Credit wallet balance
+        const rpcRes = await supabaseFetch(`/rpc/credit_wallet`, {
+          method: 'POST',
+          body: JSON.stringify({
+            p_wallet_id: tx.wallet_id,
+            p_amount: tx.amount,
+          }),
+        })
+
+        if (!rpcRes.ok) {
+          // Fallback: direct balance update
+          const walletRes = await supabaseFetch(
+            `/wallets?id=eq.${tx.wallet_id}&select=balance`,
+          )
+          const walletData = await walletRes.json()
+          const currentBalance = walletData?.[0]?.balance || 0
+          await supabaseFetch(`/wallets?id=eq.${tx.wallet_id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ balance: currentBalance + tx.amount }),
+          })
+        }
+
+        console.log(`Topup ${txId} processed: ${tx.amount} credited to wallet ${tx.wallet_id}`)
+        return new Response('OK', { status: 200 })
+      }
+
+      // --- ORDER PAYMENT FLOW (existing) ---
+      const orderId = external_id
+
       // Idempotency: skip if already processed
       const checkRes = await supabaseFetch(
         `/orders?id=eq.${orderId}&select=payment_status`,
@@ -73,9 +133,18 @@ serve(async (req) => {
 
       console.log(`Order ${orderId} set to escrow`)
     } else if (status === 'EXPIRED') {
-      console.log(`Invoice expired for order ${orderId}`)
+      if (external_id.startsWith('topup_')) {
+        const txId = external_id.replace('topup_', '')
+        await supabaseFetch(`/wallet_transactions?id=eq.${txId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'failed' }),
+        })
+        console.log(`Topup ${txId} expired, status set to failed`)
+      } else {
+        console.log(`Invoice expired for order ${external_id}`)
+      }
     } else {
-      console.log(`Unhandled webhook status: ${status} for order ${orderId}`)
+      console.log(`Unhandled webhook status: ${status} for ${external_id}`)
     }
 
     return new Response('OK', { status: 200 })

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
-import { LayoutDashboard, Users, Scale, ClipboardList, Gift, ArrowLeftRight, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, Users, Scale, ClipboardList, Gift, ArrowLeftRight, ShieldAlert, Briefcase } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/dashboard' },
   { icon: ShieldAlert, label: 'Fraud', href: '/admin/fraud' },
   { icon: Users, label: 'Vendor', href: '/admin/vendors' },
+  { icon: Briefcase, label: 'Portofolio', href: '/admin/services' },
   { icon: Scale, label: 'Sengketa', href: '/admin/disputes' },
   { icon: ClipboardList, label: 'Pesanan', href: '/admin/orders' },
   { icon: ArrowLeftRight, label: 'Transaksi', href: '/admin/transactions' },

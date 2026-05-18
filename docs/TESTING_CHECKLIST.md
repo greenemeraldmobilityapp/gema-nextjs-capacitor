@@ -277,7 +277,7 @@ AND NOT EXISTS (SELECT 1 FROM wallets WHERE user_id = '<UUID_VENDOR>');
 | 2 | Scroll ke riwayat transaksi | Transaksi dari wallet_transactions tampil |
 | 3 | Buka `/wallet` | Saldo tampil dari database |
 | 4 | Cek riwayat transaksi | Transaksi dari wallet_transactions tampil |
-| 5 | Tap "Top Up" | Button disabled (belum terintegrasi) |
+| 5 | Tap "Top Up" | Navigasi ke `/wallet/topup` |
 
 ### K.3. Portfolio
 
@@ -560,24 +560,73 @@ npx supabase functions logs xendit-webhook --tail
 | Webhook gagal (401) setelah fix JWT | Cek `XENDIT_WEBHOOK_TOKEN` di Supabase secrets cocok dengan token dari halaman detail webhook Xendit |
 | Webhook URL tidak reachable | Pastikan URL adalah Supabase Edge Function URL (publik secara default) |
 | Order tidak terupdate | Cek logs di Supabase Dashboard → Edge Functions → `xendit-webhook` → Logs |
-| Wallet tidak terisi | Pastikan vendor punya wallet row (auto-create di `/wallet` page) |
+| Wallet tidak terisi (order payment) | Pastikan vendor punya wallet row (auto-create di `/wallet` page) |
+| Wallet tidak terisi (topup) | Cek `wallet_transactions` apakah webhook sudah update status jadi `success`. Cek logs `xendit-webhook` |
 
 ---
 
 ### K.16. Wallet Topup & Withdraw
 
+> **Flow Topup:** User input amount → `create-topup-invoice` EF buat transaksi + invoice Xendit → redirect ke Xendit → bayar → webhook `xendit-webhook` detect `topup_<tx_id>` → `status: success` + **balance otomatis bertambah**
+>
+> **Flow Withdraw:** User request withdrawal (pending) → Admin approve → `create-disbursement` EF → Xendit Disbursement API → kirim dana ke rekening user
+
 | Langkah | Skenario | Expected Result |
 |---------|----------|----------------|
-| 1 | Buka `/wallet` | Tombol "Top Up" dan "Tarik" aktif (tidak disabled) |
+| 1 | Buka `/wallet` | Tombol "Top Up" dan "Tarik" aktif |
 | 2 | Tap "Top Up" | Redirect ke `/wallet/topup` |
 | 3 | Tap nominal Rp 50.000 | Input terisi otomatis |
-| 4 | Tap "Top Up Rp 50.000" | Loading "Memproses..." lalu toast sukses |
-| 5 | Redirect ke `/wallet` | Transaksi baru muncul di riwayat dengan status "Tertunda" |
-| 6 | Tap "Tarik" | Redirect ke `/wallet/withdraw` |
-| 7 | Isi jumlah, pilih bank, isi rekening, isi nama | Tombol "Tarik" aktif |
-| 8 | Tap "Tarik" | Toast sukses, transaksi "Tertunda" muncul |
-| 9 | Cek validasi: jumlah > saldo | Error "Melebihi saldo tersedia" |
-| 10 | Cek validasi: jumlah < Rp 10.000 | Tombol disabled |
+| 4 | Perhatikan info "Pembayaran via Xendit" | Info card emerald muncul dengan teks redirect ke Xendit |
+| 5 | Tap "Top Up Rp 50.000" | Loading "Menyiapkan pembayaran..." lalu redirect ke halaman Xendit |
+| 6 | Di halaman Xendit (sandbox), selesaikan pembayaran | Redirect ke `/wallet/topup/success?tx_id=...` |
+| 7 | Halaman success polling "Memverifikasi Pembayaran" | Polling status `wallet_transactions` setiap 2 detik |
+| 8 | Webhook dari Xendit diterima → status jadi `success` | Halaman berubah jadi "Top Up Berhasil!" |
+| 9 | Buka `/wallet` (tanpa refresh manual) | **Balance bertambah**, transaksi topup muncul dengan icon emerald |
+| 10 | **Polling timeout:** Jika webhook tidak kunjung tiba (15s) | Halaman fallback "Pembayaran Belum Dikonfirmasi" |
+| 11 | Tap "Tarik" | Redirect ke `/wallet/withdraw` |
+| 12 | Isi jumlah, pilih bank, isi rekening, isi nama | Tombol "Tarik" aktif |
+| 13 | Tap "Tarik" | Toast sukses, transaksi "Tertunda" muncul |
+| 14 | Login sebagai Admin, buka `/admin/transactions` | Transaksi withdrawal pending tampil dengan bank info |
+| 15 | Admin tap **"Setujui"** pada withdrawal | Memanggil `create-disbursement` EF → Xendit Disbursement API |
+| 16 | Jika disbursement sukses | Toast "Disbursement berhasil dikirim ke Xendit", status jadi `success` |
+| 17 | Jika disbursement gagal (saldo Xendit tidak cukup) | Toast error, status tetap `pending` |
+| 18 | Cek validasi: jumlah > saldo | Error "Melebihi saldo tersedia" |
+| 19 | Cek validasi: jumlah < Rp 10.000 | Tombol disabled |
+
+### K.16.1. Topup via Xendit — Direct Edge Function Test (Supabase CLI)
+
+```bash
+# Test create-topup-invoice (tanpa auth — harus 401)
+curl -s -X POST "https://ajteskgdggxwefcrncuu.supabase.co/functions/v1/create-topup-invoice" \
+  -H "Content-Type: application/json" \
+  -d '{"wallet_id":"test","amount":50000}'
+# Expected: {"code":"UNAUTHORIZED_NO_AUTH_HEADER","message":"Missing authorization header"}
+```
+
+```bash
+# Cek logs xendit-webhook
+npx supabase functions logs xendit-webhook --tail
+```
+
+### K.16.2. SQL — Verifikasi Transaksi Topup & Withdraw
+
+```sql
+-- Cek transaksi topup sukses via Xendit
+SELECT * FROM wallet_transactions 
+WHERE type = 'topup' AND status = 'success' 
+ORDER BY created_at DESC LIMIT 5;
+
+-- Cek transaksi withdrawal disbursement
+SELECT * FROM wallet_transactions 
+WHERE type = 'withdrawal' 
+ORDER BY created_at DESC LIMIT 5;
+
+-- Cek balance wallet terupdate
+SELECT w.id, w.user_id, w.balance, u.email
+FROM wallets w
+JOIN users u ON u.id = w.user_id
+ORDER BY w.balance DESC LIMIT 10;
+```
 
 #### K.25. Design System — Button Refinement (Stitch BATCH 1)
 
@@ -1322,4 +1371,91 @@ Migration ini membuat function `is_admin()` + semua RLS policies untuk admin.
 | 3 | Login sebagai **Vendor lain** di browser/device lain | Tidak ada invalidasi global — transaksi vendor lain tidak ter-refetch |
 | 4 | Cek `onSuccess` di `useRequestTopup` | `invalidateQueries(['wallet-transactions', data.wallet_id])` — spesifik per wallet |
 | 5 | Cek `onSuccess` di `useRequestWithdraw` | `invalidateQueries(['wallet-transactions', data.wallet_id])` — spesifik per wallet |
+
+---
+
+### K.33. Xendit Wallet Integration — Topup via Invoice & Withdraw via Disbursement (18 Mei 2026)
+
+> Integrasi baru: Topup otomatis via Xendit Invoice, withdraw otomatis via Xendit Disbursement. Admin tidak perlu approve topup manual lagi (webhook otomatis credit balance).
+
+#### K.33.1. New Edge Functions
+
+| Function | verify_jwt | Description |
+|----------|-----------|-------------|
+| `create-topup-invoice` | `true` | Buat pending transaction + Xendit invoice, return invoice_url |
+| `create-disbursement` | `true` | Panggil Xendit Disbursement API untuk kirim dana (admin only) |
+
+#### K.33.2. Topup via Xendit Invoice
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/wallet/topup` | Saldo saat ini tampil di balance card |
+| 2 | Pilih nominal Rp 100.000 | Input terisi, ringkasan "Jumlah Top Up Rp 100.000" |
+| 3 | Info card "Pembayaran via Xendit" | Card emerald dengan icon ExternalLink |
+| 4 | Tap "Top Up Rp 100.000" | Loading "Menyiapkan pembayaran..." |
+| 5 | EF `create-topup-invoice` dipanggil | Insert `wallet_transactions` (type=topup, status=pending) + create Xendit invoice |
+| 6 | Redirect ke halaman Xendit | URL = `https://checkout.xendit.co/...` |
+| 7 | Jika Xendit error (saldo tidak cukup, dll) | Rollback: pending transaction dihapus, toast error |
+| 8 | Selesaikan pembayaran di Xendit sandbox | Redirect ke `/wallet/topup/success?tx_id=...` |
+| 9 | Halaman success | Polling setiap 2 detik, status loading "Memverifikasi Pembayaran" |
+| 10 | Webhook `xendit-webhook` terima `PAID` untuk `external_id = topup_<tx_id>` | Update status = 'success', **credit wallet balance** |
+| 11 | Halaman berubah jadi "Top Up Berhasil!" | CheckCircle icon, tombol "Kembali ke Dompet" |
+| 12 | Buka `/wallet` | Saldo bertambah, transaksi topup dengan icon emerald + "success" |
+| 13 | **Idempotency:** Kirim webhook yang sama dua kali | Kedua kalinya di-skip, tidak ada double-credit |
+| 14 | **Expired:** Invoice tidak dibayar, webhook `EXPIRED` | Transaksi di-update jadi `failed` |
+| 15 | **Fallback timeout:** Polling 30x (60 detik) tanpa webhook | Halaman fallback "Pembayaran Belum Dikonfirmasi" |
+
+#### K.33.3. Withdraw via Xendit Disbursement
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/wallet/withdraw` | Saldo tersedia tampil |
+| 2 | Isi jumlah 50.000, pilih bank "BCA", norek "1234567890", nama "Budi" | Form valid, tombol "Tarik" aktif |
+| 3 | Tap "Tarik" | Insert `wallet_transactions` (type=withdrawal, status=pending, bank_name, account_number terisi) |
+| 4 | Login sebagai Admin, buka `/admin/transactions` | Transaksi withdrawal pending tampil dengan info bank |
+| 5 | Admin tap **"Setujui"** | Panggil `create-disbursement` EF |
+| 6 | EF verify JWT admin + admin role | 403 jika bukan admin |
+| 7 | EF validasi: type=withdrawal, status=pending, bank details lengkap | Validasi lolos |
+| 8 | EF panggil Xendit Disbursement API `POST /v2/disbursements` | Request body: bank_code, account_number, account_holder_name, amount |
+| 9 | Xendit return success | Transaction status = 'success', toast "Disbursement berhasil dikirim" |
+| 10 | Cek wallet vendor | Balance sudah terpotong (amount negative di transaction) |
+| 11 | Xendit return error (invalid bank, insufficient balance, dll) | Transaction tetap pending, toast error dari Xendit |
+| 12 | **Error:** Transaksi sudah diproses sebelumnya | EF return 400 "Transaction already processed" |
+| 13 | **Error:** Transaksi bukan withdrawal | EF return 400 "Not a withdrawal transaction" |
+
+#### K.33.4. Regression — Topup Manual (via Admin) masih berfungsi
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Insert `wallet_transactions` langsung: `INSERT INTO wallet_transactions (wallet_id, type, amount, status) VALUES ('<WALLET_ID>', 'topup', 25000, 'pending')` | Transaksi pending muncul di admin |
+| 2 | Admin tap "Setujui" untuk topup manual | Menggunakan `useApproveTransaction` (bukan disbursement), balance bertambah |
+| 3 | **Regression:** Topup Xendit tetap terproses via webhook | Kedua flow tidak konflik |
+
+#### K.33.5. Deploy & Verify Edge Functions via Supabase CLI
+
+```bash
+# 1. Deploy semua function
+npx supabase functions deploy create-topup-invoice
+npx supabase functions deploy create-disbursement
+npx supabase functions deploy xendit-webhook
+
+# 2. Verifikasi semua function terdeploy
+npx supabase functions list
+
+# 3. Test create-topup-invoice tanpa auth (harus 401)
+curl -s -X POST "https://ajteskgdggxwefcrncuu.supabase.co/functions/v1/create-topup-invoice" \
+  -H "Content-Type: application/json" \
+  -d '{"wallet_id":"test","amount":50000}'
+# Expected: 401 Unauthorized
+
+# 4. Test xendit-webhook tanpa callback token (harus 401)
+curl -s -X POST "https://ajteskgdggxwefcrncuu.supabase.co/functions/v1/xendit-webhook" \
+  -H "Content-Type: application/json" \
+  -d '{"external_id":"test_123","status":"PAID"}'
+# Expected: 401 Unauthorized
+
+# 5. Cek logs realtime
+npx supabase functions logs xendit-webhook --tail
+npx supabase functions logs create-topup-invoice --tail
+```
 

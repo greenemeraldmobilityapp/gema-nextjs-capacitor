@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useVendor, useVendorServices } from '@/lib/services/useVendors';
+import { useVendor, useVendorActiveServices } from '@/lib/services/useVendors';
 import { useVendorReviews } from '@/lib/services/useReviews';
 
 export default function VendorDetailPage() {
@@ -28,7 +28,7 @@ function VendorDetailContent() {
   const id = searchParams.get('id') || '';
   
   const { data: vendor, isLoading: vendorLoading, error: vendorError } = useVendor(id);
-  const { data: services, isLoading: servicesLoading } = useVendorServices(id);
+  const { data: services, isLoading: servicesLoading } = useVendorActiveServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useVendorReviews(id);
 
   if (vendorLoading) {

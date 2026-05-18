@@ -207,6 +207,18 @@ export default function VendorPortfolioPage() {
                       )}
                     </button>
                   </div>
+
+                  <div className="absolute top-2 left-2">
+                    {service.status === 'pending' ? (
+                      <span className="bg-orange-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm">
+                        Tertunda
+                      </span>
+                    ) : service.status === 'rejected' ? (
+                      <span className="bg-red-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm">
+                        Ditolak
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               );
             })}
@@ -242,7 +254,18 @@ export default function VendorPortfolioPage() {
                       )}
                       <p className="font-bold text-emerald-600 text-sm mt-1">Rp {service.price.toLocaleString('id-ID')}</p>
                     </div>
-                    <div className="flex gap-1.5 shrink-0">
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      {service.status === 'pending' && (
+                        <span className="bg-orange-100 text-orange-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                          Tertunda
+                        </span>
+                      )}
+                      {service.status === 'rejected' && (
+                        <span className="bg-red-100 text-red-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                          Ditolak
+                        </span>
+                      )}
+                    <div className="flex gap-1.5">
                       <button
                         onClick={() => router.push(`/vendor/portfolio/edit/${service.id}`)}
                         className="w-9 h-9 rounded-xl bg-stone-100 text-stone-500 hover:bg-stone-200 transition-colors flex items-center justify-center"
@@ -260,6 +283,7 @@ export default function VendorPortfolioPage() {
                           <Trash2 size={16} />
                         )}
                       </button>
+                    </div>
                     </div>
                   </div>
                 </div>

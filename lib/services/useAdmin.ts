@@ -220,6 +220,51 @@ export function useAllPromos() {
   });
 }
 
+export type AdminService = {
+  id: string;
+  vendor_id: string;
+  title: string;
+  category: string;
+  price: number;
+  description: string | null;
+  image_url: string | null;
+  status: string;
+  vendor_profiles?: { users?: { full_name: string } | null } | null;
+};
+
+export function useAllServices() {
+  return useQuery({
+    queryKey: ['admin-services'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('services')
+        .select('*, vendor_profiles!inner(user_id, users!inner(full_name))')
+        .order('vendor_id');
+
+      if (error) throw error;
+      return data as AdminService[];
+    },
+  });
+}
+
+export function useUpdateServiceStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ serviceId, status }: { serviceId: string; status: string }) => {
+      const { error } = await supabase
+        .from('services')
+        .update({ status })
+        .eq('id', serviceId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-services'] });
+    },
+  });
+}
+
 export function useCreatePromo() {
   const queryClient = useQueryClient();
 

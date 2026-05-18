@@ -63,6 +63,7 @@ export type Service = {
   price: number;
   description: string | null;
   image_url: string | null;
+  status: string;
 };
 
 export function useVendorServices(vendorId: string | undefined) {
@@ -74,6 +75,24 @@ export function useVendorServices(vendorId: string | undefined) {
         .from('services')
         .select('*')
         .eq('vendor_id', vendorId);
+
+      if (error) throw error;
+      return data as Service[];
+    },
+    enabled: !!vendorId,
+  });
+}
+
+export function useVendorActiveServices(vendorId: string | undefined) {
+  return useQuery({
+    queryKey: ['vendor-services-active', vendorId],
+    queryFn: async () => {
+      if (!vendorId) return [];
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .eq('vendor_id', vendorId)
+        .eq('status', 'active');
 
       if (error) throw error;
       return data as Service[];
@@ -147,7 +166,7 @@ export function useCreateService() {
     }) => {
       const { error } = await supabase
         .from('services')
-        .insert(service);
+        .insert({ ...service, status: 'pending' });
 
       if (error) throw error;
     },

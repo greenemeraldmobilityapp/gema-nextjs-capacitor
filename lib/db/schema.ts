@@ -47,6 +47,7 @@ export const services = pgTable('services', {
   price: integer('price').notNull(),
   description: text('description'),
   imageUrl: text('image_url'),
+  status: text('status').default('pending').notNull(),
 });
 
 export const orders = pgTable('orders', {

@@ -3,3 +3,5 @@
 [functions.xendit-webhook]
 verify_jwt = false
 [functions.release-payment]
+[functions.create-topup-invoice]
+[functions.create-disbursement]

@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:host": "next dev -H 0.0.0.0 -p 3000",
     "dev:host:3001": "next dev -H 0.0.0.0 -p 3001",
-    "dev:host:3002": "next dev -H 0.0.0.0 -p 3002",        
+    "dev:host:3003": "next dev -H 0.0.0.0 -p 3003",        
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

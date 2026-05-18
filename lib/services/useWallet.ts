@@ -169,3 +169,42 @@ export function useRequestWithdraw() {
     },
   });
 }
+
+export function useApproveWithdrawDisbursement() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      txId,
+      walletId,
+      amount,
+    }: {
+      txId: string;
+      walletId: string;
+      amount: number;
+    }) => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error('Sesi admin tidak ditemukan');
+
+      const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-disbursement`;
+      const res = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ tx_id: txId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal memproses disbursement');
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+    },
+  });
+}

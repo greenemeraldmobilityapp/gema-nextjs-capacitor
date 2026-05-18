@@ -1,13 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Loader2, Wallet, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Loader2, Wallet, Sparkles, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth';
-import { useWallet, useRequestTopup } from '@/lib/services/useWallet';
+import { useWallet } from '@/lib/services/useWallet';
+import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 const QUICK_AMOUNTS = [50000, 100000, 200000, 500000];
@@ -16,8 +17,8 @@ export default function TopupPage() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
   const { data: wallet } = useWallet(profile?.id);
-  const topup = useRequestTopup();
   const [amount, setAmount] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const numericAmount = parseInt(amount.replace(/\D/g, ''), 10) || 0;
 
@@ -30,16 +31,35 @@ export default function TopupPage() {
       toast.error('Minimal top up Rp 10.000');
       return;
     }
-    topup.mutate(
-      { walletId: wallet.id, amount: numericAmount },
-      {
-        onSuccess: () => {
-          toast.success('Permintaan top up berhasil dikirim');
-          router.push('/wallet');
+
+    setIsProcessing(true);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error('Sesi tidak ditemukan. Silakan login ulang.');
+
+      const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-topup-invoice`;
+      const res = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        onError: (err) => toast.error(err.message || 'Gagal mengirim permintaan'),
-      }
-    );
+        body: JSON.stringify({ wallet_id: wallet.id, amount: numericAmount }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal membuat invoice top up');
+
+      // Redirect to Xendit payment page
+      window.location.href = data.invoice_url;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Gagal memproses top up';
+      toast.error(msg);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -127,18 +147,29 @@ export default function TopupPage() {
             <span className="font-heading text-xl font-bold text-gray-800">Rp {numericAmount.toLocaleString()}</span>
           </div>
         </div>
+
+        {/* Payment info */}
+        <div className="bg-emerald-50 rounded-3xl p-4 border border-emerald-200">
+          <p className="text-sm font-semibold text-emerald-800 flex items-center gap-2">
+            <ExternalLink size={16} />
+            Pembayaran via Xendit
+          </p>
+          <p className="text-xs text-emerald-600 mt-1">
+            Anda akan diarahkan ke halaman pembayaran Xendit untuk menyelesaikan top up.
+          </p>
+        </div>
       </div>
 
       <div className="p-4 bg-white/80 backdrop-blur-xl border-t border-gray-100">
         <Button
           onClick={handleSubmit}
-          disabled={numericAmount < 10000 || topup.isPending}
+          disabled={numericAmount < 10000 || isProcessing}
           variant="premium"
           size="lg"
           className="w-full disabled:opacity-50"
         >
-          {topup.isPending ? (
-            <><Loader2 size={20} className="animate-spin mr-2" /> Memproses...</>
+          {isProcessing ? (
+            <><Loader2 size={20} className="animate-spin mr-2" /> Menyiapkan pembayaran...</>
           ) : (
             <><Plus size={20} /> Top Up Rp {numericAmount.toLocaleString()}</>
           )}
