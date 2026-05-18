@@ -145,7 +145,7 @@ function PaymentContent() {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ order_id: order.id }),
+                body: JSON.stringify({ order_id: order.id, origin: window.location.origin }),
               });
               const data = await res.json();
               if (!res.ok) throw new Error(data.error || 'Gagal membuat invoice');
