@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Loader2, Wallet, Sparkles, ExternalLink } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -62,7 +64,12 @@ export default function TopupPage() {
       if (!res.ok) throw new Error(data.error || 'Gagal membuat invoice top up');
 
       // Redirect to Xendit payment page
-      window.location.href = data.invoice_url;
+      if (Capacitor.isNativePlatform()) {
+        await Browser.open({ url: data.invoice_url });
+        router.push(`/wallet/topup/success?tx_id=${data.tx_id}`);
+      } else {
+        window.location.href = data.invoice_url;
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Gagal memproses top up';
       toast.error(msg);
