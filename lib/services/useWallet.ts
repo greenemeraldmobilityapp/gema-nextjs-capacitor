@@ -15,6 +15,9 @@ export type WalletTransaction = {
   type: string;
   amount: number;
   status: string;
+  bank_name?: string | null;
+  account_number?: string | null;
+  account_holder?: string | null;
   created_at: string;
 };
 
@@ -121,8 +124,8 @@ export function useRequestTopup() {
       if (error) throw error;
       return data as WalletTransaction;
     },
-    onSuccess: (_data) => {
-      queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['wallet-transactions', data.wallet_id] });
     },
   });
 }
@@ -151,6 +154,9 @@ export function useRequestWithdraw() {
           type: 'withdrawal',
           amount: -amount,
           status: 'pending',
+          bank_name: bankName,
+          account_number: accountNumber,
+          account_holder: accountHolder,
         })
         .select()
         .single();
@@ -158,8 +164,8 @@ export function useRequestWithdraw() {
       if (error) throw error;
       return data as WalletTransaction;
     },
-    onSuccess: (_data) => {
-      queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['wallet-transactions', data.wallet_id] });
     },
   });
 }

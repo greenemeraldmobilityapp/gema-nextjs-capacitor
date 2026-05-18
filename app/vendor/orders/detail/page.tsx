@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
 import { useAuthStore } from '@/store/auth';
 import { createClient } from '@/lib/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { VendorLocationSharer } from '@/components/shared/LiveTracker';
 
@@ -19,6 +20,7 @@ function OrderDetailContent() {
   const id = searchParams.get('id') || '';
   const { data: order, isLoading, error } = useOrder(id);
   const updateStatus = useUpdateOrderStatus();
+  const queryClient = useQueryClient();
   const profile = useAuthStore((s) => s.profile);
 
   const statusSteps = [
@@ -67,7 +69,8 @@ function OrderDetailContent() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Gagal melepaskan pembayaran');
-        await updateStatus.mutateAsync(mutations.complete);
+        queryClient.invalidateQueries({ queryKey: ['order', order.id] });
+        queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
       } else {
         await updateStatus.mutateAsync(mutations[action]);
       }
@@ -109,7 +112,7 @@ function OrderDetailContent() {
   }
 
   const formattedDate = order.scheduled_date
-    ? new Date(order.scheduled_date + 'T' + (order.scheduled_time || '00:00')).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    ? new Date(order.scheduled_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     : '-';
 
   return (

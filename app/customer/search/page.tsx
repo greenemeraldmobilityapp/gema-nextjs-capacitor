@@ -35,14 +35,19 @@ function SearchContent() {
     { label: 'Teknisi Listrik', value: 'teknisi-listrik' },
     { label: 'Plumbing', value: 'plumbing' },
     { label: 'Cat & Interior', value: 'cat-interior' },
+    { label: 'AC & Kulkas', value: 'ac-kulkas' },
+    { label: 'Elektronik', value: 'elektronik' },
+    { label: 'Furniture', value: 'furniture' },
+    { label: 'Pest Control', value: 'pest-control' },
   ];
 
   const activeChip = categoryParam || '';
   const filteredVendors = (vendors || []).filter((vendor) => {
     const nameMatch = vendor.users?.full_name?.toLowerCase().includes(query.toLowerCase());
     const specMatch = vendor.specialization?.toLowerCase().includes(query.toLowerCase());
+    const hasMatchingService = (vendor.services || []).some(s => s.category === activeChip);
     const categoryMatch = activeChip
-      ? vendor.specialization?.toLowerCase().replace(/\s+/g, '-') === activeChip.toLowerCase()
+      ? hasMatchingService || vendor.specialization?.toLowerCase().replace(/\s+/g, '-') === activeChip.toLowerCase()
       : true;
     return (nameMatch || specMatch) && (!activeChip || categoryMatch);
   });

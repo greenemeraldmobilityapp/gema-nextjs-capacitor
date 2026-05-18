@@ -112,6 +112,9 @@ export const walletTransactions = pgTable('wallet_transactions', {
   type: text('type').notNull(), // 'topup', 'withdrawal', 'payment', 'escrow_release'
   amount: integer('amount').notNull(),
   status: text('status').notNull(), // 'pending', 'success', 'failed'
+  bankName: text('bank_name'),
+  accountNumber: text('account_number'),
+  accountHolder: text('account_holder'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

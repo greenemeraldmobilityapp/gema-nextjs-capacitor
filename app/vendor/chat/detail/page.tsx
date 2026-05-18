@@ -9,6 +9,7 @@ import { useSearchParams } from 'next/navigation';
 import { useChatByOrder, useChatMessages, useRealtimeMessages, useSendMessage } from '@/lib/services/useChat';
 import { useAuthStore } from '@/store/auth';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export default function VendorChatDetailPage() {
   return (
@@ -42,7 +43,8 @@ function ChatDetailContent() {
     sendMessage.mutate(
       { chatId: chat.id, senderId: profile.id, message: input.trim() },
       {
-        onSuccess: () => setInput(''),
+        onSuccess: () => { setInput(''); toast.success('Pesan terkirim'); },
+        onError: () => toast.error('Gagal mengirim pesan'),
       }
     );
   };
@@ -134,6 +136,7 @@ function ChatDetailContent() {
           <Send size={20} />
         </Button>
       </div>
+      <div className="h-16 shrink-0" />
     </div>
   );
 }

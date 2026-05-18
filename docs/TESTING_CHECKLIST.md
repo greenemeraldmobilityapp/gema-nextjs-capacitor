@@ -1265,3 +1265,61 @@ Migration ini membuat function `is_admin()` + semua RLS policies untuk admin.
 | `coverageRadius` and `operatingHours` not persisted | Vendor address form data lost on reload | Schema migration |
 | Migration 0008 not yet applied to production DB | RLS policies are inert until migration runs | `supabase db push` or manual apply |
 
+---
+
+### K.32. Wallet Module Fixes (18 Mei 2026)
+
+> 5 issues diperbaiki: bank details hilang saat withdraw, cache user tidak di-invalidate setelah admin approve, vendor "Tarik Saldo" button kosmetik, promo detail pakai raw Supabase client, topup invalidasi global.
+
+#### K.32.1. Bank Details Persistence (Issue 🔴 #1)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/wallet/withdraw`, isi jumlah 50.000, pilih bank "BCA", isi rekening "1234567890", isi nama "Budi" | Form valid |
+| 2 | Tap "Tarik" | Toast sukses, transaksi "Tertunda" muncul di riwayat |
+| 3 | Cek row di `wallet_transactions` via SQL: `SELECT bank_name, account_number, account_holder FROM wallet_transactions WHERE type = 'withdrawal' ORDER BY created_at DESC LIMIT 1;` | `bank_name = 'BCA'`, `account_number = '1234567890'`, `account_holder = 'Budi'` |
+| 4 | Buka `/admin/transactions` sebagai Admin | Transaksi withdrawal terbaru tampil dengan bank info |
+| 5 | Kolom `bank_name`, `account_number`, `account_holder` ada di tabel | Migration 0010 sukses |
+| 6 | **Regression:** Transaksi non-withdrawal (topup, payment) | Bank columns = NULL, tidak error |
+
+#### K.32.2. Wallet Cache Invalidation After Admin Approve (Issue 🔴 #2)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Login sebagai Vendor, catat saldo di `/vendor/earnings` | Saldo tampil |
+| 2 | Login sebagai Admin, buka `/admin/transactions` | Transaksi pending vendor tampil |
+| 3 | Admin tap "Setujui" untuk transaksi vendor | Toast sukses |
+| 4 | Kembali ke halaman Vendor (tanpa refresh manual) | Saldo **terupdate otomatis** (cache di-invalidate) |
+| 5 | Cek bahwa `['wallet', userId]` di-invalidate | Query key pattern confirmed di `useApproveTransaction.onSuccess` |
+
+#### K.32.3. Vendor "Tarik Saldo" Navigation (Issue 🟡 #3)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Login sebagai Vendor, buka `/vendor/earnings` | Card saldo muncul |
+| 2 | Tap tombol "Tarik Saldo" di pojok kanan card | Navigasi ke `/wallet/withdraw` |
+| 3 | Halaman withdraw muncul | Form jumlah, bank, rekening, nama tampil |
+| 4 | **Regression:** Tombol tidak berubah styling | `bg-white/20 backdrop-blur-sm rounded-full`, arrow icon |
+
+#### K.32.4. Promo Detail React Query Refactor (Issue 🟡 #4)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka `/wallet/promo?id=...` dengan ID promo valid | Hero card, discount %, countdown, terms tampil |
+| 2 | Cek Network tab | Tidak ada `supabase.from('promos').select()` inline — data dari React Query cache |
+| 3 | Buka promo yang sama lagi (navigasi kedua) | Instant load (cache hit), tanpa loading spinner |
+| 4 | Buka `/wallet/promo?id=INVALID_ID` | "Promo tidak ditemukan" error state |
+| 5 | Loading state | Loader2 spinner saat pertama fetch |
+| 6 | **Regression:** Countdown timer masih jalan | "Berakhir dalam X hari Y jam" |
+| 7 | **Regression:** "Gunakan Promo" button navigasi ke `/customer/search` | Berfungsi normal |
+
+#### K.32.5. Topup/Withdraw Specific Invalidation (Issue 🟢 #5)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Login sebagai Vendor, buka `/wallet` | Saldo & transaksi tampil |
+| 2 | Tap "Top Up" → isi Rp 50.000 → submit | Toast sukses |
+| 3 | Login sebagai **Vendor lain** di browser/device lain | Tidak ada invalidasi global — transaksi vendor lain tidak ter-refetch |
+| 4 | Cek `onSuccess` di `useRequestTopup` | `invalidateQueries(['wallet-transactions', data.wallet_id])` — spesifik per wallet |
+| 5 | Cek `onSuccess` di `useRequestWithdraw` | `invalidateQueries(['wallet-transactions', data.wallet_id])` — spesifik per wallet |
+

@@ -1,12 +1,12 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 const supabaseFetch = (path: string, options: RequestInit = {}) =>
   fetch(`${SUPABASE_URL}/rest/v1${path}`, {
@@ -20,24 +20,31 @@ const supabaseFetch = (path: string, options: RequestInit = {}) =>
   })
 
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     const token = authHeader.slice(7)
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_SERVICE_ROLE_KEY },
+    })
 
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 })
+    if (!userRes.ok) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    const user = await userRes.json()
     const callerId = user.id
 
     const { order_id } = await req.json()
     if (!order_id) {
-      return new Response(JSON.stringify({ error: 'order_id is required' }), { status: 400 })
+      return new Response(JSON.stringify({ error: 'order_id is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     const orderRes = await supabaseFetch(
@@ -47,19 +54,19 @@ serve(async (req) => {
     const order = orders?.[0]
 
     if (!order) {
-      return new Response(JSON.stringify({ error: 'Order not found' }), { status: 404 })
+      return new Response(JSON.stringify({ error: 'Order not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     if (order.vendor_id !== callerId) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 })
+      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     if (order.order_status !== 'in_progress') {
-      return new Response(JSON.stringify({ error: 'Order is not in progress' }), { status: 400 })
+      return new Response(JSON.stringify({ error: 'Order is not in progress' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     if (order.payment_status !== 'escrow') {
-      return new Response(JSON.stringify({ error: 'Payment is not in escrow' }), { status: 400 })
+      return new Response(JSON.stringify({ error: 'Payment is not in escrow' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     const now = new Date().toISOString()
@@ -90,25 +97,23 @@ serve(async (req) => {
         }),
       })
 
-      // Atomic balance update — no race condition
-      await supabaseFetch(`/rpc/credit_wallet`, {
-        method: 'POST',
+      await supabaseFetch(`/wallets?id=eq.${wallet.id}`, {
+        method: 'PATCH',
         body: JSON.stringify({
-          p_wallet_id: wallet.id,
-          p_amount: order.vendor_payout,
+          balance: Number(wallet.balance) + Number(order.vendor_payout),
         }),
       })
     }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
     console.error('release-payment error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
 })

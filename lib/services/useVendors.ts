@@ -19,6 +19,7 @@ export type VendorProfile = {
     lng: number | null;
     address_full?: string | null;
   };
+  services?: { category: string }[];
 };
 
 export function useVendors() {
@@ -27,7 +28,7 @@ export function useVendors() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('vendor_profiles')
-        .select('*, users(full_name, email, phone, lat, lng)')
+        .select('*, users(full_name, email, phone, lat, lng), services(category)')
         .eq('is_verified', true);
 
       if (error) throw error;

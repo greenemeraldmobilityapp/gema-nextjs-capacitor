@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Clock, MapPin, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
 import { useVendorOrders } from '@/lib/services/useOrders';
@@ -23,6 +24,10 @@ export default function VendorOrdersPage() {
   const activeOrders = (orders || []).filter(o => ['pending', 'accepted', 'in_progress'].includes(o.order_status));
   const historyOrders = (orders || []).filter(o => ['completed', 'cancelled'].includes(o.order_status));
   const displayOrders = tab === 'active' ? activeOrders : historyOrders;
+
+  useEffect(() => {
+    if (error) toast.error('Gagal memuat daftar pesanan');
+  }, [error]);
 
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">

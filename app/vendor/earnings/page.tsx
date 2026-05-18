@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { Wallet, TrendingUp, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
 import { useVendorOrders } from '@/lib/services/useOrders';
 import { useWallet, useWalletTransactions } from '@/lib/services/useWallet';
 
 export default function VendorEarningsPage() {
+  const router = useRouter();
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   const profile = useAuthStore((s) => s.profile);
   const { data: orders, isLoading: ordersLoading, error: ordersError } = useVendorOrders(profile?.id);
@@ -70,7 +72,7 @@ export default function VendorEarningsPage() {
                   <Wallet size={18} className="text-white" />
                   <span className="text-sm text-emerald-100">Saldo Tersedia</span>
                 </div>
-                <button className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-semibold text-white hover:bg-white/30 transition-all shadow-md flex items-center gap-1.5">
+                <button onClick={() => router.push('/wallet/withdraw')} className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-semibold text-white hover:bg-white/30 transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
                   Tarik Saldo <ArrowRight size={14} />
                 </button>
               </div>

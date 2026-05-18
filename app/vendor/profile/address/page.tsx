@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { ArrowLeft, MapPin, Building, Navigation, Loader2, Check, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import BottomSheetSelect, { type BottomSheetOption } from '@/components/shared/BottomSheetSelect';
 import { useAuthStore } from '@/store/auth';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -293,75 +294,52 @@ export default function VendorAddressPage() {
 
           <div className="space-y-1">
             <label className="text-xs text-stone-500 ml-1">Provinsi</label>
-            <select
+            <BottomSheetSelect
               value={form.provinceCode}
-              onChange={(e) => {
-                const opt = e.target.selectedOptions[0];
-                handleProvinceChange(e.target.value, opt?.text || '');
-              }}
-              className="w-full h-12 bg-stone-50 border border-stone-200 rounded-xl px-3 text-sm focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
-            >
-              <option value="">Pilih Provinsi</option>
-              {provinces.map((p) => (
-                <option key={p.kode} value={p.kode}>{p.nama}</option>
-              ))}
-            </select>
+              onChange={(v, label) => handleProvinceChange(v, label)}
+              options={provinces.map((p) => ({ value: p.kode, label: p.nama }))}
+              placeholder="Pilih Provinsi"
+              searchable
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-xs text-stone-500 ml-1">Kota / Kabupaten</label>
-            <select
+            <BottomSheetSelect
               value={form.cityCode}
-              disabled={!form.provinceCode || fetchingCities}
-              onChange={(e) => {
-                const opt = e.target.selectedOptions[0];
-                handleCityChange(e.target.value, opt?.text || '');
-              }}
-              className="w-full h-12 bg-stone-50 border border-stone-200 rounded-xl px-3 text-sm focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
-            >
-              <option value="">{fetchingCities ? 'Memuat...' : 'Pilih Kota / Kabupaten'}</option>
-              {cities.map((c) => (
-                <option key={c.kode} value={c.kode}>{c.nama}</option>
-              ))}
-            </select>
+              onChange={(v, label) => handleCityChange(v, label)}
+              options={cities.map((c) => ({ value: c.kode, label: c.nama }))}
+              placeholder="Pilih Kota / Kabupaten"
+              disabled={!form.provinceCode}
+              loading={fetchingCities}
+              searchable
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-xs text-stone-500 ml-1">Kecamatan</label>
-            <select
+            <BottomSheetSelect
               value={form.districtCode}
-              disabled={!form.cityCode || fetchingDistricts}
-              onChange={(e) => {
-                const opt = e.target.selectedOptions[0];
-                handleDistrictChange(e.target.value, opt?.text || '');
-              }}
-              className="w-full h-12 bg-stone-50 border border-stone-200 rounded-xl px-3 text-sm focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
-            >
-              <option value="">{fetchingDistricts ? 'Memuat...' : 'Pilih Kecamatan'}</option>
-              {districts.map((d) => (
-                <option key={d.kode} value={d.kode}>{d.nama}</option>
-              ))}
-            </select>
+              onChange={(v, label) => handleDistrictChange(v, label)}
+              options={districts.map((d) => ({ value: d.kode, label: d.nama }))}
+              placeholder="Pilih Kecamatan"
+              disabled={!form.cityCode}
+              loading={fetchingDistricts}
+              searchable
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-xs text-stone-500 ml-1">Desa / Kelurahan</label>
-            <select
+            <BottomSheetSelect
               value={form.villageCode}
-              disabled={!form.districtCode || fetchingVillages}
-              onChange={(e) => {
-                const opt = e.target.selectedOptions[0];
-                setForm((prev) => ({
-                  ...prev, villageCode: e.target.value, villageName: opt?.text || '',
-                }));
-              }}
-              className="w-full h-12 bg-stone-50 border border-stone-200 rounded-xl px-3 text-sm focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
-            >
-              <option value="">{fetchingVillages ? 'Memuat...' : 'Pilih Desa / Kelurahan'}</option>
-              {villages.map((v) => (
-                <option key={v.kode} value={v.kode}>{v.nama}</option>
-              ))}
-            </select>
+              onChange={(v, label) => setForm((prev) => ({ ...prev, villageCode: v, villageName: label }))}
+              options={villages.map((v) => ({ value: v.kode, label: v.nama }))}
+              placeholder="Pilih Desa / Kelurahan"
+              disabled={!form.districtCode}
+              loading={fetchingVillages}
+              searchable
+            />
           </div>
         </div>
 

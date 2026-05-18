@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useVendorOrders } from '@/lib/services/useOrders';
 import { useWallet } from '@/lib/services/useWallet';
+import { toast } from 'sonner';
 
 export default function VendorDashboard() {
   const profile = useAuthStore((s) => s.profile);
@@ -24,6 +26,10 @@ export default function VendorDashboard() {
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
   const monthlyEarnings = thisMonthOrders.reduce((sum, o) => sum + o.vendor_payout, 0);
+
+  useEffect(() => {
+    if (error) toast.error('Gagal memuat data dashboard');
+  }, [error]);
 
   if (isLoading) {
     return (

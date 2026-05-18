@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Bell, MessageSquare, Tag, ShieldCheck, Lock, Smartphone, ChevronRight, Globe } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 export default function VendorSettingsPage() {
   const [notifications, setNotifications] = useState({
@@ -66,7 +67,10 @@ export default function VendorSettingsPage() {
                       <input
                         type="checkbox"
                         checked={notifications[item.key]}
-                        onChange={() => setNotifications(s => ({...s, [item.key]: !s[item.key]}))}
+                        onChange={() => {
+                          setNotifications(s => ({...s, [item.key]: !s[item.key]}));
+                          toast.success('Pengaturan notifikasi diperbarui');
+                        }}
                         className="sr-only peer"
                       />
                       <div className="w-12 h-6 bg-stone-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500" />

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ClipboardList, Wallet, User } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, MessageCircle, Wallet, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function VendorBottomNav() {
@@ -11,6 +11,7 @@ export function VendorBottomNav() {
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/vendor/dashboard' },
     { icon: ClipboardList, label: 'Orders', href: '/vendor/orders' },
+    { icon: MessageCircle, label: 'Chat', href: '/vendor/chat' },
     { icon: Wallet, label: 'Earnings', href: '/vendor/earnings' },
     { icon: User, label: 'Profile', href: '/vendor/profile' },
   ];

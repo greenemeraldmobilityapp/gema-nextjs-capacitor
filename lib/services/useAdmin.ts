@@ -285,6 +285,9 @@ export type AdminTransaction = {
   type: string;
   amount: number;
   status: string;
+  bank_name?: string | null;
+  account_number?: string | null;
+  account_holder?: string | null;
   created_at: string;
   wallets?: { user_id: string } | null;
 };
@@ -318,7 +321,7 @@ export function useApproveTransaction() {
 
       const { data: wallet } = await supabase
         .from('wallets')
-        .select('balance')
+        .select('balance, user_id')
         .eq('id', walletId)
         .single();
 
@@ -330,10 +333,15 @@ export function useApproveTransaction() {
         .eq('id', walletId);
 
       if (walletError) throw walletError;
+
+      return { userId: wallet?.user_id };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-transactions'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      if (data?.userId) {
+        queryClient.invalidateQueries({ queryKey: ['wallet', data.userId] });
+      }
     },
   });
 }

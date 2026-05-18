@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { MessageSquare, Search, Circle, Loader2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/auth';
 import { useVendorChats } from '@/lib/services/useChat';
@@ -22,6 +23,10 @@ export default function VendorChatPage() {
   const [search, setSearch] = useState('');
   const profile = useAuthStore((s) => s.profile);
   const { data: chats, isLoading, error } = useVendorChats(profile?.id);
+
+  useEffect(() => {
+    if (error) toast.error('Gagal memuat percakapan');
+  }, [error]);
 
   const filteredChats = (chats || []).filter(chat =>
     chat.order?.customer?.full_name?.toLowerCase().includes(search.toLowerCase()) ||

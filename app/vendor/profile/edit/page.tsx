@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, User, Camera, Loader2, ImageOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import BottomSheetSelect, { type BottomSheetOption } from '@/components/shared/BottomSheetSelect';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
 import { createClient } from '@/lib/supabase/client';
@@ -14,6 +15,17 @@ import { compressImage, deleteExistingAvatar } from '@/lib/image-utils';
 import { toast } from 'sonner';
 
 const supabase = createClient();
+
+const SPECIALIZATION_OPTIONS: BottomSheetOption[] = [
+  { value: 'Tukang Bangunan', label: 'Tukang Bangunan' },
+  { value: 'Teknisi Listrik', label: 'Teknisi Listrik' },
+  { value: 'Plumbing', label: 'Plumbing' },
+  { value: 'Cat & Interior', label: 'Cat & Interior' },
+  { value: 'AC & Kulkas', label: 'AC & Kulkas' },
+  { value: 'Elektronik', label: 'Elektronik' },
+  { value: 'Furniture', label: 'Furniture' },
+  { value: 'Pest Control', label: 'Pest Control' },
+];
 
 const AVATAR_MAX_SIZE = 5 * 1024 * 1024;
 const AVATAR_ACCEPT = 'image/jpeg,image/png,image/webp';
@@ -283,10 +295,11 @@ export default function VendorEditProfilePage() {
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Spesialisasi</label>
-            <Input
+            <BottomSheetSelect
               value={formData.specialization}
-              onChange={(e) => setFormData(prev => ({ ...prev, specialization: e.target.value }))}
-              className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
+              onChange={(v) => setFormData(prev => ({ ...prev, specialization: v }))}
+              options={SPECIALIZATION_OPTIONS}
+              placeholder="Pilih spesialisasi"
             />
           </div>
           <div className="space-y-1.5">
