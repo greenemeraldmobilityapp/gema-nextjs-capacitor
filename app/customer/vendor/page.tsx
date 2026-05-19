@@ -1,15 +1,16 @@
 'use client';
 
-import { Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Star, MapPin, ShieldCheck, Clock, Loader2, MessageSquare, Crown, Briefcase, Calendar, Search } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Star, MapPin, ShieldCheck, Clock, Loader2, MessageSquare, Crown, Briefcase, Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useVendor, useVendorActiveServices, haversineDistance } from '@/lib/services/useVendors';
+import { useVendor, useVendorActiveServices, useVendorCompletedProjects, haversineDistance } from '@/lib/services/useVendors';
 import { useVendorReviews } from '@/lib/services/useReviews';
 import { useLocationStore } from '@/store/location';
+import ImageLightbox from '@/components/shared/ImageLightbox';
 
 export default function VendorDetailPage() {
   return (
@@ -31,6 +32,7 @@ function VendorDetailContent() {
   const { data: vendor, isLoading: vendorLoading, error: vendorError } = useVendor(id);
   const { data: services, isLoading: servicesLoading } = useVendorActiveServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useVendorReviews(id);
+  const { data: completedProjects, isLoading: projectsLoading } = useVendorCompletedProjects(id);
   const userLocation = useLocationStore((s) => s.lat !== null && s.lng !== null ? { lat: s.lat, lng: s.lng } : null);
 
   const distance = vendor?.users?.lat && vendor?.users?.lng && userLocation
@@ -48,6 +50,8 @@ function VendorDetailContent() {
   const avgRating = reviews && reviews.length > 0
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0;
+
+  const [lightbox, setLightbox] = useState<{ open: boolean; images: { image_url: string }[]; index: number }>({ open: false, images: [], index: 0 });
 
   if (vendorLoading) {
     return (
@@ -207,7 +211,7 @@ function VendorDetailContent() {
         </div>
       )}
 
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 pb-28">
         <div className="space-y-3">
           <div className="border-l-4 border-emerald-500 pl-3">
             <h2 className="text-base font-heading font-bold text-gray-900">Layanan Tersedia</h2>
@@ -230,45 +234,173 @@ function VendorDetailContent() {
           {!servicesLoading && services && services.length > 0 && (
             <div className="space-y-3 pb-24">
               {services.map((service) => (
-                <Link key={service.id} href={`/customer/booking?vendorId=${id}&serviceId=${service.id}`} className="block">
-                  <Card className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-gray-100 shadow-sm">
-                    <CardContent className="p-0">
-                      {service.service_images && service.service_images.length > 0 ? (
-                        <div className="relative w-full h-36 bg-gray-100">
-                          <img src={service.service_images[0].image_url} alt={service.title} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                          {service.service_images.length > 1 && (
-                            <span className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                              +{service.service_images.length - 1}
-                            </span>
-                          )}
-                        </div>
-                      ) : null}
-                      <div className="p-4 space-y-2.5">
+                <Card key={service.id} className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-gray-100 shadow-sm">
+                  <CardContent className="p-0">
+                    {service.service_images && service.service_images.length > 0 ? (
+                      <div className="relative w-full h-44 bg-gray-100 overflow-x-auto snap-x snap-mandatory scrollbar-none select-none"
+                        onScroll={(e) => {
+                          const el = e.currentTarget;
+                          const idx = Math.round(el.scrollLeft / el.clientWidth);
+                          const dotIdx = el.querySelector(`[data-dot-idx="${idx}"]`);
+                          if (dotIdx) {
+                            el.querySelectorAll('[data-dot]').forEach((d) => d.classList.remove('bg-white', 'scale-110'));
+                            dotIdx.classList.add('bg-white', 'scale-110');
+                            dotIdx.classList.remove('bg-white/50');
+                          }
+                        }}
+                      >
+                        {service.service_images.map((img, idx) => (
+                          <div
+                            key={idx}
+                            className="snap-center shrink-0 w-full h-full inline-flex cursor-pointer"
+                            onClick={() => setLightbox({ open: true, images: service.service_images || [], index: idx })}
+                          >
+                            <img
+                              src={img.image_url}
+                              alt={`${service.title} ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                              draggable={false}
+                            />
+                          </div>
+                        ))}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                        {service.service_images.length > 1 && (
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                            {service.service_images.map((_, idx) => (
+                              <button
+                                key={idx}
+                                data-dot={true}
+                                data-dot-idx={idx}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const parent = e.currentTarget.closest('.snap-x');
+                                  if (parent) {
+                                    parent.scrollTo({ left: idx * parent.clientWidth, behavior: 'smooth' });
+                                  }
+                                }}
+                                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                  idx === 0 ? 'bg-white scale-110' : 'bg-white/50'
+                                }`}
+                                aria-label={`Gambar ${idx + 1}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
+
+                    <Link href={`/customer/booking?vendorId=${id}&serviceId=${service.id}`} className="block">
+                      <div className="p-4 space-y-3">
                         <div className="flex justify-between items-start gap-3">
                           <h3 className="font-bold text-gray-900 leading-tight">{service.title}</h3>
-                          <span className="font-heading font-bold text-emerald-600 shrink-0 text-sm whitespace-nowrap">{formatPrice(service.price)}</span>
+                          <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full shrink-0">{service.category}</span>
                         </div>
-                        {service.duration_minutes && (
-                          <p className="text-xs text-gray-400 flex items-center gap-1">
-                            <Clock size={12} />{service.duration_minutes < 60 ? `${service.duration_minutes} menit` : service.duration_minutes < 1440 ? `${Math.round(service.duration_minutes / 60)} jam` : `${Math.round(service.duration_minutes / 1440)} hari`}
-                          </p>
-                        )}
+
+                        <div className="flex items-center justify-between">
+                          {service.duration_minutes ? (
+                            <div className="flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 rounded-lg px-2.5 py-1.5">
+                              <Clock size={14} className="text-gray-400" />
+                              <span>{service.duration_minutes < 60 ? `${service.duration_minutes} menit` : service.duration_minutes < 1440 ? `${Math.round(service.duration_minutes / 60)} jam` : `${Math.round(service.duration_minutes / 1440)} hari`}</span>
+                            </div>
+                          ) : (
+                            <div />
+                          )}
+                          <span className="text-lg font-bold text-emerald-600">{formatPrice(service.price)}</span>
+                        </div>
+
                         {service.description && (
-                          <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{service.description}</p>
+                          <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">{service.description}</p>
                         )}
-                        <div className="flex items-center justify-between pt-1">
-                          <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">{service.category}</span>
-                          <div className="shrink-0 flex items-center gap-1 text-xs font-semibold text-emerald-600">
-                            Pesan
-                            <ArrowLeft size={12} className="rotate-180" />
-                          </div>
+
+                        <div className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 flex items-center justify-center gap-2 text-white font-semibold text-sm transition-colors">
+                          Pesan Sekarang
+                          <ArrowRight size={16} />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                    </Link>
+                  </CardContent>
+                </Card>
               ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="border-l-4 border-emerald-500 pl-3">
+              <h2 className="text-base font-heading font-bold text-gray-900">Proyek Selesai</h2>
+            </div>
+            {completedProjects && completedProjects.length > 0 && (
+              <Link href={`/customer/vendor/projects?vendor_id=${id}`}
+                className="text-sm font-semibold text-emerald-600 bg-emerald-50 rounded-full px-4 py-1.5 hover:bg-emerald-100 transition-colors">
+                Lihat Semua
+              </Link>
+            )}
+          </div>
+
+          {projectsLoading && (
+            <div className="space-y-3">
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="h-24 w-full rounded-[16px]" />
+              ))}
+            </div>
+          )}
+
+          {!projectsLoading && completedProjects && completedProjects.length > 0 && (
+            <div className="space-y-3 pb-4">
+              <p className="text-xs text-gray-500">{completedProjects.length} proyek telah diselesaikan</p>
+              {completedProjects.slice(0, 5).map((project) => (
+                <Card key={project.id} className="rounded-[16px] border border-gray-100 shadow-sm">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {project.customer?.avatar_url ? (
+                          <img src={project.customer.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold shrink-0">
+                            {project.customer?.full_name?.charAt(0) || '?'}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-900 text-sm truncate">
+                            {project.customer?.full_name || 'Pelanggan'}
+                          </p>
+                          <p className="text-[10px] text-gray-400">
+                            {project.completed_at
+                              ? new Date(project.completed_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })
+                              : '-'}
+                          </p>
+                        </div>
+                      </div>
+                      {project.reviews?.[0] && (
+                        <div className="flex items-center gap-0.5 shrink-0">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star key={s} size={14} className={s <= project.reviews[0].rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Briefcase size={14} className="text-gray-400 shrink-0" />
+                      <span>{project.service_name}</span>
+                    </div>
+
+                    {project.reviews?.[0]?.review_text && (
+                      <p className="text-xs text-gray-500 italic leading-relaxed border-l-2 border-gray-200 pl-3">
+                        &ldquo;{project.reviews[0].review_text}&rdquo;
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {!projectsLoading && (!completedProjects || completedProjects.length === 0) && (
+            <div className="text-center py-6 text-gray-400 pb-4">
+              <Briefcase size={28} className="mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Belum ada proyek selesai</p>
             </div>
           )}
         </div>
@@ -335,9 +467,13 @@ function VendorDetailContent() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold shrink-0">
-                          {review.customer?.full_name?.charAt(0) || '?'}
-                        </div>
+                        {review.customer?.avatar_url ? (
+                          <img src={review.customer.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold shrink-0">
+                            {review.customer?.full_name?.charAt(0) || '?'}
+                          </div>
+                        )}
                         <div className="min-w-0">
                           <p className="font-medium text-gray-900 text-sm truncate">
                             {review.customer?.full_name || 'Pelanggan'}
@@ -364,7 +500,15 @@ function VendorDetailContent() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      {lightbox.open && (
+        <ImageLightbox
+          images={lightbox.images}
+          initialIndex={lightbox.index}
+          onClose={() => setLightbox({ open: false, images: [], index: 0 })}
+        />
+      )}
+
+      <div className="fixed bottom-16 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
           <Link href="/customer/chat" className="shrink-0">
             <div className="w-11 h-11 rounded-xl bg-gray-100 hover:bg-gray-200 hover:text-emerald-600 flex items-center justify-center text-gray-600 transition-colors">

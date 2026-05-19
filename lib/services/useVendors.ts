@@ -233,3 +233,52 @@ export function useDeleteService() {
     },
   });
 }
+
+export type CompletedProject = {
+  id: string;
+  service_name: string;
+  service_category: string;
+  base_amount: number;
+  completed_at: string | null;
+  customer: {
+    full_name: string;
+    avatar_url: string | null;
+  } | null;
+  reviews: {
+    rating: number;
+    review_text: string | null;
+  }[];
+};
+
+export function useVendorCompletedProjects(vendorId: string | undefined, limit: number = 20) {
+  return useQuery({
+    queryKey: ['vendor-completed-projects', vendorId, limit],
+    queryFn: async () => {
+      if (!vendorId) return [];
+      let query = supabase
+        .from('orders')
+        .select(`
+          id,
+          service_name,
+          service_category,
+          base_amount,
+          completed_at,
+          customer:customer_id(full_name, avatar_url),
+          reviews(rating, review_text)
+        `)
+        .eq('vendor_id', vendorId)
+        .eq('order_status', 'completed')
+        .order('completed_at', { ascending: false });
+
+      if (limit > 0) {
+        query = query.limit(limit);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      return data as unknown as CompletedProject[];
+    },
+    enabled: !!vendorId,
+  });
+}

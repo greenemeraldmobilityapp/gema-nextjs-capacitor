@@ -130,9 +130,13 @@ function ReviewsContent() {
                 <div key={review.id} className="bg-white rounded-3xl p-4 shadow-sm border space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
-                        {review.customer?.full_name?.charAt(0) || 'P'}
-                      </div>
+                      {review.customer?.avatar_url ? (
+                        <img src={review.customer.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
+                          {review.customer?.full_name?.charAt(0) || 'P'}
+                        </div>
+                      )}
                       <div>
                         <p className="font-medium text-sm text-gray-900">{review.customer?.full_name || 'Pelanggan'}</p>
                         <p className="text-xs text-gray-400">{new Date(review.created_at).toLocaleDateString('id-ID')}</p>

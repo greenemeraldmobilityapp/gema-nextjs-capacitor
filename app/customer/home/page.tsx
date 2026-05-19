@@ -53,11 +53,11 @@ export default function CustomerHome() {
   const promo = promos?.[0];
 
   const displayVendors = (userLocation ? nearbyVendors : vendors) || [];
-  const topVendors = vendors?.filter((v) => (v.rating || 0) > 0).sort((a, b) => {
+  const topVendors = [...(vendors || [])].sort((a, b) => {
     const ratingDiff = (b.rating || 0) - (a.rating || 0);
     if (ratingDiff !== 0) return ratingDiff;
     return (b.total_jobs || 0) - (a.total_jobs || 0);
-  }) || [];
+  });
 
   const vendorCards = (list: (VendorProfile & { distance?: number })[]) =>
     list.slice(0, 5).map((vendor) => (
@@ -258,9 +258,10 @@ export default function CustomerHome() {
               {displayVendors.length > 0 && (
                 <button
                   onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
-                  className={`p-2 rounded-lg transition-colors ${viewMode === 'map' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}
+                  className="text-sm font-semibold text-emerald-600 bg-emerald-50 rounded-full px-4 py-1.5 hover:bg-emerald-100 transition-colors flex items-center gap-1.5"
                 >
-                  {viewMode === 'map' ? <LayoutGrid size={18} /> : <MapIcon size={18} />}
+                  {viewMode === 'map' ? <LayoutGrid size={16} /> : <MapIcon size={16} />}
+                  {viewMode === 'map' ? 'Daftar' : 'Lihat Peta'}
                 </button>
               )}
               <Link href="/customer/search" className="text-sm font-semibold text-emerald-600 bg-emerald-50 rounded-full px-4 py-1.5 hover:bg-emerald-100 transition-colors">
@@ -326,7 +327,7 @@ export default function CustomerHome() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <h3 className="font-bold text-gray-900 truncate">{vendor.users?.full_name || 'Unknown'}</h3>
-                          <Sparkles size={12} className="text-emerald-500 shrink-0" />
+                          <Sparkles size={12} className={vendor.rating && vendor.rating > 0 ? 'text-emerald-500 shrink-0' : 'text-gray-300 shrink-0'} />
                         </div>
                         <p className="text-xs text-gray-500 mt-0.5">{vendor.specialization || 'General'}</p>
                         <div className="flex items-center gap-2 mt-1.5 text-xs font-medium">

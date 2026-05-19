@@ -86,7 +86,7 @@ export default function SplashScreen() {
         <div
           className={`transition-all duration-700 motion-reduce:transition-none ${
             exit
-              ? 'opacity-0 scale-75 rotate-6 duration-400'
+              ? 'opacity-0 scale-90 duration-400'
               : phase === 'logo'
                 ? 'opacity-0 scale-50 -rotate-12'
                 : 'opacity-100 scale-100 rotate-0'
@@ -162,7 +162,7 @@ export default function SplashScreen() {
             />
           </div>
 
-          <p className="text-emerald-100/60 mt-4 text-xs sm:text-sm font-medium tracking-[0.25em] uppercase">
+          <p className="text-emerald-100/80 mt-4 text-sm sm:text-base font-light tracking-[0.25em] uppercase drop-shadow-sm">
             Kepercayaan di Setiap Layanan
           </p>
 
@@ -189,6 +189,23 @@ export default function SplashScreen() {
               }`}
             />
           </div>
+
+          <div
+            className={`flex items-center justify-center gap-1.5 mt-6 transition-all duration-500 ${
+              phase === 'done' ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
+            }`}
+          >
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-1.5 h-1.5 rounded-full bg-emerald-300/60"
+                style={{
+                  animation: `loader-dot 1.4s ease-in-out infinite`,
+                  animationDelay: `${i * 0.2}s`,
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -197,8 +214,9 @@ export default function SplashScreen() {
         <div
           className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-200 ease-linear"
           style={{
-            width: phase === 'logo' ? '5%' : phase === 'title' ? '30%' : phase === 'tagline' ? '65%' : '100%',
+            width: phase === 'logo' ? '5%' : phase === 'title' ? '25%' : phase === 'tagline' ? '55%' : '100%',
             transitionDuration: `${dur.phase}ms`,
+            transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         />
       </div>

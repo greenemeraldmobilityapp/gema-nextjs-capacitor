@@ -12,7 +12,7 @@ export type Review = {
   review_text: string | null;
   review_image: string | null;
   created_at: string;
-  customer?: { full_name: string } | null;
+  customer?: { full_name: string; avatar_url: string | null } | null;
 };
 
 export function useVendorReviews(vendorId: string | undefined, limit = 50) {
@@ -22,7 +22,7 @@ export function useVendorReviews(vendorId: string | undefined, limit = 50) {
       if (!vendorId) return [];
       const { data, error } = await supabase
         .from('reviews')
-        .select('*, customer:customer_id(full_name)')
+        .select('*, customer:customer_id(full_name, avatar_url)')
         .eq('vendor_id', vendorId)
         .order('created_at', { ascending: false })
         .limit(limit);
