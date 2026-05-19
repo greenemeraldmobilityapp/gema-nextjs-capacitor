@@ -170,7 +170,7 @@ export default function SplashScreen() {
             />
           </div>
 
-          <p className="text-emerald-100/80 mt-4 text-sm sm:text-base font-light tracking-[0.25em] uppercase drop-shadow-sm">
+          <p className="text-white mt-4 text-sm sm:text-base font-light tracking-[0.25em] uppercase drop-shadow-sm">
             Kepercayaan di Setiap Layanan
           </p>
 
@@ -199,39 +199,46 @@ export default function SplashScreen() {
           </div>
 
           <div
-            className={`flex items-center justify-center gap-1.5 mt-6 transition-all duration-500 ${
+            className={`flex items-center justify-center gap-2 mt-6 transition-all duration-500 ${
               phase === 'done' ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
             }`}
           >
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="w-1.5 h-1.5 rounded-full bg-emerald-300/60"
+                className="w-2.5 h-2.5 rounded-full"
                 style={{
-                  animation: `loader-dot 1.4s ease-in-out infinite`,
-                  animationDelay: `${i * 0.2}s`,
+                  background: 'linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%)',
+                  boxShadow: '0 0 10px rgba(255,255,255,0.4), 0 0 20px rgba(52,211,153,0.3)',
+                  animation: `elegant-bounce 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite`,
+                  animationDelay: `${i * 0.15}s`,
                 }}
               />
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Progress bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/10 motion-reduce:hidden">
-        <div
-          className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-200 ease-linear"
-          style={{
-            width: phase === 'logo' ? '5%' : phase === 'title' ? '25%' : phase === 'tagline' ? '55%' : '100%',
-            transitionDuration: `${dur.phase}ms`,
-            transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        />
+          {/* Progress bar */}
+          <div className="w-full max-w-xs mx-auto mt-8 mb-4">
+            <div className="h-1 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: phase === 'logo' ? '5%' : phase === 'title' ? '25%' : phase === 'tagline' ? '55%' : '100%',
+                  background: 'linear-gradient(90deg, #10b981, #34d399, #6ee7b7)',
+                  boxShadow: '0 0 12px rgba(52,211,153,0.5), 0 0 4px rgba(255,255,255,0.3)',
+                  animation: phase === 'done' ? 'none' : 'shimmer 2s ease-in-out infinite',
+                  backgroundSize: '200% 100%',
+                  transition: `width ${dur.phase}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Version */}
       <div
-        className={`absolute bottom-4 right-4 text-[10px] text-white/20 font-mono tracking-wider transition-opacity duration-700 ${
+        className={`absolute bottom-8 right-4 text-[10px] text-white/70 font-mono tracking-wider transition-opacity duration-700 ${
           phase === 'done' || exit ? 'opacity-100' : 'opacity-0'
         }`}
       >
