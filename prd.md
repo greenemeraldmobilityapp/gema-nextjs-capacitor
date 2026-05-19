@@ -370,3 +370,18 @@ Target 6 bulan pertama:
 **Future PDF support**: Must use a **separate upload button/flow** for PDF files, not mixed via `accept` attribute. For example:
 - Upload foto sertifikat (JPG/PNG) — `accept="image/*"`
 - Upload dokumen pendukung (PDF) — `accept=".pdf"` (button terpisah, endpoint berbeda)
+
+---
+
+### 13.2 Onboarding Page Copy (Opsi A — Friendly & Benefit-First)
+
+**Style**: Friendly, warm, benefit-driven, bahasa Indonesia natural
+**Principle**: Benefit-first, tidak corporate/technical, approachable tone
+
+| Slide | Title | Description | Icon |
+|-------|-------|-------------|------|
+| 1 — Temukan Layanan | "Solusi Layanan Terpercaya di Ujung Jari" | "Temukan tukang ahli di dekat Anda — dari perbaikan rumah hingga kebutuhan sehari-hari, semua dalam satu aplikasi." | Wrench |
+| 2 — Vendor Terverifikasi | "Vendor Terpilih, Kualitas Terjamin" | "Setiap Mitra melewati proses verifikasi ketat, sehingga Anda tidak perlu khawatir tentang kualitas dan keamanan." | ShieldCheck |
+| 3 — Pembayaran Aman | "Bayar Setelah Selesai, Tanpa Risiko" | "Pembayaran ditahan sampai Anda puas. Dana baru dilepaskan ke Mitra setelah pekerjaan selesai dan Anda konfirmasi." | Wallet |
+
+**Tanggal disusun**: 2026-05-19
