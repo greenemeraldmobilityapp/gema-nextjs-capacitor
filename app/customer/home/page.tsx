@@ -63,37 +63,35 @@ export default function CustomerHome() {
     list.slice(0, 5).map((vendor) => (
       <Link key={vendor.user_id} href={`/customer/vendor?id=${vendor.user_id}`}>
         <Card className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-gray-100 shadow-sm">
-          <CardContent className="p-4 flex gap-4">
+          <CardContent className="py-2 px-3 flex gap-2.5 items-start">
             {vendor.avatar_url ? (
-              <img src={vendor.avatar_url} alt={vendor.users?.full_name || ''} className="w-20 h-20 rounded-xl shrink-0 object-cover" />
+              <img src={vendor.avatar_url} alt={vendor.users?.full_name || ''} className="w-16 h-16 rounded-lg shrink-0 object-cover" />
             ) : (
-              <div className="w-20 h-20 bg-gray-100 rounded-xl shrink-0 flex items-center justify-center text-gray-500 font-bold text-xl">
+              <div className="w-16 h-16 bg-gray-100 rounded-lg shrink-0 flex items-center justify-center text-gray-500 font-bold text-xl">
                 {vendor.users?.full_name?.charAt(0) || '?'}
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="font-bold text-gray-900 truncate">{vendor.users?.full_name || 'Unknown'}</h3>
-                <span className="shrink-0 flex items-center gap-1 text-xs font-semibold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
-                  <Star size={12} className="text-yellow-500" fill="currentColor" /> {vendor.rating?.toFixed(1) || '0.0'}
-                </span>
-              </div>
-              <p className="text-sm text-gray-500 mt-0.5">{vendor.specialization || 'General'}</p>
-              <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                <span>{vendor.total_jobs || 0} proyek</span>
-                {vendor.distance !== undefined && vendor.distance !== null && (
-                  <span className="text-emerald-600 font-medium">{vendor.distance.toFixed(1)} km</span>
-                )}
-              </div>
+            <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-0.5 items-start min-w-0 flex-1">
+              <h3 className="font-bold text-gray-900 truncate">{vendor.users?.full_name || 'Unknown'}</h3>
+              <span className="shrink-0 flex items-center gap-1 text-xs font-semibold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
+                <Star size={12} className="text-yellow-500" fill="currentColor" /> {vendor.rating?.toFixed(1) || '0.0'}
+              </span>
+              <p className="text-xs text-gray-500">{vendor.specialization || 'General'}</p>
               <button
                 onClick={(e) => {
                   e.preventDefault();
                   router.push(`/customer/vendor?id=${vendor.user_id}`);
                 }}
-                className="mt-2 w-fit px-5 h-9 rounded-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 text-white text-sm font-semibold shadow-sm hover:brightness-105 active:brightness-95 transition-all"
+                className="shrink-0 px-4 h-8 rounded-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 text-white text-xs font-semibold shadow-sm hover:brightness-105 active:brightness-95 transition-all"
               >
                 Pesan
               </button>
+              <div className="flex items-center gap-2 text-xs text-gray-500 col-span-2">
+                <span>{vendor.total_jobs || 0} proyek</span>
+                {vendor.distance !== undefined && vendor.distance !== null && (
+                  <span className="text-emerald-600 font-medium">{vendor.distance.toFixed(1)} km</span>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -102,7 +100,7 @@ export default function CustomerHome() {
 
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-600 text-white p-4 pt-8 pb-8 rounded-b-[24px] shadow-lg shadow-emerald-900/20 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-600 text-white p-4 pt-6 pb-7 rounded-b-[24px] shadow-lg shadow-emerald-900/20 relative overflow-hidden">
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-emerald-400/10 blur-3xl rounded-full pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-300/10 blur-3xl rounded-full pointer-events-none" />
         <div className="relative z-10 space-y-3">
@@ -118,8 +116,10 @@ export default function CustomerHome() {
             </div>
             <Link
               href="/customer/profile"
-              className="flex items-center gap-1.5 ml-3 shrink-0 bg-white/10 backdrop-blur-xl rounded-full pl-1 pr-3 py-1 border border-white/20 hover:bg-white/20 hover:border-white/30 transition-all duration-300 group"
+              className="flex items-center gap-1.5 ml-3 shrink-0 bg-emerald-900/40 backdrop-blur-xl rounded-full pl-3 pr-1 py-1 border border-white/15 hover:bg-emerald-900/50 transition-all duration-300 group"
             >
+              <span className="text-sm font-semibold truncate max-w-[72px]">{profile?.full_name?.split(' ')[0] || 'User'}</span>
+              <ChevronDown size={14} className="text-white/60 group-hover:text-white/90 transition-colors" />
               <div className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/30 group-hover:ring-white/50 transition-all duration-300">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt={profile.full_name || ''} className="w-full h-full object-cover" />
@@ -129,37 +129,49 @@ export default function CustomerHome() {
                   </div>
                 )}
               </div>
-              <span className="text-sm font-semibold truncate max-w-[72px]">{profile?.full_name?.split(' ')[0] || 'User'}</span>
-              <ChevronDown size={14} className="text-white/60 group-hover:text-white/90 transition-colors" />
             </Link>
           </div>
 
-          <Link
-            href="/wallet"
-            className="bg-white/10 backdrop-blur-xl rounded-2xl px-4 py-3 flex items-center gap-3 border border-white/10 hover:bg-white/20 transition-all group"
-          >
-            <div className="w-10 h-10 bg-emerald-400/30 rounded-xl flex items-center justify-center shrink-0">
-              <Wallet size={20} className="text-white" />
+          <div className="rounded-3xl shadow-lg shadow-black/10 overflow-hidden bg-emerald-900/40 backdrop-blur-xl border border-white/15 hover:bg-emerald-900/50 transition-all relative">
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/5 pointer-events-none" />
+            <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle at 75% 30%, white 2px, transparent 2px)', backgroundSize: '24px 24px' }} />
+            <div className="relative p-4">
+              <div className="flex items-center justify-between">
+                <Link href="/wallet" className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+                      <Wallet size={14} className="text-white" />
+                    </div>
+                    <span className="text-white/80 text-xs font-semibold">Saldo GemaPay</span>
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold font-heading text-white drop-shadow-sm">
+                      Rp {(wallet?.balance || 0).toLocaleString('id-ID')}
+                    </div>
+                    <div className="mt-1.5">
+                      <p className="text-emerald-200/80 text-[11px]">Saldo siap digunakan</p>
+                    </div>
+                  </div>
+                </Link>
+                <Link
+                  href="/wallet/topup"
+                  className="shrink-0 bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold px-4 py-2 rounded-full transition-all duration-200 shadow-lg shadow-emerald-900/20 backdrop-blur-sm"
+                >
+                  + Top Up
+                </Link>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-emerald-100/60 leading-tight">Saldo GemaPay</p>
-              <p className="font-heading text-base text-white font-bold">Rp {(wallet?.balance || 0).toLocaleString('id-ID')}</p>
-            </div>
-            <div className="flex items-center gap-1.5 bg-white/20 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full hover:bg-white/30 transition-colors shrink-0">
-              <PlusCircle size={12} />
-              <span>Top Up</span>
-            </div>
-          </Link>
+          </div>
         </div>
       </div>
 
-      <div className="-mt-7 px-4 relative z-20">
+      <div className="-mt-8 px-4 relative z-20">
         <Link
           href="/customer/search"
-          className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-xl shadow-emerald-900/8 border border-emerald-500/10 cursor-pointer hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 group"
+          className="flex items-center gap-3 bg-white rounded-xl p-3.5 shadow-xl shadow-emerald-900/8 border border-emerald-500/10 cursor-pointer hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 group"
         >
-          <div className="w-9 h-9 bg-emerald-50 rounded-full flex items-center justify-center group-hover:bg-emerald-100 transition-colors shrink-0">
-            <Search size={18} className="text-emerald-500" />
+          <div className="w-8 h-8 bg-emerald-50 rounded-full flex items-center justify-center group-hover:bg-emerald-100 transition-colors shrink-0">
+            <Search size={16} className="text-emerald-500" />
           </div>
           <span className="text-sm text-gray-400 flex-1">Cari layanan...</span>
           <div className="flex items-center gap-1 text-[11px] font-medium text-gray-400">
@@ -171,55 +183,65 @@ export default function CustomerHome() {
 
       <div className="p-4 space-y-6">
         {promosLoading ? (
-          <div className="w-full bg-emerald-50 rounded-[24px] p-4 border border-emerald-100 animate-pulse">
-            <div className="h-6 w-32 bg-emerald-200 rounded mb-2" />
-            <div className="h-4 w-48 bg-emerald-200 rounded" />
+          <div className="w-full bg-white rounded-[24px] p-4 border-2 border-emerald-300 animate-pulse shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gray-200" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-32 bg-gray-200 rounded" />
+                <div className="h-3 w-48 bg-gray-100 rounded" />
+              </div>
+            </div>
           </div>
         ) : promo ? (
           <Link href={`/wallet/promo?id=${promo.id}`}>
-            <div className="w-full bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-[24px] p-4 flex items-center justify-between shadow-sm cursor-pointer hover:brightness-105 transition-all group">
-              <div className="text-white">
-                <h3 className="font-bold text-lg">{promo.title}</h3>
-                <p className="text-sm text-emerald-100">{promo.description}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  {promo.discount}%
+            <div className="w-full bg-white border-2 border-emerald-300 rounded-[24px] p-4 flex items-center justify-between shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-12 h-12 shrink-0 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-200">
+                  <Percent size={18} className="text-white" />
                 </div>
-                <ChevronRight size={18} className="text-white/50 group-hover:text-white/80 transition-colors" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-gray-900 text-sm leading-tight">{promo.title}</h3>
+                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{promo.description}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 ml-2">
+                <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl px-3 py-1.5 flex items-center justify-center shadow-sm">
+                  <span className="text-white font-bold text-sm">{promo.discount}%</span>
+                </div>
+                <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
               </div>
             </div>
           </Link>
         ) : (
           <Link href="/wallet/vouchers">
-            <div className="w-full bg-emerald-50 rounded-[24px] p-4 border border-emerald-100 flex items-center justify-between cursor-pointer hover:bg-emerald-100 transition-colors group">
+            <div className="w-full bg-white border-2 border-emerald-300 rounded-[24px] p-4 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-emerald-200 rounded-full flex items-center justify-center text-emerald-600">
-                  <Percent size={22} />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-200">
+                  <Percent size={18} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-emerald-800">Promo untukmu</h3>
-                  <p className="text-sm text-emerald-600">Lihat promo & voucher tersedia</p>
+                  <h3 className="font-bold text-gray-900 text-sm">Promo untukmu</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">Lihat promo & voucher tersedia</p>
                 </div>
               </div>
-              <ChevronRight size={18} className="text-emerald-300 group-hover:text-emerald-500 transition-colors" />
+              <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" />
             </div>
           </Link>
         )}
 
         <div className="space-y-3">
           <div className="border-l-4 border-emerald-500 pl-3">
-              <h2 className="text-lg font-heading font-bold text-gray-900">Kategori</h2>
+              <h2 className="text-base font-heading font-bold text-gray-900">Kategori</h2>
           </div>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-2.5">
             {categories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/customer/search?category=${cat.slug}`}
-                className="flex flex-col items-center gap-2 p-3 rounded-[24px] border border-gray-100 bg-white shadow-sm cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 group"
+                className="flex flex-col items-center gap-2 p-2.5 rounded-2xl border border-gray-100 bg-white shadow-sm cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 group"
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${cat.color}`}>
-                  <cat.icon size={22} />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${cat.color}`}>
+                  <cat.icon size={18} />
                 </div>
                 <span className="text-[11px] font-semibold text-center text-gray-700 leading-tight">{cat.title}</span>
               </Link>
@@ -230,7 +252,7 @@ export default function CustomerHome() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="border-l-4 border-emerald-500 pl-3">
-              <h2 className="text-lg font-heading font-bold text-gray-900">Vendor Terdekat</h2>
+              <h2 className="text-base font-heading font-bold text-gray-900">Vendor Terdekat</h2>
             </div>
             <div className="flex items-center gap-2">
               {displayVendors.length > 0 && (
@@ -281,30 +303,35 @@ export default function CustomerHome() {
 
         {topVendors.length > 0 && (
           <div className="space-y-3 pb-8">
+          <div className="flex items-center justify-between">
             <div className="border-l-4 border-emerald-500 pl-3">
-              <h2 className="text-lg font-heading font-bold text-gray-900">Vendor Terbaik</h2>
+              <h2 className="text-base font-heading font-bold text-gray-900">Vendor Terbaik</h2>
             </div>
+            <Link href="/customer/search?sort=rating" className="text-sm font-semibold text-emerald-600 bg-emerald-50 rounded-full px-4 py-1.5 hover:bg-emerald-100 transition-colors">
+              Lihat Semua
+            </Link>
+          </div>
             <div className="space-y-3">
               {topVendors.slice(0, 5).map((vendor) => (
                 <Link key={vendor.user_id} href={`/customer/vendor?id=${vendor.user_id}`}>
                   <Card className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-emerald-100 shadow-sm">
-                    <CardContent className="p-4 flex gap-4">
+                    <CardContent className="py-2 px-3 flex gap-2.5">
                       {vendor.avatar_url ? (
-                        <img src={vendor.avatar_url} alt={vendor.users?.full_name || ''} className="w-20 h-20 rounded-xl shrink-0 object-cover" />
+                        <img src={vendor.avatar_url} alt={vendor.users?.full_name || ''} className="w-16 h-16 rounded-lg shrink-0 object-cover" />
                       ) : (
-                        <div className="w-20 h-20 bg-emerald-50 rounded-xl shrink-0 flex items-center justify-center text-emerald-600 font-bold text-xl">
+                        <div className="w-16 h-16 bg-emerald-50 rounded-lg shrink-0 flex items-center justify-center text-emerald-600 font-bold text-xl">
                           {vendor.users?.full_name?.charAt(0) || '?'}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <h3 className="font-bold text-gray-900 truncate">{vendor.users?.full_name || 'Unknown'}</h3>
-                          <Sparkles size={14} className="text-emerald-500 shrink-0" />
+                          <Sparkles size={12} className="text-emerald-500 shrink-0" />
                         </div>
-                        <p className="text-sm text-gray-500 mt-0.5">{vendor.specialization || 'General'}</p>
-                        <div className="flex items-center gap-2 mt-2 text-sm font-medium">
+                        <p className="text-xs text-gray-500 mt-0.5">{vendor.specialization || 'General'}</p>
+                        <div className="flex items-center gap-2 mt-1.5 text-xs font-medium">
                           <span className="flex items-center gap-1 text-amber-500">
-                            <Star size={14} fill="currentColor" /> {vendor.rating?.toFixed(1) || '0.0'}
+                            <Star size={12} fill="currentColor" /> {vendor.rating?.toFixed(1) || '0.0'}
                           </span>
                           <span className="text-gray-300">•</span>
                           <span className="text-gray-600">{vendor.total_jobs || 0} proyek</span>

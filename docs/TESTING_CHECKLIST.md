@@ -1627,3 +1627,18 @@ npx supabase functions logs create-topup-invoice --tail
 | 5 | Vendor buka review page | Badge "Ditolak" + alasan |
 | 6 | Build verification | `npm run build` → 0 errors |
 
+#### K.36. Custom DivIcon Vendor Map Markers
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka halaman dengan VendorMap (customer home, customer vendor) | Map render dengan marker custom (card putih + nama + spesialisasi + pin dot emerald) |
+| 2 | Cek marker card | Menampilkan nama vendor (bold) + spesialisasi (abu-abu, lebih kecil) |
+| 3 | Cek pin dot | Lingkaran gradient emerald (`#059669`→`#047857`) dengan border putih |
+| 4 | Hover card | Border card berubah ke emerald (`#10b981`) |
+| 5 | Klik marker | `onVendorClick` terpanggil, popup muncul dengan nama + spesialisasi |
+| 6 | Pin berdekatan | MarkerCluster mengelompokkan pin dengan `maxClusterRadius: 60` |
+| 7 | Zoom in ke cluster | Cluster pecah, jadi DivIcon individual |
+| 8 | Mobile viewport | Card tetap terbaca, `pointer-events: none` pada wrapper tidak mengganggu tap |
+| 9 | HTML escaping | Nama vendor mengandung karakter spesial (`&<>"`) → tampil aman |
+| 10 | Build verification | `npm run build` → 0 errors |
+

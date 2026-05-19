@@ -10,6 +10,9 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet-gesture-handling/dist/leaflet-gesture-handling.css';
 
+const escapeHtml = (str: string) =>
+  str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 export default function VendorMap({
   vendors,
   centerOn,
@@ -74,8 +77,27 @@ export default function VendorMap({
 
       vendors.forEach((v) => {
         if (v.users?.lat && v.users?.lng) {
-          const marker = L.marker([v.users.lat, v.users.lng]);
-          marker.bindPopup(v.users.full_name || 'Vendor');
+          const name = v.users?.full_name || 'Vendor';
+          const spec = v.specialization || '';
+
+          const icon = L.divIcon({
+            className: '',
+            html: `
+              <div class="vendor-pin">
+                <div class="vendor-pin-card">
+                  <div class="vendor-pin-name">${escapeHtml(name)}</div>
+                  ${spec ? `<div class="vendor-pin-spec">${escapeHtml(spec)}</div>` : ''}
+                </div>
+                <div class="vendor-pin-tail"></div>
+                <div class="vendor-pin-dot"></div>
+              </div>
+            `,
+            iconSize: [160, 62],
+            iconAnchor: [80, 62],
+          });
+
+          const marker = L.marker([v.users.lat, v.users.lng], { icon });
+          marker.bindPopup(`<strong>${escapeHtml(name)}</strong>${spec ? `<br/><span style="color:#6b7280;font-size:12px">${escapeHtml(spec)}</span>` : ''}`);
           marker.on('click', () => {
             if (onVendorClick) onVendorClick(v.user_id);
           });
@@ -99,5 +121,65 @@ export default function VendorMap({
     };
   }, [vendors, centerOn, onVendorClick]);
 
-  return <div ref={mapRef} className="w-full h-80 rounded-2xl overflow-hidden shadow-sm" />;
+  return (
+    <>
+      <style>{`
+        .vendor-pin {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          filter: drop-shadow(0 2px 6px rgba(0,0,0,0.18));
+          pointer-events: none;
+        }
+        .vendor-pin-card {
+          background: white;
+          border-radius: 8px;
+          padding: 5px 10px;
+          max-width: 150px;
+          border: 1px solid #e5e7eb;
+          pointer-events: auto;
+          cursor: pointer;
+        }
+        .vendor-pin-card:hover {
+          border-color: #10b981;
+        }
+        .vendor-pin-name {
+          font-size: 12px;
+          font-weight: 700;
+          color: #0f172a;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          line-height: 1.4;
+        }
+        .vendor-pin-spec {
+          font-size: 10px;
+          color: #6b7280;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          line-height: 1.3;
+          margin-top: 1px;
+        }
+        .vendor-pin-tail {
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 6px solid white;
+          pointer-events: none;
+        }
+        .vendor-pin-dot {
+          width: 14px;
+          height: 14px;
+          background: linear-gradient(135deg, #059669, #047857);
+          border: 2px solid white;
+          border-radius: 50%;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+          pointer-events: none;
+        }
+      `}</style>
+      <div ref={mapRef} className="w-full h-80 rounded-2xl overflow-hidden shadow-sm" />
+    </>
+  );
 }
