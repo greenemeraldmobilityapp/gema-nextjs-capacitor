@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
 type SplashPhase = 'logo' | 'title' | 'tagline' | 'done';
 type SplashSpeed = 'normal' | 'full';
@@ -37,15 +38,24 @@ export default function SplashScreen() {
   const dur = SPEED_DURATIONS[speed];
 
   useEffect(() => {
+    const supabase = createClient();
+
     const t1 = setTimeout(() => setPhase('title'), dur.phase);
     const t2 = setTimeout(() => {
       setPhase('tagline');
       setTitleChars('GEMA'.split(''));
     }, dur.phase * 2);
     const t3 = setTimeout(() => setPhase('done'), dur.phase * 3);
-    const t4 = setTimeout(() => {
+    const t4 = setTimeout(async () => {
+      let target = localStorage.getItem('gema_has_onboarded') ? '/login' : '/onboarding';
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.user_metadata?.role === 'admin') {
+          target = '/login';
+        }
+      }
       setExit(true);
-      const target = localStorage.getItem('gema_has_onboarded') ? '/login' : '/onboarding';
       setTimeout(() => router.push(target), 400);
     }, dur.total);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
@@ -72,11 +82,9 @@ export default function SplashScreen() {
               width: `${p.size}px`,
               height: `${p.size}px`,
               backgroundColor: 'rgba(52, 211, 153, 0.4)',
-              animation: `particle-float ${p.duration}s ease-in-out infinite`,
+              animation: `particle-float-${(p.id % 3) + 1} ${p.duration}s ease-in-out infinite`,
               animationDelay: `${p.delay}s`,
-              '--p-opacity': p.opacity,
-              '--p-drift': `${p.drift}px`,
-            } as React.CSSProperties}
+            }}
           />
         ))}
       </div>

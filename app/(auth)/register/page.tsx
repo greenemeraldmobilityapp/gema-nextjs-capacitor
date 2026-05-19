@@ -79,6 +79,8 @@ function RegisterContent() {
         }
       }
 
+      localStorage.setItem('gema_has_onboarded', 'true');
+
       if (role === 'vendor') {
         const { error: vendorError } = await supabase.from('vendor_profiles').insert({
           user_id: authData.user.id,
