@@ -20,6 +20,7 @@ export type VendorProfile = {
     lat: number | null;
     lng: number | null;
     address_full?: string | null;
+    created_at?: string;
   };
   services?: { category: string }[];
 };
@@ -47,7 +48,7 @@ export function useVendor(vendorId: string | undefined) {
       if (!vendorId) return null;
       const { data, error } = await supabase
         .from('vendor_profiles')
-        .select('*, users(full_name, email, phone, lat, lng)')
+        .select('*, users(full_name, email, phone, lat, lng, created_at, address_full)')
         .eq('user_id', vendorId)
         .maybeSingle();
 

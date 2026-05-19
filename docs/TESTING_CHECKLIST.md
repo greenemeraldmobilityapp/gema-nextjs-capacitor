@@ -1642,3 +1642,28 @@ npx supabase functions logs create-topup-invoice --tail
 | 9 | HTML escaping | Nama vendor mengandung karakter spesial (`&<>"`) → tampil aman |
 | 10 | Build verification | `npm run build` → 0 errors |
 
+#### K.37. Vendor Profile Page Redesign (`/customer/vendor`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka halaman vendor dari home/search/map | Header gradient emerald dengan decorative blur circles |
+| 2 | Header glass card | Avatar dengan ring putih, nama, Pro badge (gold gradient + Crown icon), spesialisasi, rating |
+| 3 | Stats bar dalam header | 3 metric (Terverifikasi, Proyek, Aktif) dengan icon dalam colored box `bg-emerald-500/30` |
+| 4 | Jarak + tanggal bergabung | MapPin icon + jarak km (jika GPS aktif), Calendar icon + "Bergabung [bulan tahun]" |
+| 5 | Bio section | Card `rounded-[24px]` dengan judul "Tentang", text bio dengan `leading-relaxed` |
+| 6 | Service card — image preview | Jika service punya `image_url` → tampil 36h cover image dengan gradient overlay |
+| 7 | Service card — content | Title (bold), price (emerald bold), description (line-clamp-2), category tag (emerald-50), "Pesan" CTA |
+| 8 | Service card — hover | `hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md` |
+| 9 | Review summary bento | Rating besar kiri + distribution bar (5★–1★) dengan bar `bg-yellow-400` di kanan |
+| 10 | Review cards | Avatar circle (inisial), nama, date format "12 Apr 2026", star rating, review text |
+| 11 | "Lihat Semua" ulasan | Pill button `bg-emerald-50 rounded-full` → `/customer/reviews?vendor_id=...` |
+| 12 | Sticky CTA bar | `bg-white border-t shadow-[0_-4px_20px_rgba(0,0,0,0.05)]` fixed bottom |
+| 13 | Chat button di CTA | Icon `MessageSquare` di rounded-xl gray box → `/customer/chat` |
+| 14 | Price range di CTA | "Mulai dari Rp X - Rp Y" (atau "Rp X" jika 1 layanan) |
+| 15 | Pesan Sekarang button | Pill button emerald → `/customer/booking?vendorId=...&serviceId=...` |
+| 16 | CTA tanpa services | Chat button tetap muncul, tulisan "Belum ada layanan tersedia" |
+| 17 | Loading skeleton | Skeleton dengan header gradient + glass card placeholder + 3 service card skeleton |
+| 18 | Error state | Kartu putih "Mitra Tidak Ditemukan" dengan icon Search + tombol ke beranda |
+| 19 | Back button | Kembali ke halaman sebelumnya (`router.back()`) |
+| 20 | Build verification | `npm run build` → 0 errors |
+
