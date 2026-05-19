@@ -67,12 +67,12 @@ const service = services?.find((s) => s.id === serviceId);
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Hanya file gambar yang diizinkan');
+      toast.warning('Hanya file gambar yang diizinkan', { duration: 4000 });
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Maksimal ukuran gambar 5MB');
+      toast.warning('Maksimal ukuran gambar 5MB', { duration: 4000 });
       return;
     }
 
@@ -106,7 +106,7 @@ const service = services?.find((s) => s.id === serviceId);
       });
 
     if (uploadError) {
-      toast.error('Gagal mengunggah gambar');
+      toast.error(uploadError.message || 'Gagal mengunggah gambar', { duration: 5000 });
       return existingImage || null;
     }
 
@@ -121,12 +121,12 @@ const service = services?.find((s) => s.id === serviceId);
     e.preventDefault();
     if (!profile?.id || !service) return;
     if (!formData.category) {
-      toast.error('Pilih kategori terlebih dahulu');
+      toast.warning('Pilih kategori terlebih dahulu', { duration: 4000 });
       return;
     }
 
     setUploading(true);
-    try {
+    const submitPromise = (async () => {
       const imageUrl = await uploadImage(profile.id);
 
       await updateService.mutateAsync({
@@ -138,10 +138,20 @@ const service = services?.find((s) => s.id === serviceId);
         description: formData.description || null,
         image_url: imageUrl,
       });
-      toast.success('Portofolio berhasil diperbarui');
-      router.push('/vendor/portfolio');
-    } catch {
-      toast.error('Gagal memperbarui portofolio');
+    })();
+
+    toast.promise(submitPromise, {
+      loading: 'Memperbarui portofolio...',
+      success: () => {
+        router.push('/vendor/portfolio');
+        return 'Portofolio berhasil diperbarui';
+      },
+      error: (err) => err?.message || 'Gagal memperbarui portofolio',
+      duration: 4000,
+    });
+
+    try {
+      await submitPromise;
     } finally {
       setUploading(false);
     }
@@ -150,12 +160,22 @@ const service = services?.find((s) => s.id === serviceId);
   const handleDelete = async () => {
     if (!profile?.id || !service) return;
 
+    const deletePromise = deleteService.mutateAsync({ id: service.id, vendor_id: profile.id });
+
+    toast.promise(deletePromise, {
+      loading: 'Menghapus portofolio...',
+      success: () => {
+        router.push('/vendor/portfolio');
+        return 'Portofolio berhasil dihapus';
+      },
+      error: (err) => err?.message || 'Gagal menghapus portofolio',
+      duration: 4000,
+    });
+
     try {
-      await deleteService.mutateAsync({ id: service.id, vendor_id: profile.id });
-      toast.success('Portofolio berhasil dihapus');
-      router.push('/vendor/portfolio');
+      await deletePromise;
     } catch {
-      toast.error('Gagal menghapus portofolio');
+      // toast handled by toast.promise
     }
   };
 

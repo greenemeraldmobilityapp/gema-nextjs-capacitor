@@ -100,7 +100,7 @@ PHASE 5 — Vendor Operations MVP
 
 Tasks
 
-- [x] KYC onboarding
+- [x] KYC onboarding (KTP + certificate upload, `verification_submissions` table, storage bucket, admin review/approve/reject)
 - [x] Portfolio upload
 - [x] Vendor dashboard
 - [x] Order management
@@ -164,7 +164,7 @@ PHASE 9 — QA / UAT
 Tasks
 
 - [x] Code audit (Auth, Customer, Vendor, Admin, Wallet, Edge Functions, RLS)
-- [x] Build verification (55 pages, 0 errors)
+- [x] Build verification (62 pages, 0 errors)
 - [x] Payment flow audit + fixes
 - [x] Bug fixing (15 bugs fixed — see docs/TESTING_CHECKLIST.md K.31)
 - [x] RLS migration (0008) — INSERT/UPDATE/SELECT policies for all tables
@@ -178,7 +178,7 @@ Tasks
 
 Output
 
-Code quality verified — 55 pages, 0 build errors, 15 bugs fixed, RLS hardening applied
+Code quality verified — 62 pages, 0 build errors, 15 bugs fixed, RLS hardening applied
 
 ---
 

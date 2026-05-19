@@ -121,8 +121,16 @@ function PaymentContent() {
         <Button
           disabled={isCreatingInvoice}
           onClick={async () => {
+            if (selectedMethod === 'wallet' && wallet && wallet.balance < order.total_amount) {
+              toast.warning('Saldo GemaPay tidak mencukupi', {
+                description: `Butuh Rp ${(order.total_amount - wallet.balance).toLocaleString('id-ID')} lagi`,
+                duration: 5000,
+              });
+              return;
+            }
+
             setIsCreatingInvoice(true);
-            try {
+            const paymentPromise = (async () => {
               if (selectedMethod === 'wallet') {
                 const supabase = createClient();
                 const { error: payError } = await supabase
@@ -130,7 +138,6 @@ function PaymentContent() {
                   .update({ payment_status: 'escrow' })
                   .eq('id', order.id);
                 if (payError) throw payError;
-                toast.success('Pembayaran berhasil!');
                 router.push(`/customer/payment/success?order_id=${order.id}`);
                 return;
               }
@@ -150,9 +157,17 @@ function PaymentContent() {
               const data = await res.json();
               if (!res.ok) throw new Error(data.error || 'Gagal membuat invoice');
               window.location.href = data.invoice_url;
-            } catch (err) {
-              const msg = err instanceof Error ? err.message : 'Gagal menghubungi payment gateway';
-              toast.error(msg);
+            })();
+
+            toast.promise(paymentPromise, {
+              loading: 'Memproses pembayaran...',
+              success: 'Pembayaran berhasil!',
+              error: (err) => err instanceof Error ? err.message : 'Gagal menghubungi payment gateway',
+              duration: 5000,
+            });
+
+            try {
+              await paymentPromise;
             } finally {
               setIsCreatingInvoice(false);
             }

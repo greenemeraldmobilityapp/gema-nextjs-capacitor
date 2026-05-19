@@ -88,7 +88,7 @@ function RegisterContent() {
         if (vendorError && !vendorError.message?.includes('duplicate')) {
           console.error('Gagal buat vendor profile:', vendorError);
         }
-        router.push('/vendor/dashboard');
+        router.push('/vendor/profile/edit?from=register');
       } else {
         router.push('/customer/home');
       }

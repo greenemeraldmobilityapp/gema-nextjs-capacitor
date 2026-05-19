@@ -1,8 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, IdCard, ScrollText, Clock } from 'lucide-react';
+import { ShieldCheck, IdCard, ScrollText, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/store/auth';
+import { useLatestSubmission } from '@/lib/services/useVerification';
 
 const steps = [
   { icon: IdCard, label: 'Verifikasi KTP', desc: 'Upload foto KTP dan isi data diri' },
@@ -11,6 +15,30 @@ const steps = [
 ];
 
 export default function VerificationIntroPage() {
+  const router = useRouter();
+  const profile = useAuthStore((s) => s.profile);
+  const { data: submission, isLoading: checking } = useLatestSubmission(profile?.id);
+
+  useEffect(() => {
+    if (checking) return;
+
+    if (!submission) return;
+
+    if (submission.status === 'approved') {
+      router.replace('/vendor/dashboard');
+    } else {
+      router.replace('/vendor/verification/review');
+    }
+  }, [submission, checking, router]);
+
+  if (checking) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-stone-50">
+        <Loader2 size={24} className="animate-spin text-stone-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">
       <div className="bg-white/90 backdrop-blur-lg px-4 pt-6 pb-4 border-b border-stone-100">

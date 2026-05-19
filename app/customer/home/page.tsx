@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, PlusCircle, ChevronRight, Sparkles, Search, ArrowUpRight, Cable, Hammer, Bug, Thermometer } from 'lucide-react';
+import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, PlusCircle, ChevronRight, Sparkles, Search, ArrowUpRight, Cable, Hammer, Bug, Thermometer, ChevronDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
@@ -11,6 +11,7 @@ import { useVendors, useNearbyVendors } from '@/lib/services/useVendors';
 import { useActivePromos } from '@/lib/services/usePromos';
 import { useWallet } from '@/lib/services/useWallet';
 import { useAuthStore } from '@/store/auth';
+import { useLocationStore } from '@/store/location';
 import type { VendorProfile } from '@/lib/services/useVendors';
 
 const VendorMap = dynamic(() => import('@/components/shared/VendorMap'), { ssr: false });
@@ -30,16 +31,20 @@ export default function CustomerHome() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const userLocation = useLocationStore((s) => s.lat !== null && s.lng !== null ? { lat: s.lat, lng: s.lng } : null);
+  const setLocation = useLocationStore((s) => s.setLocation);
+  const lastFetched = useLocationStore((s) => s.lastFetched);
   useEffect(() => {
     if (navigator.geolocation) {
+      const now = Date.now();
+      if (lastFetched && now - lastFetched < 300000) return;
       navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (pos) => setLocation(pos.coords.latitude, pos.coords.longitude),
         () => {},
         { timeout: 5000, enableHighAccuracy: false }
       );
     }
-  }, []);
+  }, [setLocation, lastFetched]);
 
   const { data: vendors, isLoading, error } = useVendors();
   const { data: nearbyVendors } = useNearbyVendors(userLocation?.lat, userLocation?.lng);
@@ -48,21 +53,29 @@ export default function CustomerHome() {
   const promo = promos?.[0];
 
   const displayVendors = (userLocation ? nearbyVendors : vendors) || [];
-  const topVendors = vendors?.filter((v) => (v.rating || 0) > 0).sort((a, b) => (b.rating || 0) - (a.rating || 0)) || [];
+  const topVendors = vendors?.filter((v) => (v.rating || 0) > 0).sort((a, b) => {
+    const ratingDiff = (b.rating || 0) - (a.rating || 0);
+    if (ratingDiff !== 0) return ratingDiff;
+    return (b.total_jobs || 0) - (a.total_jobs || 0);
+  }) || [];
 
   const vendorCards = (list: (VendorProfile & { distance?: number })[]) =>
     list.slice(0, 5).map((vendor) => (
       <Link key={vendor.user_id} href={`/customer/vendor?id=${vendor.user_id}`}>
         <Card className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-gray-100 shadow-sm">
           <CardContent className="p-4 flex gap-4">
-            <div className="w-20 h-20 bg-gray-100 rounded-xl shrink-0 flex items-center justify-center text-gray-500 font-bold text-xl">
-              {vendor.users?.full_name?.charAt(0) || '?'}
-            </div>
+            {vendor.avatar_url ? (
+              <img src={vendor.avatar_url} alt={vendor.users?.full_name || ''} className="w-20 h-20 rounded-xl shrink-0 object-cover" />
+            ) : (
+              <div className="w-20 h-20 bg-gray-100 rounded-xl shrink-0 flex items-center justify-center text-gray-500 font-bold text-xl">
+                {vendor.users?.full_name?.charAt(0) || '?'}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-bold text-gray-900 truncate">{vendor.users?.full_name || 'Unknown'}</h3>
-                <span className="shrink-0 flex items-center gap-1 text-xs font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">
-                  <Star size={12} fill="currentColor" /> {vendor.rating?.toFixed(1) || '0.0'}
+                <span className="shrink-0 flex items-center gap-1 text-xs font-semibold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
+                  <Star size={12} className="text-yellow-500" fill="currentColor" /> {vendor.rating?.toFixed(1) || '0.0'}
                 </span>
               </div>
               <p className="text-sm text-gray-500 mt-0.5">{vendor.specialization || 'General'}</p>
@@ -105,12 +118,19 @@ export default function CustomerHome() {
             </div>
             <Link
               href="/customer/profile"
-              className="flex items-center gap-2 ml-3 shrink-0 bg-white/10 rounded-full pl-2 pr-3 py-1 border border-white/10 hover:bg-white/20 transition-all"
+              className="flex items-center gap-1.5 ml-3 shrink-0 bg-white/10 backdrop-blur-xl rounded-full pl-1 pr-3 py-1 border border-white/20 hover:bg-white/20 hover:border-white/30 transition-all duration-300 group"
             >
-              <div className="w-8 h-8 bg-emerald-300 rounded-full flex items-center justify-center text-emerald-800 font-bold text-sm">
-                {profile?.full_name?.charAt(0) || 'U'}
+              <div className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/30 group-hover:ring-white/50 transition-all duration-300">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt={profile.full_name || ''} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-emerald-300 to-emerald-500 flex items-center justify-center text-white font-bold text-sm">
+                    {profile?.full_name?.charAt(0) || 'U'}
+                  </div>
+                )}
               </div>
-              <span className="text-sm font-semibold truncate max-w-[80px]">{profile?.full_name?.split(' ')[0] || 'User'}</span>
+              <span className="text-sm font-semibold truncate max-w-[72px]">{profile?.full_name?.split(' ')[0] || 'User'}</span>
+              <ChevronDown size={14} className="text-white/60 group-hover:text-white/90 transition-colors" />
             </Link>
           </div>
 
@@ -269,9 +289,13 @@ export default function CustomerHome() {
                 <Link key={vendor.user_id} href={`/customer/vendor?id=${vendor.user_id}`}>
                   <Card className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-emerald-100 shadow-sm">
                     <CardContent className="p-4 flex gap-4">
-                      <div className="w-20 h-20 bg-emerald-50 rounded-xl shrink-0 flex items-center justify-center text-emerald-600 font-bold text-xl">
-                        {vendor.users?.full_name?.charAt(0) || '?'}
-                      </div>
+                      {vendor.avatar_url ? (
+                        <img src={vendor.avatar_url} alt={vendor.users?.full_name || ''} className="w-20 h-20 rounded-xl shrink-0 object-cover" />
+                      ) : (
+                        <div className="w-20 h-20 bg-emerald-50 rounded-xl shrink-0 flex items-center justify-center text-emerald-600 font-bold text-xl">
+                          {vendor.users?.full_name?.charAt(0) || '?'}
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <h3 className="font-bold text-gray-900 truncate">{vendor.users?.full_name || 'Unknown'}</h3>
@@ -279,7 +303,7 @@ export default function CustomerHome() {
                         </div>
                         <p className="text-sm text-gray-500 mt-0.5">{vendor.specialization || 'General'}</p>
                         <div className="flex items-center gap-2 mt-2 text-sm font-medium">
-                          <span className="flex items-center gap-1 text-emerald-600">
+                          <span className="flex items-center gap-1 text-amber-500">
                             <Star size={14} fill="currentColor" /> {vendor.rating?.toFixed(1) || '0.0'}
                           </span>
                           <span className="text-gray-300">•</span>

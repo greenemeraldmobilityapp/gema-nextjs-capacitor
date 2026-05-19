@@ -17,35 +17,49 @@ export default function AdminPromos() {
 
   const handleCreate = async () => {
     if (!form.title || !form.description || form.discount <= 0) {
-      toast.error('Harap isi semua field');
+      toast.warning('Harap isi semua field', { duration: 4000 });
       return;
     }
-    try {
-      await createPromo.mutateAsync({ ...form, discount: Number(form.discount) });
-      toast.success('Promo berhasil ditambahkan');
-      setForm({ title: '', description: '', discount: 0, active: true });
-      setShowForm(false);
-    } catch {
-      toast.error('Gagal menambah promo');
-    }
+    const promise = createPromo.mutateAsync({ ...form, discount: Number(form.discount) });
+
+    toast.promise(promise, {
+      loading: 'Menambah promo...',
+      success: () => {
+        setForm({ title: '', description: '', discount: 0, active: true });
+        setShowForm(false);
+        return 'Promo berhasil ditambahkan';
+      },
+      error: (err) => err instanceof Error ? err.message : 'Gagal menambah promo',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   const handleToggle = async (promo: { id: string; title: string; description: string; discount: number; image_url: string | null; active: boolean; created_at: string }) => {
-    try {
-      await updatePromo.mutateAsync({ ...promo, active: !promo.active });
-      toast.success(promo.active ? 'Promo dinonaktifkan' : 'Promo diaktifkan');
-    } catch {
-      toast.error('Gagal mengubah status promo');
-    }
+    const promise = updatePromo.mutateAsync({ ...promo, active: !promo.active });
+
+    toast.promise(promise, {
+      loading: 'Mengubah status promo...',
+      success: promo.active ? 'Promo dinonaktifkan' : 'Promo diaktifkan',
+      error: (err) => err instanceof Error ? err.message : 'Gagal mengubah status promo',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      await deletePromo.mutateAsync(id);
-      toast.success('Promo berhasil dihapus');
-    } catch {
-      toast.error('Gagal menghapus promo');
-    }
+    const promise = deletePromo.mutateAsync(id);
+
+    toast.promise(promise, {
+      loading: 'Menghapus promo...',
+      success: 'Promo berhasil dihapus',
+      error: (err) => err instanceof Error ? err.message : 'Gagal menghapus promo',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   if (isLoading) {

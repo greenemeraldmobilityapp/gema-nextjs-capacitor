@@ -4,8 +4,20 @@ Version 2.0 (Execution Ready)
 
 ---
 
-1. Product Vision
+## 13. Known Issues & Technical Decisions
 
+### 13.1 Android Chrome — File Upload via `accept` Multi-type
+
+**Issue**: Android Chrome returns `File.type = ''` (empty string) when `<input accept=".pdf,image/*">` contains mixed MIME types (PDF + image). This causes `supabase.storage.upload()` to fail because the fallback `contentType` (`'application/octet-stream'`) is not handled correctly by the client on Android.
+
+**Affects**: Vendor verification — certificate upload page (`/vendor/verification/certification`)
+**Fix applied**: Changed `accept=".pdf,image/*"` → `accept="image/*"` with fallback `contentType: 'image/jpeg'`
+
+**Future PDF support**: Must use a **separate upload button/flow** for PDF files, not mixed via `accept` attribute. For example:
+- Upload foto sertifikat (JPG/PNG) — `accept="image/*"`
+- Upload dokumen pendukung (PDF) — `accept=".pdf"` (button terpisah, endpoint berbeda)
+
+---
 GEMA adalah marketplace jasa profesional berbasis lokasi yang menghubungkan customer dengan vendor terpercaya untuk layanan teknikal dan home services.
 
 Fokus MVP:
@@ -345,3 +357,16 @@ Target 6 bulan pertama:
 - High customer acquisition cost
 
 ---
+
+## 13. Known Issues & Technical Decisions
+
+### 13.1 Android Chrome — File Upload via `accept` Multi-type
+
+**Issue**: Android Chrome returns `File.type = ''` (empty string) when `<input accept=".pdf,image/*">` contains mixed MIME types (PDF + image). This causes `supabase.storage.upload()` to fail because the fallback `contentType` (`'application/octet-stream'`) is not handled correctly by the client on Android.
+
+**Affects**: Vendor verification — certificate upload page (`/vendor/verification/certification`)
+**Fix applied**: Changed `accept=".pdf,image/*"` → `accept="image/*"` with fallback `contentType: 'image/jpeg'`
+
+**Future PDF support**: Must use a **separate upload button/flow** for PDF files, not mixed via `accept` attribute. For example:
+- Upload foto sertifikat (JPG/PNG) — `accept="image/*"`
+- Upload dokumen pendukung (PDF) — `accept=".pdf"` (button terpisah, endpoint berbeda)

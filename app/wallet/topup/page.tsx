@@ -26,7 +26,7 @@ export default function TopupPage() {
 
   const handleSubmit = async () => {
     if (numericAmount < 10000) {
-      toast.error('Minimal top up Rp 10.000');
+      toast.warning('Minimal top up Rp 10.000', { duration: 4000 });
       return;
     }
 
@@ -72,7 +72,7 @@ export default function TopupPage() {
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Gagal memproses top up';
-      toast.error(msg);
+      toast.error(msg, { duration: 5000 });
     } finally {
       setIsProcessing(false);
     }

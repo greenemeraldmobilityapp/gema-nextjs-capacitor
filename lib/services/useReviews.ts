@@ -76,21 +76,6 @@ export function useCreateReview() {
         });
 
       if (insertError) throw insertError;
-
-      const { data: reviews } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('vendor_id', review.vendor_id);
-
-      if (reviews && reviews.length > 0) {
-        const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-        const { error: updateError } = await supabase
-          .from('vendor_profiles')
-          .update({ rating: Math.round(avgRating * 10) / 10 })
-          .eq('user_id', review.vendor_id);
-
-        if (updateError) throw updateError;
-      }
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['vendor-reviews', variables.vendor_id] });
@@ -123,21 +108,6 @@ export function useUpdateReview() {
         .eq('id', review.id);
 
       if (error) throw error;
-
-      const { data: reviews } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('vendor_id', review.vendor_id);
-
-      if (reviews && reviews.length > 0) {
-        const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-        const { error: updateError } = await supabase
-          .from('vendor_profiles')
-          .update({ rating: Math.round(avgRating * 10) / 10 })
-          .eq('user_id', review.vendor_id);
-
-        if (updateError) throw updateError;
-      }
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['vendor-reviews', variables.vendor_id] });

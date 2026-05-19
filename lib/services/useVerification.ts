@@ -6,7 +6,7 @@ const supabase = createClient();
 export type VerificationSubmission = {
   id: string;
   user_id: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'revoked';
   nik: string;
   ktp_name: string;
   ktp_url: string;
@@ -78,7 +78,7 @@ export function useSubmitCertificate() {
     mutationFn: async (params: {
       userId: string;
       submissionId: string;
-      certificateUrl: string;
+      certificateUrl: string | null;
       certificateName: string;
       certificateIssuer: string;
       certificateYear: number;

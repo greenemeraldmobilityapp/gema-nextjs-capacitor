@@ -25,7 +25,7 @@ export default function VendorChatPage() {
   const { data: chats, isLoading, error } = useVendorChats(profile?.id);
 
   useEffect(() => {
-    if (error) toast.error('Gagal memuat percakapan');
+    if (error) toast.error('Gagal memuat percakapan', { duration: 5000 });
   }, [error]);
 
   const filteredChats = (chats || []).filter(chat =>

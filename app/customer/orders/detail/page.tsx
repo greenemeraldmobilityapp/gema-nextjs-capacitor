@@ -295,11 +295,36 @@ function OrderTrackingContent() {
         {order.order_status === 'pending' && (
           <Button
             onClick={() => {
+              const orderId = order.id;
+              const loadingId = toast.loading('Membatalkan pesanan...');
               updateStatus.mutate(
-                { orderId: order.id, order_status: 'cancelled', cancelled_at: new Date().toISOString(), payment_status: 'refunded' },
+                { orderId, order_status: 'cancelled', cancelled_at: new Date().toISOString(), payment_status: 'refunded' },
                 {
-                  onSuccess: () => toast.success('Pesanan dibatalkan'),
-                  onError: (err) => toast.error(err.message || 'Gagal membatalkan'),
+                  onSuccess: () => {
+                    toast.dismiss(loadingId);
+                    toast('Pesanan dibatalkan', {
+                      description: 'Anda dapat mengurungkan pembatalan dalam 6 detik',
+                      action: {
+                        label: 'Urungkan',
+                        onClick: () => {
+                          toast.promise(
+                            updateStatus.mutateAsync({ orderId, order_status: 'pending', cancelled_at: null, payment_status: 'unpaid' }),
+                            {
+                              loading: 'Mengembalikan pesanan...',
+                              success: 'Pesanan dikembalikan',
+                              error: (err) => err.message || 'Gagal mengembalikan',
+                              duration: 4000,
+                            },
+                          );
+                        },
+                      },
+                      duration: 6000,
+                    });
+                  },
+                  onError: (err) => {
+                    toast.dismiss(loadingId);
+                    toast.error(err.message || 'Gagal membatalkan', { duration: 5000 });
+                  },
                 }
               );
             }}

@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, User, Camera, Loader2, ImageOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,16 @@ const AVATAR_MAX_SIZE = 5 * 1024 * 1024;
 const AVATAR_ACCEPT = 'image/jpeg,image/png,image/webp';
 
 export default function VendorEditProfilePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-stone-50"><Loader2 size={24} className="animate-spin text-stone-400" /></div>}>
+      <EditProfileForm />
+    </Suspense>
+  );
+}
+
+function EditProfileForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const profile = useAuthStore((s) => s.profile);
   const setProfile = useAuthStore((s) => s.setProfile);
@@ -39,7 +48,6 @@ export default function VendorEditProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     fullName: '',
-    email: '',
     phone: '',
     specialization: '',
     bio: '',
@@ -57,7 +65,6 @@ export default function VendorEditProfilePage() {
     if (vendor && profile) {
       setFormData({
         fullName: profile.full_name || '',
-        email: profile.email || '',
         phone: vendor.users?.phone || '',
         specialization: vendor.specialization || '',
         bio: vendor.bio || '',
@@ -123,7 +130,7 @@ export default function VendorEditProfilePage() {
     setSaving(true);
     setErrorMsg('');
 
-    try {
+    const savePromise = (async () => {
       let avatarUrl: string | null = null;
 
       if (avatarFile) {
@@ -136,7 +143,6 @@ export default function VendorEditProfilePage() {
         .from('users')
         .update({
           full_name: formData.fullName,
-          email: formData.email,
           phone: formData.phone || null,
         })
         .eq('id', profile.id);
@@ -170,18 +176,32 @@ export default function VendorEditProfilePage() {
       if (avatarUrl && profile) {
         setProfile({ ...profile, avatar_url: avatarUrl });
       }
+    })();
 
-      setSaved(true);
-      toast.success('Profil berhasil disimpan');
-      queryClient.invalidateQueries({ queryKey: ['vendor', profile.id] });
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
-      setTimeout(() => {
-        setSaved(false);
-      }, 1500);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Gagal menyimpan profil';
-      setErrorMsg(msg);
-      toast.error(msg);
+    toast.promise(savePromise, {
+      loading: 'Menyimpan profil...',
+      success: () => {
+        setSaved(true);
+        queryClient.invalidateQueries({ queryKey: ['vendor', profile.id] });
+        queryClient.invalidateQueries({ queryKey: ['vendors'] });
+        if (searchParams.get('from') === 'register') {
+          router.push('/vendor/verification');
+        } else {
+          setTimeout(() => { setSaved(false); }, 1500);
+        }
+        return 'Profil berhasil disimpan';
+      },
+      error: (err) => {
+        const msg = err instanceof Error ? err.message : 'Gagal menyimpan profil';
+        setErrorMsg(msg);
+        return msg;
+      },
+    });
+
+    try {
+      await savePromise;
+    } catch {
+      // error handled by toast.promise
     } finally {
       setSaving(false);
     }
@@ -278,11 +298,10 @@ export default function VendorEditProfilePage() {
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Email</label>
             <Input
-              required
               type="email"
-              value={formData.email}
-              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-              className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
+              value={profile?.email || ''}
+              disabled
+              className="h-12 bg-stone-100 border-stone-200 rounded-xl text-stone-500 cursor-not-allowed"
             />
           </div>
           <div className="space-y-1.5">

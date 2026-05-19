@@ -49,6 +49,19 @@ export function compressImage(
   });
 }
 
+export async function deleteFolderContents(
+  supabase: SupabaseClient,
+  bucket: string,
+  folderPath: string
+): Promise<void> {
+  const { data: files, error } = await supabase.storage
+    .from(bucket)
+    .list(folderPath);
+  if (error || !files?.length) return;
+  const paths = files.map((f) => `${folderPath}/${f.name}`);
+  await supabase.storage.from(bucket).remove(paths);
+}
+
 export async function deleteExistingAvatar(
   supabase: SupabaseClient,
   userId: string

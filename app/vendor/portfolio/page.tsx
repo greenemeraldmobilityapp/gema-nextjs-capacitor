@@ -51,11 +51,17 @@ export default function VendorPortfolioPage() {
   const handleDelete = async (id: string) => {
     if (!profile?.id) return;
     setDeletingId(id);
+    const deletePromise = deleteService.mutateAsync({ id, vendor_id: profile.id });
+
+    toast.promise(deletePromise, {
+      loading: 'Menghapus portofolio...',
+      success: 'Portofolio berhasil dihapus',
+      error: (err) => err?.message || 'Gagal menghapus portofolio',
+      duration: 4000,
+    });
+
     try {
-      await deleteService.mutateAsync({ id, vendor_id: profile.id });
-      toast.success('Portofolio berhasil dihapus');
-    } catch {
-      toast.error('Gagal menghapus portofolio');
+      await deletePromise;
     } finally {
       setDeletingId(null);
     }

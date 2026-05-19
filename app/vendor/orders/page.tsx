@@ -29,7 +29,7 @@ function OrdersContent() {
   const displayOrders = tab === 'active' ? activeOrders : historyOrders;
 
   useEffect(() => {
-    if (error) toast.error('Gagal memuat daftar pesanan');
+    if (error) toast.error('Gagal memuat daftar pesanan', { duration: 5000 });
   }, [error]);
 
   return (

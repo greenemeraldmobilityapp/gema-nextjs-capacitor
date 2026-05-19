@@ -40,13 +40,14 @@ function ChatDetailContent() {
 
   const handleSend = () => {
     if (!input.trim() || !chat?.id || !profile) return;
-    sendMessage.mutate(
+    const sendPromise = sendMessage.mutateAsync(
       { chatId: chat.id, senderId: profile.id, message: input.trim() },
-      {
-        onSuccess: () => { setInput(''); toast.success('Pesan terkirim'); },
-        onError: () => toast.error('Gagal mengirim pesan'),
-      }
     );
+    toast.promise(sendPromise, {
+      loading: 'Mengirim pesan...',
+      success: () => { setInput(''); return 'Pesan terkirim'; },
+      error: (err) => err?.message || 'Gagal mengirim pesan',
+    });
   };
 
   return (

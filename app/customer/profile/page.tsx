@@ -76,7 +76,7 @@ export default function ProfilePage() {
 
       toast.success('Foto profil berhasil diperbarui');
     } catch {
-      toast.success('Foto tampil sementara');
+      toast.error('Foto gagal diupload, tapi perubahan tersimpan sementara');
     } finally {
       setUploading(false);
     }

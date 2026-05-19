@@ -36,27 +36,31 @@ export default function AdminTransactions() {
   });
 
   const handleApprove = async (tx: { id: string; wallet_id: string; amount: number; type: string }) => {
-    try {
-      if (tx.type === 'withdrawal') {
-        await approveWithdraw.mutateAsync({ txId: tx.id });
-        toast.success('Disbursement berhasil dikirim ke Xendit');
-      } else {
-        await approveTx.mutateAsync({ txId: tx.id, walletId: tx.wallet_id, amount: tx.amount });
-        toast.success('Transaksi berhasil disetujui');
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Gagal menyetujui transaksi';
-      toast.error(msg);
-    }
+    const promise = tx.type === 'withdrawal'
+      ? approveWithdraw.mutateAsync({ txId: tx.id })
+      : approveTx.mutateAsync({ txId: tx.id, walletId: tx.wallet_id, amount: tx.amount });
+
+    toast.promise(promise, {
+      loading: 'Memproses transaksi...',
+      success: tx.type === 'withdrawal' ? 'Disbursement berhasil dikirim ke Xendit' : 'Transaksi berhasil disetujui',
+      error: (err) => err instanceof Error ? err.message : 'Gagal menyetujui transaksi',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   const handleReject = async (txId: string) => {
-    try {
-      await rejectTx.mutateAsync(txId);
-      toast.success('Transaksi ditolak');
-    } catch {
-      toast.error('Gagal menolak transaksi');
-    }
+    const promise = rejectTx.mutateAsync(txId);
+
+    toast.promise(promise, {
+      loading: 'Menolak transaksi...',
+      success: 'Transaksi ditolak',
+      error: (err) => err instanceof Error ? err.message : 'Gagal menolak transaksi',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   if (isLoading) {

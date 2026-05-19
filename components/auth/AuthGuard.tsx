@@ -19,7 +19,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     } else if (!isLoading && profile) {
       if (pathname === '/login' || pathname === '/register' || pathname.startsWith('/onboarding') || pathname.startsWith('/register/role')) {
         if (profile.role === 'customer') router.replace('/customer/home');
-        else if (profile.role === 'vendor') router.replace('/vendor/dashboard');
+        else if (profile.role === 'vendor') router.replace('/vendor/verification');
         else if (profile.role === 'admin') router.replace('/admin/dashboard');
         else router.replace('/register/role');
       }

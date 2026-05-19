@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, Loader2, FileText, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Upload, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/lib/supabase/client';
@@ -18,6 +18,8 @@ export default function CertificationPage() {
   const profile = useAuthStore((s) => s.profile);
   const { data: submission, isLoading } = useLatestSubmission(profile?.id);
   const submitCertificate = useSubmitCertificate();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const fileDataPromiseRef = useRef<Promise<{ buffer: ArrayBuffer; contentType: string; fileName: string } | null>>(Promise.resolve(null));
   const [formData, setFormData] = useState({ name: '', publisher: '', year: '' });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -41,33 +43,53 @@ export default function CertificationPage() {
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
-    if (f) {
-      if (preview) URL.revokeObjectURL(preview);
-      setFile(f);
-      if (f.type.startsWith('image/')) {
-        setPreview(URL.createObjectURL(f));
-      }
-    }
+    if (!f) return;
+    if (preview) URL.revokeObjectURL(preview);
+    fileDataPromiseRef.current = new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const data = { buffer: reader.result as ArrayBuffer, contentType: f.type || 'image/jpeg', fileName: f.name };
+        resolve(data);
+      };
+      reader.onerror = () => { resolve(null); };
+      reader.readAsArrayBuffer(f);
+    });
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
   };
+
+  const hasCertData = file !== null || formData.name.trim() || formData.publisher.trim() || formData.year.trim();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile?.id || !submission?.id) return;
+    console.log('[Cert] handleSubmit, submission:', submission?.id);
+    if (!profile?.id) {
+      toast.warning('Silakan login terlebih dahulu', { duration: 4000 });
+      return;
+    }
+    if (!submission?.id) {
+      toast.warning('Data verifikasi tidak ditemukan, silakan ulangi dari KTP', { duration: 4000 });
+      return;
+    }
     setSaving(true);
-    try {
-      let certUrl = '';
-      if (file) {
-        const { data: { session } } = await supabase.auth.getSession();
-        const userId = session?.user?.id;
-        if (userId) {
-          const filePath = `${userId}/cert/${Date.now()}_${file.name}`;
-          const { error: uploadError } = await supabase.storage
-            .from('verification')
-            .upload(filePath, file);
-          if (uploadError) throw new Error('Gagal upload file sertifikat');
-          const { data: urlData } = supabase.storage.from('verification').getPublicUrl(filePath);
-          certUrl = urlData?.publicUrl || '';
+    const submitPromise = (async () => {
+      let certUrl: string | null = null;
+      let uploadedFileName: string | null = null;
+      const fileData = await fileDataPromiseRef.current;
+      if (fileData) {
+        const userId = profile.id;
+        const safeName = fileData.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+        uploadedFileName = `${Date.now()}_${safeName}`;
+        const filePath = `${userId}/certificate/${uploadedFileName}`;
+        const { error: uploadError } = await supabase.storage
+          .from('verification')
+          .upload(filePath, fileData.buffer, { contentType: fileData.contentType });
+        if (uploadError) {
+          throw new Error(uploadError.message || 'Gagal upload file sertifikat');
         }
+        const { data: urlData } = supabase.storage.from('verification').getPublicUrl(filePath);
+        certUrl = urlData?.publicUrl || null;
+        if (!certUrl) throw new Error('Gagal mendapatkan URL sertifikat');
       }
 
       await submitCertificate.mutateAsync({
@@ -79,15 +101,44 @@ export default function CertificationPage() {
         certificateYear: parseInt(formData.year) || new Date().getFullYear(),
       });
 
-      toast.success('Sertifikat berhasil disimpan');
+      if (uploadedFileName) {
+        cleanupOldFiles(profile.id, uploadedFileName);
+      }
+
       router.push('/vendor/verification/review');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Gagal menyimpan sertifikat';
-      toast.error(msg);
+    })();
+
+    toast.promise(submitPromise, {
+      loading: 'Menyimpan sertifikat...',
+      success: 'Sertifikat berhasil disimpan',
+      error: (err) => err instanceof Error ? err.message : 'Gagal menyimpan sertifikat',
+      duration: 5000,
+    });
+
+    try {
+      await submitPromise;
     } finally {
       setSaving(false);
     }
   };
+
+  async function cleanupOldFiles(userId: string, keepFileName: string) {
+    try {
+      const { data: files } = await supabase.storage
+        .from('verification')
+        .list(`${userId}/certificate`);
+      if (!files?.length) return;
+      const toDelete = files
+        .filter((f) => f.name !== keepFileName)
+        .map((f) => `${userId}/certificate/${f.name}`);
+      if (toDelete.length > 0) {
+        await supabase.storage.from('verification').remove(toDelete);
+        console.log('[Cert] cleaned up', toDelete.length, 'old file(s)');
+      }
+    } catch (err) {
+      console.warn('[Cert] cleanup error (non-fatal):', err);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -133,39 +184,30 @@ export default function CertificationPage() {
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Upload Sertifikat (Opsional)</label>
-              <label className="flex flex-col items-center justify-center w-full min-h-[8rem] border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50 overflow-hidden">
+              <div
+                onClick={() => inputRef.current?.click()}
+                className="flex flex-col items-center justify-center w-full min-h-[8rem] border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50 overflow-hidden"
+              >
                 {preview ? (
                   <img src={preview} alt="Preview sertifikat" className="w-full object-contain max-h-40 rounded-2xl" />
-                ) : file ? (
-                  <div className="flex flex-col items-center py-6 text-stone-400">
-                    <FileText size={32} className="mb-1" />
-                    <p className="text-sm font-medium text-stone-500">{file.name}</p>
-                  </div>
                 ) : submission.certificate_url ? (
                   <div className="flex flex-col items-center py-6 text-emerald-600">
-                    {submission.certificate_url.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
-                      <img
-                        src={submission.certificate_url}
-                        alt="Sertifikat terupload"
-                        className="w-full object-contain max-h-32 rounded-xl opacity-60"
-                      />
-                    ) : (
-                      <>
-                        <FileText size={32} className="mb-1" />
-                        <p className="text-sm font-medium">Sertifikat sudah diupload</p>
-                      </>
-                    )}
+                    <img
+                      src={submission.certificate_url}
+                      alt="Sertifikat terupload"
+                      className="w-full object-contain max-h-32 rounded-xl opacity-60"
+                    />
                     <p className="text-xs mt-2 text-stone-400">Tap untuk mengganti file</p>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center py-6 text-stone-400">
                     <Upload size={28} className="mb-2" />
                     <p className="text-sm font-medium">Tap untuk upload sertifikat</p>
-                    <p className="text-xs mt-1">Format PDF/JPG/PNG, maks 5MB</p>
+                    <p className="text-xs mt-1">Format JPG/PNG, maks 5MB</p>
                   </div>
                 )}
-                <input type="file" accept=".pdf,image/*" onChange={handleFile} className="hidden" />
-              </label>
+              </div>
+              <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Nama Sertifikat</label>
@@ -205,7 +247,7 @@ export default function CertificationPage() {
             </Link>
             <Button
               type="submit"
-              disabled={saving}
+              disabled={saving || !hasCertData}
               variant="premium"
               size="lg"
               className="flex-1 disabled:opacity-50"

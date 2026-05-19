@@ -38,31 +38,27 @@ export default function WalletAccounts() {
   const handleSave = () => {
     if (!profile?.id) return;
     if (!formBank || !formNumber || !formHolder) {
-      toast.error('Lengkapi semua data rekening');
+      toast.warning('Lengkapi semua data rekening', { duration: 4000 });
       return;
     }
     if (formNumber.length < 8) {
-      toast.error('Nomor rekening minimal 8 digit');
+      toast.warning('Nomor rekening minimal 8 digit', { duration: 4000 });
       return;
     }
 
-    if (editingId) {
-      updateAccount.mutate(
-        { id: editingId, userId: profile.id, bankCode: formBank, accountNumber: formNumber, accountHolder: formHolder, isPrimary: formPrimary },
-        {
-          onSuccess: () => { toast.success('Rekening berhasil diperbarui'); resetForm(); },
-          onError: (err) => toast.error(err.message || 'Gagal memperbarui rekening'),
-        }
-      );
-    } else {
-      createAccount.mutate(
-        { userId: profile.id, bankCode: formBank, accountNumber: formNumber, accountHolder: formHolder, isPrimary: formPrimary },
-        {
-          onSuccess: () => { toast.success('Rekening berhasil ditambahkan'); resetForm(); },
-          onError: (err) => toast.error(err.message || 'Gagal menambahkan rekening'),
-        }
-      );
-    }
+    const savePromise = editingId
+      ? updateAccount.mutateAsync(
+          { id: editingId, userId: profile.id, bankCode: formBank, accountNumber: formNumber, accountHolder: formHolder, isPrimary: formPrimary },
+        )
+      : createAccount.mutateAsync(
+          { userId: profile.id, bankCode: formBank, accountNumber: formNumber, accountHolder: formHolder, isPrimary: formPrimary },
+        );
+
+    toast.promise(savePromise, {
+      loading: 'Menyimpan rekening...',
+      success: () => { resetForm(); return editingId ? 'Rekening berhasil diperbarui' : 'Rekening berhasil ditambahkan'; },
+      error: (err) => err?.message || 'Gagal menyimpan rekening',
+    });
   };
 
   const startEdit = (acc: { id: string; bank_code: string; account_number: string; account_holder: string; is_primary: boolean }) => {
@@ -77,18 +73,22 @@ export default function WalletAccounts() {
   const handleDelete = (id: string) => {
     if (!profile?.id) return;
     if (!confirm('Hapus rekening ini?')) return;
-    deleteAccount.mutate(
-      { id, userId: profile.id },
-      { onSuccess: () => toast.success('Rekening berhasil dihapus'), onError: (err) => toast.error(err.message || 'Gagal menghapus rekening') }
-    );
+    const deletePromise = deleteAccount.mutateAsync({ id, userId: profile.id });
+    toast.promise(deletePromise, {
+      loading: 'Menghapus rekening...',
+      success: 'Rekening berhasil dihapus',
+      error: (err) => err?.message || 'Gagal menghapus rekening',
+    });
   };
 
   const handleSetPrimary = (id: string) => {
     if (!profile?.id) return;
-    setPrimary.mutate(
-      { id, userId: profile.id },
-      { onSuccess: () => toast.success('Rekening utama berhasil diubah'), onError: (err) => toast.error(err.message || 'Gagal mengubah rekening utama') }
-    );
+    const primaryPromise = setPrimary.mutateAsync({ id, userId: profile.id });
+    toast.promise(primaryPromise, {
+      loading: 'Mengubah rekening utama...',
+      success: 'Rekening utama berhasil diubah',
+      error: (err) => err?.message || 'Gagal mengubah rekening utama',
+    });
   };
 
   return (

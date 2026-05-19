@@ -223,6 +223,43 @@ export function useRejectVerification() {
   });
 }
 
+export function useRevokeVerification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ submissionId, userId, adminId, reason }: { submissionId: string; userId: string; adminId: string; reason: string }) => {
+      const { error: subError } = await supabase
+        .from('verification_submissions')
+        .update({
+          status: 'revoked',
+          rejection_reason: reason,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: adminId,
+        })
+        .eq('id', submissionId);
+
+      if (subError) throw subError;
+
+      const { error: vendorError } = await supabase
+        .from('vendor_profiles')
+        .update({
+          is_verified: false,
+          verification_status: 'revoked',
+          rejection_reason: reason,
+        })
+        .eq('user_id', userId);
+
+      if (vendorError) throw vendorError;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-vendor-detail', variables.userId] });
+      queryClient.invalidateQueries({ queryKey: ['admin-vendors'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['vendor', variables.userId] });
+    },
+  });
+}
+
 export type AdminDispute = {
   id: string;
   order_id: string;

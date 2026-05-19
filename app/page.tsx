@@ -52,13 +52,13 @@ export default function SplashScreen() {
   }, [router, dur]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-black select-none">
-      {/* Emerald glow behind logo */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none motion-reduce:hidden" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-400/5 rounded-full blur-[60px] pointer-events-none motion-reduce:hidden" />
+    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-gradient-to-b from-emerald-900/95 via-emerald-600/90 to-emerald-800/85 select-none">
+      {/* White glow behind logo */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-white/[0.07] rounded-full blur-[80px] pointer-events-none motion-reduce:hidden" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-white/[0.04] rounded-full blur-[60px] pointer-events-none motion-reduce:hidden" />
 
       {/* Subtle grid texture */}
-      <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_50%_50%,_white_1px,_transparent_1px)] bg-[length:24px_24px] pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_50%_50%,_white_1px,_transparent_1px)] bg-[length:24px_24px] pointer-events-none" />
 
       {/* Floating particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden motion-reduce:hidden" aria-hidden="true">
@@ -96,7 +96,7 @@ export default function SplashScreen() {
           <img
             src="/images/gema-logo.svg"
             alt="GEMA"
-            className="w-20 h-20 sm:w-24 sm:h-24 drop-shadow-[0_0_30px_rgba(52,211,153,0.15)] motion-reduce:drop-shadow-none"
+            className="w-20 h-20 sm:w-24 sm:h-24 drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] motion-reduce:drop-shadow-none"
           />
         </div>
 
@@ -115,7 +115,7 @@ export default function SplashScreen() {
                   style={{
                     transitionDelay: exit ? `${i * 60}ms` : `${i * 120}ms`,
                     transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-                    textShadow: '0 0 40px rgba(52,211,153,0.08)',
+                    textShadow: '0 0 40px rgba(255,255,255,0.1)',
                   }}
                 >
                   {char}
@@ -142,21 +142,21 @@ export default function SplashScreen() {
             <div
               className={`h-px transition-all duration-700 delay-200 ${
                 phase === 'tagline' || phase === 'done'
-                  ? 'w-12 bg-emerald-400/30'
+                  ? 'w-12 bg-emerald-300/40'
                   : 'w-0 bg-transparent'
               }`}
             />
             <div
               className={`w-1 h-1 rounded-full transition-all duration-700 delay-300 ${
                 phase === 'tagline' || phase === 'done'
-                  ? 'bg-emerald-400/40 scale-100'
+                  ? 'bg-emerald-200/60 scale-100'
                   : 'bg-transparent scale-0'
               }`}
             />
             <div
               className={`h-px transition-all duration-700 delay-200 ${
                 phase === 'tagline' || phase === 'done'
-                  ? 'w-12 bg-emerald-400/30'
+                  ? 'w-12 bg-emerald-300/40'
                   : 'w-0 bg-transparent'
               }`}
             />
@@ -170,21 +170,21 @@ export default function SplashScreen() {
             <div
               className={`h-px transition-all duration-700 delay-300 ${
                 phase === 'tagline' || phase === 'done'
-                  ? 'w-12 bg-emerald-400/30'
+                  ? 'w-12 bg-emerald-300/40'
                   : 'w-0 bg-transparent'
               }`}
             />
             <div
               className={`w-1 h-1 rounded-full transition-all duration-700 delay-400 ${
                 phase === 'tagline' || phase === 'done'
-                  ? 'bg-emerald-400/40 scale-100'
+                  ? 'bg-emerald-200/60 scale-100'
                   : 'bg-transparent scale-0'
               }`}
             />
             <div
               className={`h-px transition-all duration-700 delay-300 ${
                 phase === 'tagline' || phase === 'done'
-                  ? 'w-12 bg-emerald-400/30'
+                  ? 'w-12 bg-emerald-300/40'
                   : 'w-0 bg-transparent'
               }`}
             />
@@ -193,7 +193,7 @@ export default function SplashScreen() {
       </div>
 
       {/* Progress bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/5 motion-reduce:hidden">
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/10 motion-reduce:hidden">
         <div
           className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-200 ease-linear"
           style={{
@@ -205,7 +205,7 @@ export default function SplashScreen() {
 
       {/* Version */}
       <div
-        className={`absolute bottom-4 right-4 text-[10px] text-white/15 font-mono tracking-wider transition-opacity duration-700 ${
+        className={`absolute bottom-4 right-4 text-[10px] text-white/20 font-mono tracking-wider transition-opacity duration-700 ${
           phase === 'done' || exit ? 'opacity-100' : 'opacity-0'
         }`}
       >

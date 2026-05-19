@@ -64,15 +64,15 @@ export default function VendorAddressPage() {
 
   useEffect(() => {
     async function loadProvinces() {
-      try {
-        const res = await fetch(`${CDN}/provinces/index.json`);
-        const data: [string, string][] = await res.json();
-        setProvinces(data.map(([k, n]) => ({ kode: k, nama: n })));
-      } catch {
-        toast.error('Gagal memuat data wilayah');
-      }
+      const res = await fetch(`${CDN}/provinces/index.json`);
+      const data: [string, string][] = await res.json();
+      setProvinces(data.map(([k, n]) => ({ kode: k, nama: n })));
     }
-    loadProvinces();
+    toast.promise(loadProvinces(), {
+      loading: 'Memuat data wilayah...',
+      success: 'Data wilayah siap',
+      error: (err) => err instanceof Error ? err.message : 'Gagal memuat data wilayah',
+    });
   }, []);
 
   useEffect(() => {
@@ -147,8 +147,8 @@ export default function VendorAddressPage() {
       const res = await fetch(`${CDN}/cities/${kode}.json`);
       const data: [string, string][] = await res.json();
       setCities(data.map(([k, n]) => ({ kode: k, nama: n })));
-    } catch {
-      toast.error('Gagal memuat daftar kota');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal memuat daftar kota', { duration: 5000 });
     } finally {
       setFetchingCities(false);
     }
@@ -167,8 +167,8 @@ export default function VendorAddressPage() {
       const res = await fetch(`${CDN}/districts/${kode}.json`);
       const data: [string, string][] = await res.json();
       setDistricts(data.map(([k, n]) => ({ kode: k, nama: n })));
-    } catch {
-      toast.error('Gagal memuat daftar kecamatan');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal memuat daftar kecamatan', { duration: 5000 });
     } finally {
       setFetchingDistricts(false);
     }
@@ -186,8 +186,8 @@ export default function VendorAddressPage() {
       const res = await fetch(`${CDN}/villages/${kode}.json`);
       const data: [string, string][] = await res.json();
       setVillages(data.map(([k, n]) => ({ kode: k, nama: n })));
-    } catch {
-      toast.error('Gagal memuat daftar desa');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal memuat daftar desa', { duration: 5000 });
     } finally {
       setFetchingVillages(false);
     }
@@ -211,7 +211,7 @@ export default function VendorAddressPage() {
   const handleSave = async () => {
     if (!profile?.id) return;
     setSaving(true);
-    try {
+    const savePromise = (async () => {
       const addressFull = generateFullAddress();
       const userUpdates: Record<string, unknown> = {
         address_street: form.street || null,
@@ -236,11 +236,17 @@ export default function VendorAddressPage() {
         operating_hours: operatingHours as Record<string, unknown>,
       }, { onConflict: 'user_id' });
       if (vendorError) throw vendorError;
+    })();
 
-      toast.success('Alamat berhasil disimpan');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Gagal menyimpan alamat';
-      toast.error(msg);
+    toast.promise(savePromise, {
+      loading: 'Menyimpan alamat...',
+      success: 'Alamat berhasil disimpan',
+      error: (err) => err instanceof Error ? err.message : 'Gagal menyimpan alamat',
+      duration: 4000,
+    });
+
+    try {
+      await savePromise;
     } finally {
       setSaving(false);
     }

@@ -69,9 +69,13 @@ function VendorDetailContent() {
 
       <div className="bg-white p-4 pb-6 border-b shadow-sm">
         <div className="flex gap-4 items-start">
-          <div className="w-20 h-20 bg-gray-200 rounded-2xl flex-shrink-0 flex items-center justify-center text-gray-500 font-bold text-2xl">
-            {initials}
-          </div>
+          {vendor.avatar_url ? (
+            <img src={vendor.avatar_url} alt={vendor.users?.full_name || ''} className="w-20 h-20 rounded-2xl flex-shrink-0 object-cover" />
+          ) : (
+            <div className="w-20 h-20 bg-gray-200 rounded-2xl flex-shrink-0 flex items-center justify-center text-gray-500 font-bold text-2xl">
+              {initials}
+            </div>
+          )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h1 className="text-xl font-heading font-bold text-gray-900 leading-none">{vendor.users?.full_name || 'Unknown'}</h1>

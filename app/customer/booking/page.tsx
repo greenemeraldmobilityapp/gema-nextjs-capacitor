@@ -313,8 +313,8 @@ function BookingContent() {
                 if (!service || !profile) return;
                 const platformFee = Math.round(service.price * 0.05);
                 const totalAmount = service.price + platformFee;
-                createOrder.mutate(
-                  {
+                toast.promise(
+                  createOrder.mutateAsync({
                     customer_id: profile.id,
                     vendor_id: vendorId,
                     service_id: service.id,
@@ -328,16 +328,16 @@ function BookingContent() {
                     platform_fee: platformFee,
                     vendor_payout: service.price - Math.round(service.price * 0.1),
                     total_amount: totalAmount,
-                  },
+                  }),
                   {
-                    onSuccess: (order) => {
-                      toast.success('Pesanan berhasil dibuat');
+                    loading: 'Membuat pesanan...',
+                    success: (order) => {
                       router.push(`/customer/payment?order_id=${order.id}`);
+                      return 'Pesanan berhasil dibuat';
                     },
-                    onError: (err) => {
-                      toast.error(err.message || 'Gagal membuat pesanan');
-                    },
-                  }
+                    error: (err) => err.message || 'Gagal membuat pesanan',
+                    duration: 5000,
+                  },
                 );
               }}
               variant="pill"

@@ -23,16 +23,22 @@ export default function AdminDisputes() {
   const handleResolve = async (disputeId: string) => {
     const resolution = resolutionText[disputeId];
     if (!resolution?.trim()) {
-      toast.error('Harap isi catatan resolusi');
+      toast.warning('Harap isi catatan resolusi', { duration: 4000 });
       return;
     }
-    try {
-      await resolveDispute.mutateAsync({ disputeId, resolution: resolution.trim() });
-      toast.success('Sengketa berhasil diselesaikan');
-      setResolutionText((prev) => ({ ...prev, [disputeId]: '' }));
-    } catch {
-      toast.error('Gagal menyelesaikan sengketa');
-    }
+    const promise = resolveDispute.mutateAsync({ disputeId, resolution: resolution.trim() });
+
+    toast.promise(promise, {
+      loading: 'Menyelesaikan sengketa...',
+      success: () => {
+        setResolutionText((prev) => ({ ...prev, [disputeId]: '' }));
+        return 'Sengketa berhasil diselesaikan';
+      },
+      error: (err) => err instanceof Error ? err.message : 'Gagal menyelesaikan sengketa',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   if (isLoading) {

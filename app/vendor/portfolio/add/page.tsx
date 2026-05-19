@@ -44,12 +44,12 @@ export default function VendorAddPortfolioPage() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Hanya file gambar yang diizinkan');
+      toast.warning('Hanya file gambar yang diizinkan', { duration: 4000 });
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Maksimal ukuran gambar 5MB');
+      toast.warning('Maksimal ukuran gambar 5MB', { duration: 4000 });
       return;
     }
 
@@ -81,7 +81,7 @@ export default function VendorAddPortfolioPage() {
       });
 
     if (uploadError) {
-      toast.error('Gagal mengunggah gambar');
+      toast.error(uploadError.message || 'Gagal mengunggah gambar', { duration: 5000 });
       return null;
     }
 
@@ -96,12 +96,12 @@ export default function VendorAddPortfolioPage() {
     e.preventDefault();
     if (!profile?.id) return;
     if (!formData.category) {
-      toast.error('Pilih kategori terlebih dahulu');
+      toast.warning('Pilih kategori terlebih dahulu', { duration: 4000 });
       return;
     }
 
     setUploading(true);
-    try {
+    const submitPromise = (async () => {
       const imageUrl = await uploadImage(profile.id);
 
       await createService.mutateAsync({
@@ -112,10 +112,20 @@ export default function VendorAddPortfolioPage() {
         description: formData.description || undefined,
         image_url: imageUrl,
       });
-      toast.success('Portofolio berhasil ditambahkan');
-      router.push('/vendor/portfolio');
-    } catch {
-      toast.error('Gagal menambahkan portofolio');
+    })();
+
+    toast.promise(submitPromise, {
+      loading: 'Menambahkan portofolio...',
+      success: () => {
+        router.push('/vendor/portfolio');
+        return 'Portofolio berhasil ditambahkan';
+      },
+      error: (err) => err?.message || 'Gagal menambahkan portofolio',
+      duration: 4000,
+    });
+
+    try {
+      await submitPromise;
     } finally {
       setUploading(false);
     }

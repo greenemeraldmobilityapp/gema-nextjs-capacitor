@@ -104,6 +104,13 @@ function ReviewContent() {
   const handleSubmit = async () => {
     if (rating === 0 || !profile) return;
 
+    if (!reviewText.trim()) {
+      toast.warning('Anda belum menulis komentar', {
+        description: 'Menambahkan komentar membantu vendor dan pengguna lain',
+        duration: 4000,
+      });
+    }
+
     setIsUploading(true);
     try {
       let reviewImageUrl: string | undefined = existingReview?.review_image || undefined;
@@ -120,7 +127,7 @@ function ReviewContent() {
           });
 
         if (uploadError) {
-          toast.error('Gagal mengunggah gambar');
+          toast.error('Gagal mengunggah gambar', { duration: 5000 });
           setIsUploading(false);
           return;
         }
@@ -133,48 +140,48 @@ function ReviewContent() {
       }
 
       if (existingReview) {
-        updateReview.mutate(
-          {
+        toast.promise(
+          updateReview.mutateAsync({
             id: existingReview.id,
             order_id: orderId,
             vendor_id: order.vendor_id,
             rating,
             review_text: reviewText.trim() || undefined,
             review_image: reviewImageUrl,
-          },
+          }),
           {
-            onSuccess: () => {
-              toast.success('Ulasan berhasil diperbarui');
+            loading: 'Memperbarui ulasan...',
+            success: () => {
               setEditMode(false);
+              return 'Ulasan berhasil diperbarui';
             },
-            onError: (err) => {
-              toast.error(err.message || 'Gagal memperbarui ulasan');
-            },
-          }
+            error: (err) => err.message || 'Gagal memperbarui ulasan',
+            duration: 4000,
+          },
         );
       } else {
-        createReview.mutate(
-          {
+        toast.promise(
+          createReview.mutateAsync({
             order_id: orderId,
             customer_id: profile.id,
             vendor_id: order.vendor_id,
             rating,
             review_text: reviewText.trim() || undefined,
             review_image: reviewImageUrl,
-          },
+          }),
           {
-            onSuccess: () => {
-              toast.success('Ulasan berhasil dikirim');
+            loading: 'Mengirim ulasan...',
+            success: () => {
               router.push('/customer/orders');
+              return 'Ulasan berhasil dikirim';
             },
-            onError: (err) => {
-              toast.error(err.message || 'Gagal mengirim ulasan');
-            },
-          }
+            error: (err) => err.message || 'Gagal mengirim ulasan',
+            duration: 4000,
+          },
         );
       }
     } catch {
-      toast.error('Gagal memproses gambar');
+      toast.error('Gagal memproses gambar', { duration: 5000 });
     } finally {
       setIsUploading(false);
     }

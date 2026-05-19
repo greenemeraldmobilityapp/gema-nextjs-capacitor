@@ -67,11 +67,11 @@ export default function WithdrawPage() {
 
   const handleSubmit = async () => {
     if (numericAmount < 10000) {
-      toast.error('Minimal penarikan Rp 10.000');
+      toast.warning('Minimal penarikan Rp 10.000', { duration: 4000 });
       return;
     }
     if (numericAmount > balance) {
-      toast.error('Saldo tidak mencukupi');
+      toast.warning('Saldo tidak mencukupi', { duration: 4000 });
       return;
     }
 
@@ -84,46 +84,47 @@ export default function WithdrawPage() {
         .select()
         .single();
       if (createErr || !newWallet) {
-        toast.error('Dompet tidak ditemukan');
+        toast.error(createErr?.message || 'Dompet tidak ditemukan', { duration: 5000 });
         return;
       }
       walletId = newWallet.id;
       queryClient.invalidateQueries({ queryKey: ['wallet', profile?.id] });
     }
 
-    withdraw.mutate(
-      {
+    const submitPromise = (async () => {
+      const result = await withdraw.mutateAsync({
         walletId: walletId!,
         amount: numericAmount,
         savedAccountId: mode === 'saved' ? selectedAccountId : undefined,
         bankName: mode === 'manual' ? banks.find((b) => b.value === bank)?.label || bank : undefined,
         accountNumber: mode === 'manual' ? accountNumber : undefined,
         accountHolder: mode === 'manual' ? accountHolder : undefined,
-      },
-      {
-        onSuccess: (result) => {
-          if (canAutoDisburse) {
-            autoDisburse.mutate(
-              { txId: result.id },
-              {
-                onSuccess: () => {
-                  toast.success('Penarikan berhasil! Dana dikirim ke rekening Anda.');
-                  router.push('/wallet');
-                },
-                onError: (err) => {
-                  toast.error(err.message || 'Gagal memproses penarikan otomatis. Admin akan review.');
-                  router.push('/wallet');
-                },
-              }
-            );
-          } else {
-            toast.success('Permintaan penarikan berhasil dikirim');
-            router.push('/wallet');
-          }
-        },
-        onError: (err) => toast.error(err.message || 'Gagal mengirim permintaan'),
+      });
+
+      if (canAutoDisburse) {
+        await autoDisburse.mutateAsync({ txId: result.id });
       }
-    );
+
+      return result;
+    })();
+
+    toast.promise(submitPromise, {
+      loading: 'Memproses penarikan...',
+      success: () => {
+        router.push('/wallet');
+        if (canAutoDisburse) {
+          return 'Penarikan berhasil! Dana dikirim ke rekening Anda.';
+        }
+        return 'Permintaan penarikan berhasil dikirim';
+      },
+      error: (err) => err?.message || 'Gagal memproses penarikan',
+    });
+
+    try {
+      await submitPromise;
+    } catch {
+      // handled by toast.promise
+    }
   };
 
   return (

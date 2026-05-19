@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, Star, Shield, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Wallet, PlusCircle, MapPin } from 'lucide-react';
+import { User, Star, Shield, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Clock, Wallet, PlusCircle, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
@@ -29,7 +29,22 @@ export default function VendorProfilePage() {
     router.push('/login');
   };
 
+  const verificationItem = (() => {
+    const vs = vendor?.verification_status;
+    if (!vs || vs === 'approved') return null;
+
+    const items: Record<string, { icon: typeof Shield; label: string; subtitle: string; href: string }> = {
+      none: { icon: Shield, label: 'Verifikasi Akun', subtitle: 'Lengkapi verifikasi untuk tingkatkan kepercayaan', href: '/vendor/verification' },
+      pending: { icon: Clock, label: 'Verifikasi Diproses', subtitle: 'Dokumen sedang direview tim GEMA', href: '/vendor/verification/review' },
+      rejected: { icon: AlertCircle, label: 'Verifikasi Ditolak', subtitle: vendor.rejection_reason || 'Ajukan ulang verifikasi', href: '/vendor/verification/review' },
+      revoked: { icon: Shield, label: 'Verifikasi Dicabut', subtitle: vendor.rejection_reason || 'Ajukan ulang verifikasi', href: '/vendor/verification/review' },
+    };
+
+    return items[vs] || null;
+  })();
+
   const menuItems = [
+    ...(verificationItem ? [verificationItem] : []),
     { icon: User, label: 'Edit Profil', subtitle: 'Nama, spesialisasi, bio', href: '/vendor/profile/edit' },
     { icon: Briefcase, label: 'Portofolio', subtitle: 'Daftar layanan & karya', href: '/vendor/portfolio' },
     { icon: MapPin, label: 'Alamat & Area Layanan', subtitle: 'Lokasi & koordinat', href: '/vendor/profile/address' },

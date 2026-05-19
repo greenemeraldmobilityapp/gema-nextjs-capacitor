@@ -6,11 +6,67 @@ import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity, U
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
-import { useVendor } from '@/lib/services/useVendors';
+import { useVendor, type VendorProfile } from '@/lib/services/useVendors';
 import { useVendorOrders } from '@/lib/services/useOrders';
 import { useWallet } from '@/lib/services/useWallet';
 import { useVendorReviews } from '@/lib/services/useReviews';
 import { toast } from 'sonner';
+
+function getVendorCTA(vendor: VendorProfile | null | undefined): {
+  label: string;
+  href: string;
+  icon: typeof User;
+} | null {
+  if (!vendor) return null;
+
+  const profileComplete = !!(
+    vendor.users?.phone?.trim() &&
+    vendor.specialization?.trim()
+  );
+
+  if (!profileComplete) {
+    return { label: 'Lengkapi Profil', href: '/vendor/profile/edit', icon: User };
+  }
+
+  if (vendor.verification_status === 'none' || vendor.verification_status === null) {
+    return { label: 'Verifikasi Akun', href: '/vendor/verification', icon: ShieldCheck };
+  }
+
+  if (vendor.verification_status === 'rejected') {
+    return { label: 'Ajukan Ulang Verifikasi', href: '/vendor/verification', icon: ShieldCheck };
+  }
+
+  if (vendor.verification_status === 'pending') {
+    return { label: 'Cek Status Verifikasi', href: '/vendor/verification/review', icon: ShieldCheck };
+  }
+
+  return null;
+}
+
+function EmptyStateCard({ vendor }: { vendor: VendorProfile | null | undefined }) {
+  const cta = getVendorCTA(vendor);
+
+  return (
+    <Card className="rounded-3xl border-none shadow-sm overflow-hidden bg-gradient-to-br from-stone-50 to-white">
+      <CardContent className="p-8 text-center">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-stone-100 to-stone-200 flex items-center justify-center mx-auto mb-4">
+          <Activity size={28} className="text-stone-400" />
+        </div>
+        <h3 className="font-bold text-stone-700">Selamat datang di GEMA!</h3>
+        <p className="text-sm text-stone-400 mt-1">Pesanan pertama Anda akan muncul di sini</p>
+        {cta && (
+          <Link
+            href={cta.href}
+            className="mt-4 inline-flex items-center justify-center gap-2 h-10 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-6 transition-all duration-200 shadow-lg shadow-emerald-500/20"
+          >
+            <cta.icon size={16} />
+            {cta.label}
+          </Link>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function VendorDashboard() {
   const profile = useAuthStore((s) => s.profile);
@@ -40,7 +96,7 @@ export default function VendorDashboard() {
   const monthlyEarnings = thisMonthOrders.reduce((sum, o) => sum + o.vendor_payout, 0);
 
   useEffect(() => {
-    if (error) toast.error('Gagal memuat data dashboard');
+    if (error) toast.error('Gagal memuat data dashboard', { duration: 5000 });
   }, [error]);
 
   if (isLoading) {
@@ -273,21 +329,7 @@ export default function VendorDashboard() {
         )}
 
         {pendingOrders.length === 0 && inProgressOrders.length === 0 && completedJobs === 0 && (
-          <Card className="rounded-3xl border-none shadow-sm overflow-hidden bg-gradient-to-br from-stone-50 to-white">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-stone-100 to-stone-200 flex items-center justify-center mx-auto mb-4">
-                <Activity size={28} className="text-stone-400" />
-              </div>
-              <h3 className="font-bold text-stone-700">Selamat datang di GEMA!</h3>
-              <p className="text-sm text-stone-400 mt-1">Pesanan pertama Anda akan muncul di sini</p>
-              <Link
-                href="/vendor/profile/edit"
-                className="mt-4 inline-flex items-center justify-center h-10 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-6 transition-all duration-200 shadow-lg shadow-emerald-500/20"
-              >
-                Lengkapi Profil
-              </Link>
-            </CardContent>
-          </Card>
+          <EmptyStateCard vendor={vendor} />
         )}
       </div>
     </div>

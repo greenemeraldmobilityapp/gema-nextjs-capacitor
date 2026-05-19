@@ -66,7 +66,7 @@ export default function EditProfilePage() {
 
       toast.success('Foto profil berhasil diperbarui');
     } catch {
-      toast.success('Foto tampil sementara');
+      toast.error('Foto gagal diupload, tapi perubahan tersimpan sementara');
     } finally {
       setUploading(false);
     }
@@ -75,7 +75,7 @@ export default function EditProfilePage() {
   const handleSave = async () => {
     if (!profile?.id) return;
     setSaving(true);
-    try {
+    const savePromise = (async () => {
       const supabase = createClient();
       const { error } = await supabase
         .from('users')
@@ -85,11 +85,20 @@ export default function EditProfilePage() {
       if (error) throw error;
 
       setProfile({ ...profile, full_name: formData.fullName, phone: formData.phone });
-      toast.success('Profil berhasil diperbarui');
-      router.push('/customer/profile');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Gagal menyimpan profil';
-      toast.error(msg);
+    })();
+
+    toast.promise(savePromise, {
+      loading: 'Menyimpan profil...',
+      success: () => {
+        router.push('/customer/profile');
+        return 'Profil berhasil diperbarui';
+      },
+      error: (err) => err instanceof Error ? err.message : 'Gagal menyimpan profil',
+      duration: 4000,
+    });
+
+    try {
+      await savePromise;
     } finally {
       setSaving(false);
     }

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton, SkeletonDetail } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/store/auth';
-import { useVendorDetail, useApproveVerification, useRejectVerification } from '@/lib/services/useAdmin';
+import { useVendorDetail, useApproveVerification, useRejectVerification, useRevokeVerification } from '@/lib/services/useAdmin';
 import { toast } from 'sonner';
 
 function DetailContent() {
@@ -19,41 +19,75 @@ function DetailContent() {
   const { data: vendor, isLoading, error } = useVendorDetail(userId || undefined);
   const approveVerification = useApproveVerification();
   const rejectVerification = useRejectVerification();
-  const [rejectModal, setRejectModal] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
+  const revokeVerification = useRevokeVerification();
+  const [actionModal, setActionModal] = useState<'reject' | 'revoke' | null>(null);
+  const [actionReason, setActionReason] = useState('');
   const [imgError, setImgError] = useState<Record<string, boolean>>({});
 
   const submission = vendor?.verification_submissions?.[0] || null;
 
   const handleApprove = async () => {
     if (!submission || !admin?.id) return;
-    try {
-      await approveVerification.mutateAsync({
-        submissionId: submission.id,
-        userId: submission.user_id,
-        adminId: admin.id,
-      });
-      toast.success('Vendor berhasil diverifikasi');
-    } catch {
-      toast.error('Gagal menyetujui verifikasi');
-    }
+    const promise = approveVerification.mutateAsync({
+      submissionId: submission.id,
+      userId: submission.user_id,
+      adminId: admin.id,
+    });
+
+    toast.promise(promise, {
+      loading: 'Menyetujui verifikasi...',
+      success: 'Vendor berhasil diverifikasi',
+      error: (err) => err instanceof Error ? err.message : 'Gagal menyetujui verifikasi',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   const handleReject = async () => {
-    if (!submission || !admin?.id || !rejectReason.trim()) return;
-    try {
-      await rejectVerification.mutateAsync({
-        submissionId: submission.id,
-        userId: submission.user_id,
-        adminId: admin.id,
-        reason: rejectReason.trim(),
-      });
-      toast.success('Verifikasi ditolak');
-      setRejectModal(false);
-      setRejectReason('');
-    } catch {
-      toast.error('Gagal menolak verifikasi');
-    }
+    if (!submission || !admin?.id || !actionReason.trim()) return;
+    const promise = rejectVerification.mutateAsync({
+      submissionId: submission.id,
+      userId: submission.user_id,
+      adminId: admin.id,
+      reason: actionReason.trim(),
+    });
+
+    toast.promise(promise, {
+      loading: 'Menolak verifikasi...',
+      success: () => {
+        setActionModal(null);
+        setActionReason('');
+        return 'Verifikasi ditolak';
+      },
+      error: (err) => err instanceof Error ? err.message : 'Gagal menolak verifikasi',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
+  };
+
+  const handleRevoke = async () => {
+    if (!submission || !admin?.id || !actionReason.trim()) return;
+    const promise = revokeVerification.mutateAsync({
+      submissionId: submission.id,
+      userId: submission.user_id,
+      adminId: admin.id,
+      reason: actionReason.trim(),
+    });
+
+    toast.promise(promise, {
+      loading: 'Mencabut verifikasi...',
+      success: () => {
+        setActionModal(null);
+        setActionReason('');
+        return 'Verifikasi dicabut';
+      },
+      error: (err) => err instanceof Error ? err.message : 'Gagal mencabut verifikasi',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   if (isLoading) {
@@ -91,6 +125,9 @@ function DetailContent() {
   }
 
   const statusBadge = () => {
+    if (vendor.verification_status === 'revoked') {
+      return { label: 'Dicabut', color: 'text-gray-600 bg-gray-100' };
+    }
     if (vendor.is_verified) {
       return { label: 'Terverifikasi', color: 'text-emerald-600 bg-emerald-50' };
     }
@@ -273,13 +310,13 @@ function DetailContent() {
               </div>
             )}
 
-            {vendor.verification_status === 'rejected' && vendor.rejection_reason && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-5 space-y-2">
-                <h3 className="font-bold text-red-700 flex items-center gap-2 text-sm">
+            {(vendor.verification_status === 'rejected' || vendor.verification_status === 'revoked') && vendor.rejection_reason && (
+              <div className={vendor.verification_status === 'rejected' ? 'bg-red-50 border border-red-200 rounded-2xl p-5 space-y-2' : 'bg-gray-50 border border-gray-200 rounded-2xl p-5 space-y-2'}>
+                <h3 className={`font-bold flex items-center gap-2 text-sm ${vendor.verification_status === 'rejected' ? 'text-red-700' : 'text-gray-700'}`}>
                   <XCircle size={16} />
-                  Alasan Penolakan Sebelumnya
+                  {vendor.verification_status === 'rejected' ? 'Alasan Penolakan' : 'Alasan Pencabutan'}
                 </h3>
-                <p className="text-sm text-red-600">{vendor.rejection_reason}</p>
+                <p className={`text-sm ${vendor.verification_status === 'rejected' ? 'text-red-600' : 'text-gray-600'}`}>{vendor.rejection_reason}</p>
               </div>
             )}
 
@@ -305,13 +342,56 @@ function DetailContent() {
                   <Button
                     variant="outline"
                     className="flex-1 h-12 border-red-200 text-red-600 hover:bg-red-50"
-                    onClick={() => setRejectModal(true)}
+                    onClick={() => setActionModal('reject')}
                     disabled={rejectVerification.isPending}
                   >
                     <XCircle size={18} />
                     Tolak
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {submission.status === 'approved' && (
+              <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
+                <h2 className="font-bold text-gray-900 flex items-center gap-2">
+                  <ShieldCheck size={18} className="text-emerald-600" />
+                  Aksi Verifikasi
+                </h2>
+                <Button
+                  variant="outline"
+                  className="w-full h-12 border-red-200 text-red-600 hover:bg-red-50"
+                  onClick={() => setActionModal('revoke')}
+                  disabled={revokeVerification.isPending}
+                >
+                  {revokeVerification.isPending ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <XCircle size={18} />
+                  )}
+                  Cabut Verifikasi
+                </Button>
+              </div>
+            )}
+
+            {(submission.status === 'rejected' || submission.status === 'revoked') && (
+              <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
+                <h2 className="font-bold text-gray-900 flex items-center gap-2">
+                  <ShieldCheck size={18} className="text-emerald-600" />
+                  Aksi Verifikasi
+                </h2>
+                <Button
+                  className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={handleApprove}
+                  disabled={approveVerification.isPending}
+                >
+                  {approveVerification.isPending ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <CheckCircle size={18} />
+                  )}
+                  Setujui Verifikasi
+                </Button>
               </div>
             )}
           </>
@@ -326,14 +406,14 @@ function DetailContent() {
         )}
       </div>
 
-      {rejectModal && (
+      {actionModal === 'reject' && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-md space-y-4">
             <h3 className="font-bold text-lg text-gray-900">Tolak Verifikasi</h3>
             <p className="text-sm text-gray-500">Berikan alasan penolakan kepada vendor</p>
             <Textarea
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
+              value={actionReason}
+              onChange={(e) => setActionReason(e.target.value)}
               placeholder="Alasan penolakan..."
               className="min-h-[100px]"
             />
@@ -341,16 +421,47 @@ function DetailContent() {
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => { setRejectModal(false); setRejectReason(''); }}
+                onClick={() => { setActionModal(null); setActionReason(''); }}
               >
                 Batal
               </Button>
               <Button
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white"
                 onClick={handleReject}
-                disabled={!rejectReason.trim() || rejectVerification.isPending}
+                disabled={!actionReason.trim() || rejectVerification.isPending}
               >
                 {rejectVerification.isPending ? <Loader2 size={18} className="animate-spin" /> : 'Tolak'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {actionModal === 'revoke' && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md space-y-4">
+            <h3 className="font-bold text-lg text-gray-900">Cabut Verifikasi</h3>
+            <p className="text-sm text-gray-500">Vendor ini telah terverifikasi. Berikan alasan pencabutan.</p>
+            <Textarea
+              value={actionReason}
+              onChange={(e) => setActionReason(e.target.value)}
+              placeholder="Alasan pencabutan..."
+              className="min-h-[100px]"
+            />
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => { setActionModal(null); setActionReason(''); }}
+              >
+                Batal
+              </Button>
+              <Button
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                onClick={handleRevoke}
+                disabled={!actionReason.trim() || revokeVerification.isPending}
+              >
+                {revokeVerification.isPending ? <Loader2 size={18} className="animate-spin" /> : 'Cabut'}
               </Button>
             </div>
           </div>

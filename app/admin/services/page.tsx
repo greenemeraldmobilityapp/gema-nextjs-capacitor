@@ -44,21 +44,29 @@ export default function AdminServices() {
   });
 
   const handleApprove = async (serviceId: string) => {
-    try {
-      await updateStatus.mutateAsync({ serviceId, status: 'active' });
-      toast.success('Portofolio berhasil disetujui');
-    } catch {
-      toast.error('Gagal menyetujui portofolio');
-    }
+    const promise = updateStatus.mutateAsync({ serviceId, status: 'active' });
+
+    toast.promise(promise, {
+      loading: 'Menyetujui portofolio...',
+      success: 'Portofolio berhasil disetujui',
+      error: (err) => err instanceof Error ? err.message : 'Gagal menyetujui portofolio',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   const handleReject = async (serviceId: string) => {
-    try {
-      await updateStatus.mutateAsync({ serviceId, status: 'rejected' });
-      toast.success('Portofolio ditolak');
-    } catch {
-      toast.error('Gagal menolak portofolio');
-    }
+    const promise = updateStatus.mutateAsync({ serviceId, status: 'rejected' });
+
+    toast.promise(promise, {
+      loading: 'Menolak portofolio...',
+      success: 'Portofolio ditolak',
+      error: (err) => err instanceof Error ? err.message : 'Gagal menolak portofolio',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   if (isLoading) {

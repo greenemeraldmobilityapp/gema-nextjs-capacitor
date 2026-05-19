@@ -69,7 +69,7 @@ export default function VendorSettingsPage() {
                         checked={notifications[item.key]}
                         onChange={() => {
                           setNotifications(s => ({...s, [item.key]: !s[item.key]}));
-                          toast.success('Pengaturan notifikasi diperbarui');
+                          toast.success('Pengaturan notifikasi diperbarui', { duration: 3000 });
                         }}
                         className="sr-only peer"
                       />

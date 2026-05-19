@@ -31,7 +31,8 @@ export function useVendors() {
       const { data, error } = await supabase
         .from('vendor_profiles')
         .select('*, users(full_name, email, phone, lat, lng), services(category)')
-        .eq('is_verified', true);
+        .eq('is_verified', true)
+        .limit(50);
 
       if (error) throw error;
       return data as VendorProfile[];
@@ -129,7 +130,8 @@ export function useNearbyVendors(lat?: number, lng?: number) {
       const { data, error } = await supabase
         .from('vendor_profiles')
         .select('*, users(full_name, email, phone, lat, lng)')
-        .eq('is_verified', true);
+        .eq('is_verified', true)
+        .limit(50);
 
       if (error) throw error;
 

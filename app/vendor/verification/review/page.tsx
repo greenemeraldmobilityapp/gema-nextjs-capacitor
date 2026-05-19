@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, ShieldCheck, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Clock, ShieldCheck, XCircle, AlertCircle, Loader2, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useLatestSubmission } from '@/lib/services/useVerification';
@@ -23,7 +23,13 @@ const statusViews: Record<string, { icon: typeof Clock; bg: string; border: stri
     icon: XCircle, bg: 'bg-red-50/80', border: 'border border-red-200/50', iconColor: 'text-red-600',
     title: 'Verifikasi Ditolak',
     desc: ['Dokumen Anda tidak memenuhi persyaratan. Silakan upload ulang dokumen yang valid.'],
-    cta: { label: 'Upload Ulang', href: '/vendor/verification/ktp' },
+    cta: { label: 'Ajukan Ulang', href: '/vendor/verification/ktp' },
+  },
+  revoked: {
+    icon: Ban, bg: 'bg-gray-50/80', border: 'border border-gray-200/50', iconColor: 'text-gray-600',
+    title: 'Verifikasi Dicabut',
+    desc: ['Verifikasi Anda telah dicabut oleh admin. Silakan hubungi tim GEMA atau ajukan verifikasi ulang.'],
+    cta: { label: 'Ajukan Ulang', href: '/vendor/verification/ktp' },
   },
 };
 
@@ -41,6 +47,7 @@ export default function VerificationReviewPage() {
 
   const status = submission?.status === 'approved' ? 'approved'
     : submission?.status === 'rejected' ? 'rejected'
+    : submission?.status === 'revoked' ? 'revoked'
     : 'pending';
 
   const view = statusViews[status];
@@ -61,13 +68,15 @@ export default function VerificationReviewPage() {
           <p key={i} className={`text-sm text-stone-500 max-w-xs ${i > 0 ? 'mt-1' : 'mb-2'}`}>{d}</p>
         ))}
 
-        {status === 'rejected' && submission?.rejection_reason && (
-          <div className="mt-4 w-full max-w-xs bg-red-50/80 border border-red-200/50 rounded-2xl p-4 text-left">
+        {(status === 'rejected' || status === 'revoked') && submission?.rejection_reason && (
+          <div className={`mt-4 w-full max-w-xs border rounded-2xl p-4 text-left ${status === 'rejected' ? 'bg-red-50/80 border-red-200/50' : 'bg-gray-50/80 border-gray-200/50'}`}>
             <div className="flex items-start gap-2">
-              <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+              <AlertCircle size={16} className={`shrink-0 mt-0.5 ${status === 'rejected' ? 'text-red-500' : 'text-gray-500'}`} />
               <div>
-                <p className="text-xs font-bold text-red-700 mb-1">Alasan Penolakan:</p>
-                <p className="text-sm text-red-600">{submission.rejection_reason}</p>
+                <p className={`text-xs font-bold mb-1 ${status === 'rejected' ? 'text-red-700' : 'text-gray-700'}`}>
+                  {status === 'rejected' ? 'Alasan Penolakan:' : 'Alasan Pencabutan:'}
+                </p>
+                <p className={`text-sm ${status === 'rejected' ? 'text-red-600' : 'text-gray-600'}`}>{submission.rejection_reason}</p>
               </div>
             </div>
           </div>

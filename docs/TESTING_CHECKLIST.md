@@ -1542,3 +1542,88 @@ npx supabase functions logs xendit-webhook --tail
 npx supabase functions logs create-topup-invoice --tail
 ```
 
+---
+
+### K.35 — KYC Verification System
+
+#### K.35.1. Vendor KTP Upload
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Vendor buka `/vendor/verification` | Halaman intro verifikasi muncul |
+| 2 | Tap "Mulai Verifikasi" → `/vendor/verification/ktp` | Form upload KTP muncul |
+| 3 | Upload foto KTP (JPG/PNG) | Preview gambar muncul |
+| 4 | Isi NIK (16 digit) + Nama sesuai KTP | Input terisi |
+| 5 | Tap "Simpan & Lanjutkan" | Toast "Dokumen KTP berhasil disimpan", redirect ke `/vendor/verification/certification` |
+| 6 | Cek DB: `verification_submissions` | Row baru dengan `user_id` vendor, `status` = 'pending', `nik`, `ktp_name`, `ktp_url` terisi |
+| 7 | Cek storage: `verification/{userId}/ktp/` | File KTP terupload |
+| 8 | **Error:** Upload gagal | Toast error, tidak redirect |
+| 9 | **Error:** NIK < 16 digit | Form validation (jika ada) |
+
+#### K.35.2. Vendor Certificate Upload
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Vendor di `/vendor/verification/certification` | Form sertifikat muncul, `submission` ter-load dari DB |
+| 2 | Upload file sertifikat (PDF/image) | Preview muncul (image) atau icon PDF |
+| 3 | Isi Nama Sertifikat, Penerbit, Tahun | Input terisi |
+| 4 | Tap "Simpan & Lanjutkan" | Toast "Sertifikat berhasil disimpan", redirect ke `/vendor/verification/review` |
+| 5 | Cek DB: `verification_submissions` | Row yang sama terupdate: `certificate_url`, `certificate_name`, `certificate_issuer`, `certificate_year` |
+| 6 | Cek storage: `verification/{userId}/cert/` | File sertifikat terupload |
+| 7 | **Optional:** Tap "Lewati" tanpa upload sertifikat | Redirect ke review, `certificate_url` = null di DB |
+| 8 | **Error:** Upload file gagal | Toast "Gagal upload file sertifikat", tidak redirect |
+| 9 | **Edge:** File PDF > 5MB | Harusnya ditolak storage |
+| 10 | **Edge:** Submit tanpa submission (guard) | Toast "Data verifikasi tidak ditemukan" |
+
+#### K.35.3. Vendor Verification Review
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Vendor di `/vendor/verification/review` | Status "Menunggu Review" dengan icon pending |
+| 2 | Cek tampilan | KTP info tampil (NIK, nama, foto KTP), sertifikat info tampil (jika diisi) |
+| 3 | **Status approved** | Badge hijau "Terverifikasi", tombol ke dashboard |
+| 4 | **Status rejected** | Badge merah "Ditolak", alasan penolakan tampil, tombol upload ulang |
+
+#### K.35.4. Admin Vendor Detail Page
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Admin login → `/admin/vendors` | Daftar vendor muncul, masing2 card ada link ke detail |
+| 2 | Tap card vendor → `/admin/vendors/detail?id={userId}` | Halaman detail vendor tampil dalam 3 detik |
+| 3 | Loading state | Skeleton loading muncul saat fetch |
+| 4 | Error state | "Vendor tidak ditemukan" dengan tombol Kembali |
+| 5 | Informasi vendor | Nama, email, phone, spesialisasi tampil |
+| 6 | Status badge | Badge sesuai status (Menunggu Review / Terverifikasi / Ditolak) |
+| 7 | Dokumen KTP | Foto KTP tampil, NIK + Nama terlihat |
+| 8 | **Image error fallback** | Jika gambar gagal load, tampil "Gagal memuat gambar" + link "Buka di tab baru" |
+| 9 | **Certificate section** | Hanya muncul jika ada `certificate_url` atau `certificate_name` |
+| 10 | **Certificate image** | Jika image format → preview; jika PDF → FileText icon + link buka |
+| 11 | Rejection reason | Hanya muncul jika `verification_status` = 'rejected' |
+
+#### K.35.5. Admin Approve/Reject Flow
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Admin lihat submission status 'pending' | Tombol "Setujui" dan "Tolak" muncul |
+| 2 | Tap "Setujui" | Toast "Vendor berhasil diverifikasi" |
+| 3 | Cek DB: `verification_submissions` | `status` = 'approved', `reviewed_at`, `reviewed_by` terisi |
+| 4 | Cek DB: `vendor_profiles` | `is_verified` = true, `verification_status` = 'approved', `rejection_reason` = null |
+| 5 | Tap "Tolak" | Modal konfirmasi muncul |
+| 6 | Isi alasan, tap "Tolak" | Toast "Verifikasi ditolak" |
+| 7 | Cek DB: `verification_submissions` | `status` = 'rejected', `rejection_reason` terisi |
+| 8 | Cek DB: `vendor_profiles` | `is_verified` = false, `verification_status` = 'rejected', `rejection_reason` terisi |
+| 9 | **Edge:** Tap "Batal" di modal reject | Modal tertutup, tidak ada perubahan |
+| 10 | **Edge:** Reject tanpa alasan | Tombol "Tolak" disabled |
+| 11 | **Security:** Non-admin coba akses | AuthGuard redirect ke login |
+
+#### K.35.6. Full KYC Flow Integration
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Vendor upload KTP + sertifikat | Kedua file di storage, data di `verification_submissions` |
+| 2 | Admin approve | Submission → 'approved', vendor_profiles → 'approved' |
+| 3 | Vendor buka review page | Badge "Terverifikasi" |
+| 4 | Admin reject | Submission → 'rejected', vendor_profiles → 'rejected' |
+| 5 | Vendor buka review page | Badge "Ditolak" + alasan |
+| 6 | Build verification | `npm run build` → 0 errors |
+

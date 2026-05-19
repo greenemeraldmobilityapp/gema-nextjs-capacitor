@@ -50,12 +50,16 @@ export default function AdminFraud() {
   });
 
   const handleUpdate = async (id: string, status: 'investigating' | 'resolved' | 'false_positive') => {
-    try {
-      await updateAlert.mutateAsync({ id, status, resolvedBy: profile?.id });
-      toast.success('Status berhasil diperbarui');
-    } catch {
-      toast.error('Gagal memperbarui status');
-    }
+    const promise = updateAlert.mutateAsync({ id, status, resolvedBy: profile?.id });
+
+    toast.promise(promise, {
+      loading: 'Memperbarui status...',
+      success: 'Status berhasil diperbarui',
+      error: (err) => err instanceof Error ? err.message : 'Gagal memperbarui status',
+      duration: 5000,
+    });
+
+    try { await promise; } catch {}
   };
 
   if (isLoading) {

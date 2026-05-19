@@ -8,11 +8,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
 
   return (
-    <Sonner
-      theme={theme as ToasterProps["theme"]}
-      className="toaster group"
-      position="top-center"
-      gap={12}
+      <Sonner
+        theme={theme as ToasterProps["theme"]}
+        className="toaster group"
+        position="bottom-center"
+        gap={12}
+        visibleToasts={3}
+        closeButton
       icons={{
         success: <CircleCheckIcon className="size-5" />,
         info: <InfoIcon className="size-5" />,

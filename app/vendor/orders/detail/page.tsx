@@ -53,7 +53,7 @@ function OrderDetailContent() {
       decline: 'Pesanan ditolak',
     };
 
-    try {
+    const actionPromise = (async () => {
       if (action === 'complete') {
         setIsReleasing(true);
         const supabase = createClient();
@@ -77,11 +77,18 @@ function OrderDetailContent() {
         await updateStatus.mutateAsync(mutations[action]);
       }
 
-      toast.success(labels[action]);
       router.refresh();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Gagal memperbarui status pesanan';
-      toast.error(msg);
+    })();
+
+    toast.promise(actionPromise, {
+      loading: 'Memproses...',
+      success: labels[action],
+      error: (err) => err instanceof Error ? err.message : 'Gagal memperbarui status pesanan',
+      duration: 5000,
+    });
+
+    try {
+      await actionPromise;
     } finally {
       setIsReleasing(false);
     }

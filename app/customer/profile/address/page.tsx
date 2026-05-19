@@ -68,7 +68,7 @@ export default function AddressPage() {
         const data: [string, string][] = await res.json();
         setProvinces(data.map(([k, n]) => ({ kode: k, nama: n })));
       } catch {
-        toast.error('Gagal memuat data wilayah');
+        toast.error('Gagal memuat data wilayah', { duration: 5000 });
       }
     }
     init();
@@ -119,7 +119,7 @@ export default function AddressPage() {
       const data: [string, string][] = await res.json();
       setCities(data.map(([k, n]) => ({ kode: k, nama: n })));
     } catch {
-      toast.error('Gagal memuat daftar kota');
+      toast.error('Gagal memuat daftar kota', { duration: 5000 });
     } finally {
       setFetchingCities(false);
     }
@@ -139,7 +139,7 @@ export default function AddressPage() {
       const data: [string, string][] = await res.json();
       setDistricts(data.map(([k, n]) => ({ kode: k, nama: n })));
     } catch {
-      toast.error('Gagal memuat daftar kecamatan');
+      toast.error('Gagal memuat daftar kecamatan', { duration: 5000 });
     } finally {
       setFetchingDistricts(false);
     }
@@ -158,7 +158,7 @@ export default function AddressPage() {
       const data: [string, string][] = await res.json();
       setVillages(data.map(([k, n]) => ({ kode: k, nama: n })));
     } catch {
-      toast.error('Gagal memuat daftar desa');
+      toast.error('Gagal memuat daftar desa', { duration: 5000 });
     } finally {
       setFetchingVillages(false);
     }
@@ -214,10 +214,10 @@ export default function AddressPage() {
         address_full: addressFull,
       });
 
-      toast.success('Alamat berhasil disimpan');
+      toast.success('Alamat berhasil disimpan', { duration: 3000 });
       router.push('/customer/profile');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Gagal menyimpan alamat');
+      toast.error(err instanceof Error ? err.message : 'Gagal menyimpan alamat', { duration: 5000 });
     } finally {
       setSaving(false);
     }
