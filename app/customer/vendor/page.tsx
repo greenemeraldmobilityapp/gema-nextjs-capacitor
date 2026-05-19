@@ -233,10 +233,15 @@ function VendorDetailContent() {
                 <Link key={service.id} href={`/customer/booking?vendorId=${id}&serviceId=${service.id}`} className="block">
                   <Card className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-gray-100 shadow-sm">
                     <CardContent className="p-0">
-                      {service.image_url ? (
+                      {service.service_images && service.service_images.length > 0 ? (
                         <div className="relative w-full h-36 bg-gray-100">
-                          <img src={service.image_url} alt={service.title} className="w-full h-full object-cover" />
+                          <img src={service.service_images[0].image_url} alt={service.title} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                          {service.service_images.length > 1 && (
+                            <span className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                              +{service.service_images.length - 1}
+                            </span>
+                          )}
                         </div>
                       ) : null}
                       <div className="p-4 space-y-2.5">
@@ -244,6 +249,11 @@ function VendorDetailContent() {
                           <h3 className="font-bold text-gray-900 leading-tight">{service.title}</h3>
                           <span className="font-heading font-bold text-emerald-600 shrink-0 text-sm whitespace-nowrap">{formatPrice(service.price)}</span>
                         </div>
+                        {service.duration_minutes && (
+                          <p className="text-xs text-gray-400 flex items-center gap-1">
+                            <Clock size={12} />{service.duration_minutes < 60 ? `${service.duration_minutes} menit` : service.duration_minutes < 1440 ? `${Math.round(service.duration_minutes / 60)} jam` : `${Math.round(service.duration_minutes / 1440)} hari`}
+                          </p>
+                        )}
                         {service.description && (
                           <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{service.description}</p>
                         )}

@@ -3,13 +3,12 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Upload, X } from 'lucide-react';
+import { ArrowLeft, Loader2, Upload, X, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/auth';
 import { useCreateService } from '@/lib/services/useVendors';
-import { createClient } from '@/lib/supabase/client';
-import { compressImage } from '@/lib/image-utils';
+import { useUploadMultipleServiceImages } from '@/lib/services/useServiceImages';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -24,10 +23,24 @@ const CATEGORIES = [
   { id: 'pest-control', label: 'Pest Control' },
 ];
 
+const DURATION_TYPES = [
+  { value: 30, label: '30 menit' },
+  { value: 60, label: '1 jam' },
+  { value: 120, label: '2 jam' },
+  { value: 180, label: '3 jam' },
+  { value: 240, label: '4 jam' },
+  { value: 480, label: '8 jam (1 hari)' },
+  { value: 960, label: '2 hari' },
+  { value: 1440, label: '3+ hari' },
+];
+
+const MAX_IMAGES = 5;
+
 export default function VendorAddPortfolioPage() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
   const createService = useCreateService();
+  const uploadImagesMutation = useUploadMultipleServiceImages();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -35,61 +48,47 @@ export default function VendorAddPortfolioPage() {
     price: '',
     description: '',
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.warning('Hanya file gambar yang diizinkan', { duration: 4000 });
+  const handleImagesSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const total = imageFiles.length + files.length;
+    if (total > MAX_IMAGES) {
+      toast.warning(`Maksimal ${MAX_IMAGES} gambar`, { duration: 4000 });
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.warning('Maksimal ukuran gambar 5MB', { duration: 4000 });
-      return;
-    }
+    const validFiles = files.filter((f) => {
+      if (!f.type.startsWith('image/')) {
+        toast.warning(`"${f.name}" bukan file gambar`, { duration: 4000 });
+        return false;
+      }
+      if (f.size > 5 * 1024 * 1024) {
+        toast.warning(`"${f.name}" melebihi 5MB`, { duration: 4000 });
+        return false;
+      }
+      return true;
+    });
 
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
-  };
+    const newPreviews: string[] = [];
+    validFiles.forEach((f) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreviews((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(f);
+    });
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
+    setImageFiles((prev) => [...prev, ...validFiles]);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const uploadImage = async (vendorId: string): Promise<string | null> => {
-    if (!imageFile) return null;
-
-    const supabase = createClient();
-    const compressed = await compressImage(imageFile);
-    const ext = 'jpg';
-    const fileName = `${vendorId}/${Date.now()}.${ext}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('portfolio-images')
-      .upload(fileName, compressed, {
-        contentType: 'image/jpeg',
-        upsert: true,
-      });
-
-    if (uploadError) {
-      toast.error(uploadError.message || 'Gagal mengunggah gambar', { duration: 5000 });
-      return null;
-    }
-
-    const { data: urlData } = supabase.storage
-      .from('portfolio-images')
-      .getPublicUrl(fileName);
-
-    return urlData?.publicUrl || null;
+  const removeImage = (index: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,18 +99,24 @@ export default function VendorAddPortfolioPage() {
       return;
     }
 
-    setUploading(true);
+    setSaving(true);
     const submitPromise = (async () => {
-      const imageUrl = await uploadImage(profile.id);
-
-      await createService.mutateAsync({
+      const service = await createService.mutateAsync({
         vendor_id: profile.id,
         title: formData.title,
         category: formData.category,
         price: Number(formData.price),
         description: formData.description || undefined,
-        image_url: imageUrl,
+        duration_minutes: durationMinutes,
       });
+
+      if (imageFiles.length > 0) {
+        await uploadImagesMutation.mutateAsync({
+          vendorId: profile.id,
+          serviceId: service.id,
+          files: imageFiles,
+        });
+      }
     })();
 
     toast.promise(submitPromise, {
@@ -127,11 +132,11 @@ export default function VendorAddPortfolioPage() {
     try {
       await submitPromise;
     } finally {
-      setUploading(false);
+      setSaving(false);
     }
   };
 
-  const isPending = createService.isPending || uploading;
+  const isPending = createService.isPending || saving || uploadImagesMutation.isPending;
 
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">
@@ -147,36 +152,42 @@ export default function VendorAddPortfolioPage() {
       <form onSubmit={handleSubmit} className="p-4 space-y-4">
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant space-y-5">
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Gambar Layanan</label>
-            {imagePreview ? (
-              <div className="relative rounded-2xl overflow-hidden border border-stone-200">
-                <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" />
+            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+              Gambar Layanan (maks. {MAX_IMAGES})
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {imagePreviews.map((preview, idx) => (
+                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group">
+                  <img src={preview} alt={`Gambar ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(idx)}
+                    className="absolute top-1 right-1 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+              {imageFiles.length < MAX_IMAGES && (
                 <button
                   type="button"
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="aspect-square rounded-xl border-2 border-dashed border-stone-200 bg-stone-50 flex flex-col items-center justify-center gap-1 text-stone-400 hover:border-emerald-400 hover:bg-emerald-50/50 transition-all duration-200 cursor-pointer"
                 >
-                  <X size={16} />
+                  <Upload size={20} />
+                  <span className="text-[10px] font-medium">Tambah</span>
                 </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full h-48 rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50 flex flex-col items-center justify-center gap-2 text-stone-400 hover:border-emerald-400 hover:bg-emerald-50/50 transition-all duration-200 cursor-pointer"
-              >
-                <Upload size={28} />
-                <span className="text-sm font-medium">Upload Gambar</span>
-                <span className="text-xs">Maks. 5MB (JPEG, PNG, WebP)</span>
-              </button>
-            )}
+              )}
+            </div>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              onChange={handleImageSelect}
+              multiple
+              onChange={handleImagesSelect}
               className="hidden"
             />
+            <p className="text-[11px] text-stone-400">Format: JPEG, PNG, WebP. Maks. 5MB per gambar</p>
           </div>
 
           <div className="space-y-2">
@@ -193,7 +204,7 @@ export default function VendorAddPortfolioPage() {
           <div className="space-y-2">
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Kategori</label>
             <div className="grid grid-cols-2 gap-2">
-              {CATEGORIES.map(cat => (
+              {CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
                   type="button"
@@ -211,17 +222,32 @@ export default function VendorAddPortfolioPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Harga (Rp)</label>
-            <Input
-              required
-              type="number"
-              min="0"
-              value={formData.price}
-              onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-              placeholder="150000"
-              className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Harga (Rp)</label>
+              <Input
+                required
+                type="number"
+                min="0"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                placeholder="150000"
+                className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Durasi</label>
+              <select
+                value={durationMinutes ?? ''}
+                onChange={(e) => setDurationMinutes(e.target.value ? Number(e.target.value) : null)}
+                className="w-full h-12 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 px-3 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
+              >
+                <option value="">Pilih durasi</option>
+                {DURATION_TYPES.map((d) => (
+                  <option key={d.value} value={d.value}>{d.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="space-y-2">

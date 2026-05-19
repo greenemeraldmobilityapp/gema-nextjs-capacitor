@@ -66,8 +66,9 @@ export type Service = {
   category: string;
   price: number;
   description: string | null;
-  image_url: string | null;
+  duration_minutes: number | null;
   status: string;
+  service_images?: { image_url: string; sort_order: number | null }[];
 };
 
 export function useVendorServices(vendorId: string | undefined) {
@@ -77,7 +78,7 @@ export function useVendorServices(vendorId: string | undefined) {
       if (!vendorId) return [];
       const { data, error } = await supabase
         .from('services')
-        .select('*')
+        .select('*, service_images(image_url, sort_order)')
         .eq('vendor_id', vendorId);
 
       if (error) throw error;
@@ -94,7 +95,7 @@ export function useVendorActiveServices(vendorId: string | undefined) {
       if (!vendorId) return [];
       const { data, error } = await supabase
         .from('services')
-        .select('*')
+        .select('*, service_images(image_url, sort_order)')
         .eq('vendor_id', vendorId)
         .eq('status', 'active');
 
@@ -167,16 +168,19 @@ export function useCreateService() {
       category: string;
       price: number;
       description?: string;
-      image_url?: string | null;
+      duration_minutes?: number | null;
     }) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('services')
-        .insert({ ...service, status: 'pending' });
+        .insert({ ...service, status: 'pending' })
+        .select()
+        .single();
 
       if (error) throw error;
+      return data;
     },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['vendor-services', variables.vendor_id] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-services', data.vendor_id] });
     },
   });
 }
@@ -192,7 +196,7 @@ export function useUpdateService() {
       category?: string;
       price?: number;
       description?: string | null;
-      image_url?: string | null;
+      duration_minutes?: number | null;
     }) => {
       const { id, vendor_id, ...updates } = service;
       const { error } = await supabase
@@ -219,6 +223,10 @@ export function useDeleteService() {
         .eq('id', params.id);
 
       if (error) throw error;
+
+      await supabase.storage
+        .from('portfolio-images')
+        .remove([`${params.vendor_id}/${params.id}/`]);
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['vendor-services', variables.vendor_id] });

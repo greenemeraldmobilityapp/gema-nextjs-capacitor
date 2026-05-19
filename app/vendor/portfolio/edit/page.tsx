@@ -3,13 +3,12 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Loader2, Upload, X, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Upload, X, Trash2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/auth';
 import { useVendorServices, useUpdateService, useDeleteService } from '@/lib/services/useVendors';
-import { createClient } from '@/lib/supabase/client';
-import { compressImage } from '@/lib/image-utils';
+import { useServiceImages, useUploadMultipleServiceImages, useDeleteServiceImage } from '@/lib/services/useServiceImages';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -24,6 +23,19 @@ const CATEGORIES = [
   { id: 'pest-control', label: 'Pest Control' },
 ];
 
+const DURATION_TYPES = [
+  { value: 30, label: '30 menit' },
+  { value: 60, label: '1 jam' },
+  { value: 120, label: '2 jam' },
+  { value: 180, label: '3 jam' },
+  { value: 240, label: '4 jam' },
+  { value: 480, label: '8 jam (1 hari)' },
+  { value: 960, label: '2 hari' },
+  { value: 1440, label: '3+ hari' },
+];
+
+const MAX_IMAGES = 5;
+
 function EditForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,9 +43,13 @@ function EditForm() {
   const { data: services, isLoading: loadingServices } = useVendorServices(profile?.id);
   const updateService = useUpdateService();
   const deleteService = useDeleteService();
+  const deleteServiceImage = useDeleteServiceImage();
+  const uploadImagesMutation = useUploadMultipleServiceImages();
 
   const serviceId = searchParams.get('id');
-const service = services?.find((s) => s.id === serviceId);
+  const service = services?.find((s) => s.id === serviceId);
+
+  const { data: existingImages, isLoading: loadingImages } = useServiceImages(serviceId ?? undefined);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
@@ -42,11 +58,12 @@ const service = services?.find((s) => s.id === serviceId);
     price: '',
     description: '',
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [existingImage, setExistingImage] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
 
   useEffect(() => {
     if (service) {
@@ -56,65 +73,69 @@ const service = services?.find((s) => s.id === serviceId);
         price: service.price.toString(),
         description: service.description || '',
       });
-      if (service.image_url) {
-        setExistingImage(service.image_url);
-      }
+      setDurationMinutes(service.duration_minutes ?? null);
     }
   }, [service]);
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.warning('Hanya file gambar yang diizinkan', { duration: 4000 });
+  const handleImagesSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const existingCount = (existingImages?.length || 0) + newFiles.length;
+    const total = existingCount + files.length;
+    if (total > MAX_IMAGES) {
+      toast.warning(`Maksimal ${MAX_IMAGES} gambar`, { duration: 4000 });
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.warning('Maksimal ukuran gambar 5MB', { duration: 4000 });
-      return;
-    }
+    const validFiles = files.filter((f) => {
+      if (!f.type.startsWith('image/')) {
+        toast.warning(`"${f.name}" bukan file gambar`, { duration: 4000 });
+        return false;
+      }
+      if (f.size > 5 * 1024 * 1024) {
+        toast.warning(`"${f.name}" melebihi 5MB`, { duration: 4000 });
+        return false;
+      }
+      return true;
+    });
 
-    setImageFile(file);
-    setExistingImage(null);
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
-  };
+    validFiles.forEach((f) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setNewPreviews((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(f);
+    });
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    setExistingImage(null);
+    setNewFiles((prev) => [...prev, ...validFiles]);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const uploadImage = async (vendorId: string): Promise<string | null> => {
-    if (!imageFile) return existingImage || null;
+  const removeNewImage = (index: number) => {
+    setNewFiles((prev) => prev.filter((_, i) => i !== index));
+    setNewPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
 
-    const supabase = createClient();
-    const compressed = await compressImage(imageFile);
-    const ext = 'jpg';
-    const fileName = `${vendorId}/${Date.now()}.${ext}`;
+  const handleDeleteImage = async (image: { id: string; image_url: string }) => {
+    if (!serviceId) return;
+    setDeletingImageId(image.id);
+    const delPromise = deleteServiceImage.mutateAsync({
+      serviceId,
+      imageId: image.id,
+      imageUrl: image.image_url,
+    });
 
-    const { error: uploadError } = await supabase.storage
-      .from('portfolio-images')
-      .upload(fileName, compressed, {
-        contentType: 'image/jpeg',
-        upsert: true,
-      });
+    toast.promise(delPromise, {
+      loading: 'Menghapus gambar...',
+      success: 'Gambar berhasil dihapus',
+      error: (err) => err?.message || 'Gagal menghapus gambar',
+      duration: 3000,
+    });
 
-    if (uploadError) {
-      toast.error(uploadError.message || 'Gagal mengunggah gambar', { duration: 5000 });
-      return existingImage || null;
+    try {
+      await delPromise;
+    } finally {
+      setDeletingImageId(null);
     }
-
-    const { data: urlData } = supabase.storage
-      .from('portfolio-images')
-      .getPublicUrl(fileName);
-
-    return urlData?.publicUrl || null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,10 +146,8 @@ const service = services?.find((s) => s.id === serviceId);
       return;
     }
 
-    setUploading(true);
+    setSaving(true);
     const submitPromise = (async () => {
-      const imageUrl = await uploadImage(profile.id);
-
       await updateService.mutateAsync({
         id: service.id,
         vendor_id: profile.id,
@@ -136,8 +155,16 @@ const service = services?.find((s) => s.id === serviceId);
         category: formData.category,
         price: Number(formData.price),
         description: formData.description || null,
-        image_url: imageUrl,
+        duration_minutes: durationMinutes,
       });
+
+      if (newFiles.length > 0) {
+        await uploadImagesMutation.mutateAsync({
+          vendorId: profile.id,
+          serviceId: service.id,
+          files: newFiles,
+        });
+      }
     })();
 
     toast.promise(submitPromise, {
@@ -153,7 +180,7 @@ const service = services?.find((s) => s.id === serviceId);
     try {
       await submitPromise;
     } finally {
-      setUploading(false);
+      setSaving(false);
     }
   };
 
@@ -179,7 +206,7 @@ const service = services?.find((s) => s.id === serviceId);
     }
   };
 
-  if (loadingServices) {
+  if (loadingServices || loadingImages) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-stone-50">
         <Loader2 size={24} className="animate-spin text-stone-400" />
@@ -198,8 +225,8 @@ const service = services?.find((s) => s.id === serviceId);
     );
   }
 
-  const previewUrl = imagePreview || existingImage;
-  const isPending = updateService.isPending || uploading;
+  const totalImages = (existingImages?.length || 0) + newFiles.length;
+  const isPending = updateService.isPending || saving || uploadImagesMutation.isPending;
 
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">
@@ -215,34 +242,56 @@ const service = services?.find((s) => s.id === serviceId);
       <form onSubmit={handleSubmit} className="p-4 space-y-4">
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant space-y-5">
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Gambar Layanan</label>
-            {previewUrl ? (
-              <div className="relative rounded-2xl overflow-hidden border border-stone-200">
-                <img src={previewUrl} alt="Preview" className="w-full h-48 object-cover" />
+            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+              Gambar Layanan ({totalImages}/{MAX_IMAGES})
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {existingImages?.map((img) => (
+                <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group">
+                  <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteImage(img)}
+                    disabled={deletingImageId === img.id}
+                    className="absolute top-1 right-1 w-6 h-6 bg-red-500/80 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                  >
+                    {deletingImageId === img.id ? (
+                      <Loader2 size={10} className="animate-spin" />
+                    ) : (
+                      <X size={12} />
+                    )}
+                  </button>
+                </div>
+              ))}
+              {newPreviews.map((preview, idx) => (
+                <div key={`new-${idx}`} className="relative aspect-square rounded-xl overflow-hidden border border-emerald-300 ring-2 ring-emerald-200 group">
+                  <img src={preview} alt={`Gambar baru ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeNewImage(idx)}
+                    className="absolute top-1 right-1 w-6 h-6 bg-red-500/80 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+              {totalImages < MAX_IMAGES && (
                 <button
                   type="button"
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="aspect-square rounded-xl border-2 border-dashed border-stone-200 bg-stone-50 flex flex-col items-center justify-center gap-1 text-stone-400 hover:border-emerald-400 hover:bg-emerald-50/50 transition-all duration-200 cursor-pointer"
                 >
-                  <X size={16} />
+                  <Upload size={20} />
+                  <span className="text-[10px] font-medium">Tambah</span>
                 </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full h-48 rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50 flex flex-col items-center justify-center gap-2 text-stone-400 hover:border-emerald-400 hover:bg-emerald-50/50 transition-all duration-200 cursor-pointer"
-              >
-                <Upload size={28} />
-                <span className="text-sm font-medium">Upload Gambar</span>
-                <span className="text-xs">Maks. 5MB (JPEG, PNG, WebP)</span>
-              </button>
-            )}
+              )}
+            </div>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              onChange={handleImageSelect}
+              multiple
+              onChange={handleImagesSelect}
               className="hidden"
             />
           </div>
@@ -261,7 +310,7 @@ const service = services?.find((s) => s.id === serviceId);
           <div className="space-y-2">
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Kategori</label>
             <div className="grid grid-cols-2 gap-2">
-              {CATEGORIES.map(cat => (
+              {CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
                   type="button"
@@ -279,17 +328,32 @@ const service = services?.find((s) => s.id === serviceId);
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Harga (Rp)</label>
-            <Input
-              required
-              type="number"
-              min="0"
-              value={formData.price}
-              onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-              placeholder="150000"
-              className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Harga (Rp)</label>
+              <Input
+                required
+                type="number"
+                min="0"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                placeholder="150000"
+                className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Durasi</label>
+              <select
+                value={durationMinutes ?? ''}
+                onChange={(e) => setDurationMinutes(e.target.value ? Number(e.target.value) : null)}
+                className="w-full h-12 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 px-3 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
+              >
+                <option value="">Pilih durasi</option>
+                {DURATION_TYPES.map((d) => (
+                  <option key={d.value} value={d.value}>{d.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="space-y-2">

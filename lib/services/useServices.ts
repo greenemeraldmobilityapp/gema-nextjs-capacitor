@@ -10,6 +10,8 @@ export type Service = {
   category: string;
   price: number;
   description: string | null;
+  duration_minutes: number | null;
+  status: string;
 };
 
 export function useServicesByCategory(category: string | undefined) {

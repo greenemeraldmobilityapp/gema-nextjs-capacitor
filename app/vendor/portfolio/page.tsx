@@ -164,12 +164,19 @@ export default function VendorPortfolioPage() {
                 >
                   <Link href={`/vendor/portfolio/edit?id=${service.id}`}>
                     <div className="aspect-[4/3] bg-stone-100 relative overflow-hidden">
-                      {service.image_url ? (
-                        <img
-                          src={service.image_url}
-                          alt={service.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
+                      {service.service_images && service.service_images.length > 0 ? (
+                        <>
+                          <img
+                            src={service.service_images[0].image_url}
+                            alt={service.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          {service.service_images.length > 1 && (
+                            <span className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                              +{service.service_images.length - 1}
+                            </span>
+                          )}
+                        </>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <ImageIcon size={32} className="text-stone-300" />
@@ -188,6 +195,11 @@ export default function VendorPortfolioPage() {
                         </span>
                       </div>
                       <h3 className="font-semibold text-sm text-stone-800 line-clamp-2 leading-snug">{service.title}</h3>
+                      {service.duration_minutes && (
+                        <p className="text-[10px] text-stone-400 mt-1">
+                          {service.duration_minutes < 60 ? `${service.duration_minutes} menit` : service.duration_minutes < 1440 ? `${Math.round(service.duration_minutes / 60)} jam` : `${Math.round(service.duration_minutes / 1440)} hari`}
+                        </p>
+                      )}
                       {service.description && (
                         <p className="text-xs text-stone-500 mt-1 line-clamp-2">{service.description}</p>
                       )}
@@ -239,9 +251,14 @@ export default function VendorPortfolioPage() {
                   className="bg-white/90 backdrop-blur-sm rounded-3xl p-4 shadow-elegant hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300"
                 >
                   <div className="flex items-start gap-4">
-                    {service.image_url ? (
-                      <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
-                        <img src={service.image_url} alt={service.title} className="w-full h-full object-cover" />
+                    {service.service_images && service.service_images.length > 0 ? (
+                      <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 relative">
+                        <img src={service.service_images[0].image_url} alt={service.title} className="w-full h-full object-cover" />
+                        {service.service_images.length > 1 && (
+                          <span className="absolute bottom-0.5 right-0.5 bg-black/50 text-white text-[8px] font-bold px-1 rounded">
+                            +{service.service_images.length - 1}
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm flex items-center justify-center shrink-0">
@@ -259,6 +276,11 @@ export default function VendorPortfolioPage() {
                         <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{service.description}</p>
                       )}
                       <p className="font-bold text-emerald-600 text-sm mt-1">Rp {service.price.toLocaleString('id-ID')}</p>
+                      {service.duration_minutes && (
+                        <p className="text-[10px] text-stone-400">
+                          {service.duration_minutes < 60 ? `${service.duration_minutes} menit` : service.duration_minutes < 1440 ? `${Math.round(service.duration_minutes / 60)} jam` : `${Math.round(service.duration_minutes / 1440)} hari`}
+                        </p>
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       {service.status === 'pending' && (

@@ -64,6 +64,13 @@
       "when": 1779130396558,
       "tag": "0008_mysterious_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1779206146448,
+      "tag": "0009_worried_giant_man",
+      "breakpoints": true
     }
   ]
 }

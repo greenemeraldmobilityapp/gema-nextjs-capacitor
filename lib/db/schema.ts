@@ -67,6 +67,15 @@ export const services = pgTable('services', {
   description: text('description'),
   imageUrl: text('image_url'),
   status: text('status').default('pending').notNull(),
+  durationMinutes: integer('duration_minutes'),
+});
+
+export const serviceImages = pgTable('service_images', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  serviceId: uuid('service_id').references(() => services.id, { onDelete: 'cascade' }).notNull(),
+  imageUrl: text('image_url').notNull(),
+  sortOrder: integer('sort_order').default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const orders = pgTable('orders', {
