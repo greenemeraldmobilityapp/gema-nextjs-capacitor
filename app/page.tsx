@@ -253,7 +253,7 @@ export default function SplashScreen() {
 
       {/* Version */}
       <div
-        className={`absolute bottom-8 right-4 text-[10px] text-white/70 font-mono tracking-wider transition-opacity duration-700 ${
+        className={`absolute bottom-8 left-1/2 -translate-x-1/2 text-xs text-white/80 font-mono tracking-wider transition-opacity duration-700 ${
           phase === 'done' || exit ? 'opacity-100' : 'opacity-0'
         }`}
       >

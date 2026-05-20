@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/auth';
 import { useWallet } from '@/lib/services/useWallet';
 import { createClient } from '@/lib/supabase/client';
 import { compressImage, deleteExistingAvatar } from '@/lib/image-utils';
+import LogoutModal from '@/components/shared/LogoutModal';
 import { toast } from 'sonner';
 
 const primaryMenu = [
@@ -31,10 +32,15 @@ export default function ProfilePage() {
   const { data: wallet, isLoading: walletLoading } = useWallet(profile?.id);
   const [uploading, setUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(profile?.avatar_url || null);
+  const [showLogout, setShowLogout] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogout = () => {
-    if (!window.confirm('Yakin ingin keluar dari akun ini?')) return;
+    setShowLogout(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    setShowLogout(false);
     const supabase = createClient();
     supabase.auth.signOut().then(() => {
       setProfile(null);
@@ -221,6 +227,8 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      <LogoutModal open={showLogout} onConfirm={handleLogoutConfirm} onCancel={() => setShowLogout(false)} />
     </div>
   );
 }

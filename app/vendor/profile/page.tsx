@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
 import { useWallet } from '@/lib/services/useWallet';
 import { createClient } from '@/lib/supabase/client';
+import LogoutModal from '@/components/shared/LogoutModal';
 
 const supabase = createClient();
 
@@ -20,11 +21,16 @@ export default function VendorProfilePage() {
   const { data: vendor, isLoading, error } = useVendor(profile?.id);
   const { data: wallet } = useWallet(profile?.id);
   const [avatarError, setAvatarError] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   useEffect(() => { setAvatarError(false); }, [vendor?.avatar_url]);
 
-  const handleLogout = async () => {
-    if (!window.confirm('Yakin ingin keluar dari akun ini?')) return;
+  const handleLogout = () => {
+    setShowLogout(true);
+  };
+
+  const handleLogoutConfirm = async () => {
+    setShowLogout(false);
     await supabase.auth.signOut();
     setProfile(null);
     router.push('/login');
@@ -185,6 +191,8 @@ export default function VendorProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      <LogoutModal open={showLogout} onConfirm={handleLogoutConfirm} onCancel={() => setShowLogout(false)} />
     </div>
   );
 }
