@@ -69,7 +69,6 @@ jobs:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ANDROID_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingKeyPassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ORG_GRADLE_PROJECT_signingKeyAlias: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ORG_GRADLE_PROJECT_signingKeyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Rename APK with version
         run: |
