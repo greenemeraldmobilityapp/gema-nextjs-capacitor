@@ -169,6 +169,10 @@ serve(async (req) => {
     if (!xenditRes.ok) {
       // Refund balance since Xendit failed
       console.error('Xendit disbursement error:', xenditData)
+      await supabaseFetch(`/wallet_transactions?id=eq.${tx_id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'failed' }),
+      })
       await refundBalance(walletId, amount)
       return new Response(
         JSON.stringify({

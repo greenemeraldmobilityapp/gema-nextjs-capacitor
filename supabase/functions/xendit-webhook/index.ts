@@ -145,13 +145,12 @@ serve(async (req) => {
           return new Response('Transaction not found', { status: 404 })
         }
 
-        await supabaseFetch(`/wallet_transactions?id=eq.${txId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ status: 'success' }),
-        })
-
         const credited = await creditWallet(tx.wallet_id, tx.amount)
         if (credited) {
+          await supabaseFetch(`/wallet_transactions?id=eq.${txId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'success' }),
+          })
           console.log(`Topup ${txId} processed: ${tx.amount} credited to wallet ${tx.wallet_id}`)
         } else {
           console.error(`Topup ${txId}: failed to credit wallet ${tx.wallet_id}`)

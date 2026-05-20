@@ -27,7 +27,7 @@ export default function LocationPicker({
   const [loadingGeo, setLoadingGeo] = useState(false);
   const [mapReady, setMapReady] = useState(false);
 
-  const center = lat && lng ? { lat, lng } : JAKARTA;
+  const center = lat !== null && lng !== null ? { lat, lng } : JAKARTA;
   const onChangeRef = useRef(onChange);
 
   useEffect(() => {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { User, Star, Shield, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Clock, Wallet, MapPin } from 'lucide-react';
+import { User, Star, Shield, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Clock, Wallet, MapPin, ArrowLeftRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
@@ -17,6 +17,9 @@ const supabase = createClient();
 export default function VendorProfilePage() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
+  const isVendor = useAuthStore((s) => s.isVendor);
+  const mode = useAuthStore((s) => s.mode);
+  const setMode = useAuthStore((s) => s.setMode);
   const setProfile = useAuthStore((s) => s.setProfile);
   const { data: vendor, isLoading, error } = useVendor(profile?.id);
   const { data: wallet } = useWallet(profile?.id);
@@ -177,6 +180,30 @@ export default function VendorProfilePage() {
             <div className="h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent mx-4" />
           </CardContent>
         </Card>
+
+        {isVendor && profile?.role !== 'vendor' && (
+          <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
+            <CardContent
+              className="p-4 flex items-center gap-4 cursor-pointer hover:bg-stone-50 transition-all duration-200 group"
+              onClick={() => {
+                setMode('customer');
+                localStorage.setItem('gema_mode', 'customer');
+                router.push('/customer/home');
+              }}
+            >
+              <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 shrink-0 group-hover:scale-110 transition-transform duration-200">
+                <ArrowLeftRight size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-stone-900 text-sm group-hover:text-amber-600 transition-colors duration-200">
+                  Mode Pelanggan
+                </p>
+                <p className="text-xs text-stone-400 mt-0.5">Beralih ke halaman utama</p>
+              </div>
+              <ChevronRight size={18} className="text-stone-300 shrink-0 group-hover:translate-x-0.5 transition-transform duration-200" />
+            </CardContent>
+          </Card>
+        )}
 
         <Card
           className="rounded-2xl border-none shadow-sm overflow-hidden cursor-pointer hover:shadow-md hover:shadow-red-500/10 transition-all duration-200"

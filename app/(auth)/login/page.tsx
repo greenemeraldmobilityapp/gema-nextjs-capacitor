@@ -4,11 +4,12 @@ import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { Mail, Lock, ArrowLeft, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, Eye, EyeOff, Loader2, CheckCircle2, Send } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
 const supabase = createClient();
 
@@ -35,7 +36,9 @@ function LoginContent() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
   const validateEmail = (email: string) => {
@@ -75,7 +78,13 @@ function LoginContent() {
 
       if (authError) throw authError;
     } catch (err: any) {
-      setError(err.message || 'Login gagal. Periksa email dan kata sandi.');
+      const msg = err?.message || '';
+      if (msg.toLowerCase().includes('email not confirmed')) {
+        setEmailError(formData.email);
+        setError('Email belum dikonfirmasi. Silakan cek email Anda.');
+      } else {
+        setError(msg || 'Login gagal. Periksa email dan kata sandi.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -86,12 +95,34 @@ function LoginContent() {
     setError(null);
 
     try {
+      const isNative = typeof window !== 'undefined' &&
+        !!(window as any).Capacitor?.isNativePlatform();
+
+      if (isNative) {
+        const { Browser } = await import('@capacitor/browser');
+        const originalUrl = window.location.href;
+
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: 'com.greenemerald.gema://callback',
+          },
+        });
+
+        if (error) throw error;
+        if (!data?.url) throw new Error('Tidak ada URL OAuth');
+
+        // Navigate WebView back to app and open CCT simultaneously
+        const cctPromise = Browser.open({ url: data.url });
+        window.location.href = originalUrl;
+        await cctPromise;
+        return;
+      }
+
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: typeof window !== 'undefined' && !window.location.protocol.startsWith('file')
-            ? window.location.origin
-            : undefined,
+          redirectTo: window.location.origin,
         },
       });
 
@@ -99,6 +130,33 @@ function LoginContent() {
     } catch (err: any) {
       setError(err.message || 'Login Google gagal. Coba lagi.');
       setIsLoading(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!emailError || resending) return;
+    setResending(true);
+    try {
+      const isNative = typeof window !== 'undefined' &&
+        !!(window as any).Capacitor?.isNativePlatform();
+
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: emailError,
+        options: {
+          emailRedirectTo: isNative
+            ? 'com.greenemerald.gema://callback'
+            : window.location.origin,
+        },
+      });
+      if (error) throw error;
+      toast.success('Email konfirmasi telah dikirim ulang');
+      setEmailError(null);
+      setError(null);
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal mengirim ulang email');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -129,8 +187,23 @@ function LoginContent() {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-xl text-sm">
-            {error}
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-xl text-sm space-y-2">
+            <p>{error}</p>
+            {emailError && (
+              <button
+                type="button"
+                onClick={handleResendEmail}
+                disabled={resending}
+                className="flex items-center gap-1.5 text-xs font-semibold text-red-800 hover:text-red-900 transition-colors cursor-pointer"
+              >
+                {resending ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Send size={14} />
+                )}
+                {resending ? 'Mengirim...' : 'Kirim Ulang Email Konfirmasi'}
+              </button>
+            )}
           </div>
         )}
 

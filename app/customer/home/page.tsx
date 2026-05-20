@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, ChevronRight, Sparkles, Search, AlertCircle, Cable, Hammer, Bug, Thermometer, ChevronDown } from 'lucide-react';
+import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, ChevronRight, Sparkles, Search, AlertCircle, Cable, Hammer, Bug, Thermometer, ChevronDown, Store } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
@@ -31,6 +31,7 @@ const categories = [
 export default function CustomerHome() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
+  const isVendor = useAuthStore((s) => s.isVendor);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const userLocation = useLocationStore((s) => s.lat !== null && s.lng !== null ? { lat: s.lat, lng: s.lng } : null);
   const setLocation = useLocationStore((s) => s.setLocation);
@@ -183,6 +184,24 @@ export default function CustomerHome() {
       </div>
 
       <div className="p-4 space-y-6">
+        {!isVendor && (
+          <Link
+            href="/customer/register-vendor"
+            className="block rounded-2xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 p-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-200">
+                <Store size={22} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-heading font-bold text-gray-900 text-sm">Daftar sebagai Mitra Kami</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Kelola layanan, terima pesanan, dan dapatkan penghasilan</p>
+              </div>
+              <ChevronRight size={18} className="text-gray-300 group-hover:text-emerald-500 transition-colors shrink-0" />
+            </div>
+          </Link>
+        )}
+
         {promosLoading ? (
           <div className="w-full bg-white rounded-[24px] p-4 border-2 border-emerald-300 animate-pulse shadow-sm">
             <div className="flex items-center gap-3">

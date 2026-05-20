@@ -6,6 +6,38 @@ Panduan distribusi APK untuk testing dan production secara gratis.
 
 ---
 
+## Web — Cloudflare Pages
+
+Production URL: **https://gema-app.pages.dev**
+
+GEMA di-deploy sebagai **static export** (`output: 'export'`) ke Cloudflare Pages. Build otomatis tiap push ke `main`.
+
+| Item | Detail |
+|------|--------|
+| **Platform** | Cloudflare Pages (Free plan) |
+| **URL** | `https://gema-app.pages.dev` |
+| **Build command** | `npm run build` |
+| **Output dir** | `out/` |
+| **SSL** | Otomatis (Cloudflare) |
+| **CDN** | 330+ lokasi, unlimited bandwidth |
+| **Auto deploy** | Push ke `main` |
+| **Setup guide** | `docs/setup-cloudflare.md` |
+
+### Env Vars di Cloudflare Dashboard
+
+| Key | Source |
+|-----|--------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `.env.local` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `.env.local` |
+
+> `XENDIT_SECRET_KEY` dan `XENDIT_WEBHOOK_TOKEN` dikelola via **Supabase Dashboard** (Edge Functions), bukan Cloudflare.
+
+### Rollback
+
+Dashboard → Pages → **gema-app** → **View build history** → klik timestamp → **Rollback to this build**
+
+---
+
 ## CI/CD Pipeline (GitHub Actions)
 
 Dua workflow sudah tersedia di `.github/workflows/`:

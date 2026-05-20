@@ -61,9 +61,27 @@ export default function SplashScreen() {
               .select('role')
               .eq('id', user?.id)
               .single();
-            if (profile?.role === 'vendor') target = '/vendor/dashboard';
-            else if (profile?.role === 'customer') target = '/customer/home';
-            else target = '/login';
+
+            const { data: vendorProfile } = await supabase
+              .from('vendor_profiles')
+              .select('user_id')
+              .eq('user_id', user?.id)
+              .single();
+
+            const isVendor = !!vendorProfile;
+
+            if (profile?.role === 'admin') {
+              target = '/admin/dashboard';
+            } else if (isVendor) {
+              const mode = localStorage.getItem('gema_mode') as 'customer' | 'vendor' | null;
+              target = mode === 'customer' ? '/customer/home' : '/vendor/dashboard';
+            } else if (profile?.role === 'vendor') {
+              target = '/vendor/dashboard';
+            } else if (profile?.role === 'customer') {
+              target = '/customer/home';
+            } else {
+              target = '/login';
+            }
           }
         } else {
           target = localStorage.getItem('gema_has_onboarded') ? '/login' : '/onboarding';

@@ -1667,3 +1667,21 @@ npx supabase functions logs create-topup-invoice --tail
 | 19 | Back button | Kembali ke halaman sebelumnya (`router.back()`) |
 | 20 | Build verification | `npm run build` → 0 errors |
 
+#### K.38. Capacitor Google OAuth (`/login` di APK Android)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Klik "Masuk dengan Google" di APK Debug | CCT (Chrome Custom Tab) terbuka dengan halaman login Google |
+| 2 | Login dengan akun Google | CCT menutup, aplikasi kembali ke foreground |
+| 3 | Redirect callback | `appUrlOpen` dengan `com.greenemerald.gema://callback?code=...` terdeteksi |
+| 4 | PKCE exchange | `exchangeCodeForSession` sukses, `SIGNED_IN` event terpicu |
+| 5 | Role redirect | Customer → `/customer/home`, Vendor → `/vendor/profile/edit` |
+| 6 | Google OAuth tanpa akun baru | `ensureProfileExists` membuat profile row di tabel `users` |
+| 7 | Cancel/CCT back | Kembali ke halaman login, tidak ada loading state stuck |
+| 8 | Build verification | `npm run build` → 0 errors |
+
+#### Config — Tiga tempat registrasi custom scheme `com.greenemerald.gema://callback`:
+- ✅ Supabase Dashboard → Authentication → Settings → Redirect URLs: `com.greenemerald.gema://callback/**`
+- ✅ `AndroidManifest.xml` → intent filter `android:scheme="com.greenemerald.gema"`
+- ☐ Google Cloud Console → Authorized redirect URIs (tidak wajib — via Supabase proxy)
+

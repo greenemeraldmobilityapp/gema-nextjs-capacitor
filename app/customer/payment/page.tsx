@@ -133,6 +133,32 @@ function PaymentContent() {
             const paymentPromise = (async () => {
               if (selectedMethod === 'wallet') {
                 const supabase = createClient();
+                const { data: orderData, error: orderError } = await supabase
+                  .from('orders')
+                  .select('total_amount, vendor_payout, platform_fee')
+                  .eq('id', order.id)
+                  .single();
+                if (orderError) throw orderError;
+                const { data: walletData, error: walletError } = await supabase
+                  .from('wallets')
+                  .select('id, balance')
+                  .eq('user_id', profile?.id)
+                  .single();
+                if (walletError) throw walletError;
+                if (!walletData) throw new Error('Dompet tidak ditemukan');
+                if (walletData.balance < orderData.total_amount) throw new Error('Saldo tidak mencukupi');
+                const { error: deductError } = await supabase
+                  .from('wallets')
+                  .update({ balance: walletData.balance - orderData.total_amount })
+                  .eq('id', walletData.id)
+                  .eq('balance', walletData.balance);
+                if (deductError) throw deductError;
+                await supabase.from('wallet_transactions').insert({
+                  wallet_id: walletData.id,
+                  type: 'payment',
+                  amount: -orderData.total_amount,
+                  status: 'success',
+                });
                 const { error: payError } = await supabase
                   .from('orders')
                   .update({ payment_status: 'escrow' })

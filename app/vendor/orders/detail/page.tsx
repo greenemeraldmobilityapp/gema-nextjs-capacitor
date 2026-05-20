@@ -41,7 +41,7 @@ function OrderDetailContent() {
     if (!order) return;
 
     const mutations: Record<string, Parameters<typeof updateStatus.mutateAsync>[0]> = {
-      accept: { orderId: order.id, order_status: 'accepted', payment_status: 'escrow' },
+      accept: { orderId: order.id, order_status: 'accepted' },
       start: { orderId: order.id, order_status: 'in_progress' },
       complete: { orderId: order.id, order_status: 'completed', payment_status: 'released', completed_at: new Date().toISOString() },
       decline: { orderId: order.id, order_status: 'cancelled', cancelled_at: new Date().toISOString(), payment_status: order.payment_status === 'escrow' ? 'refunded' : undefined },

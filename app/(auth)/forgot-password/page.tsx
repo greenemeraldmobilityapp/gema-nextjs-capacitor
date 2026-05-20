@@ -6,6 +6,7 @@ import { Mail, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
 const supabase = createClient();
 
@@ -21,14 +22,27 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     try {
+      const isNative = typeof window !== 'undefined' &&
+        !!(window as any).Capacitor?.isNativePlatform();
+
+      const redirectTo = isNative
+        ? 'com.greenemerald.gema://callback'
+        : `${window.location.origin}/update-password`;
+
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         email,
-        { redirectTo: `${window.location.origin}/login` },
+        { redirectTo },
       );
       if (resetError) throw new Error(resetError.message);
       setSent(true);
+      toast.success('Tautan reset sandi telah dikirim');
     } catch (err: any) {
-      setError(err?.message || 'Gagal mengirim email reset. Coba lagi.');
+      const msg = err?.message || 'Gagal mengirim email reset. Coba lagi.';
+      if (msg.toLowerCase().includes('email not found')) {
+        setError('Email tidak terdaftar');
+      } else {
+        setError(msg);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,0 +1,2 @@
+# Clean URLs — Cloudflare Pages auto-maps /path → /path.html
+# No additional rules needed. Next.js static export generates real .html files.

@@ -76,9 +76,12 @@ export function useRequestWithdraw() {
       accountHolder?: string;
       savedAccountId?: string;
     }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Sesi tidak ditemukan');
       const params: Record<string, unknown> = {
         p_wallet_id: walletId,
         p_amount: amount,
+        p_user_id: user.id,
       };
 
       if (savedAccountId) {

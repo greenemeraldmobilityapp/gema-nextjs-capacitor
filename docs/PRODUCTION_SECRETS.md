@@ -151,6 +151,31 @@ cd android && ./gradlew assembleDebug
 
 ---
 
+## 6. Cloudflare Pages Environment Variables
+
+Setup di: **Cloudflare Dashboard → Pages → gema-app → Settings → Environment variables**
+
+### Production Variables
+
+| Variable | Value | Required |
+|----------|-------|----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://ajteskgdggxwefcrncuu.supabase.co` | ✅ |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key (lihat `.env.local`) | ✅ |
+
+### Notes
+
+- `XENDIT_SECRET_KEY` / `XENDIT_WEBHOOK_TOKEN` — **bukan** untuk Cloudflare. Dikelola via **Supabase Dashboard** (Edge Functions secrets).
+- `NEXT_PUBLIC_XENDIT_PUBLIC_KEY` — tidak digunakan di frontend, tidak perlu diset.
+- Env vars bersifat **build-time** (tersedia saat `npm run build`).
+- Preview deployments bisa pakai env vars berbeda → Settings → Environment variables → **Preview**.
+
+### Update Build
+
+Setelah ubah env vars, trigger ulang build:
+Dashboard → Pages → **gema-app** → **Deployments** → ⋮ → **Retry deployment**
+
+---
+
 ## 7. Security Notes
 
 ### NEVER DO

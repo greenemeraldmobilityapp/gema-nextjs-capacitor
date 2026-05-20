@@ -32,14 +32,14 @@ export default function SecuritySettingsPage() {
 
         <Card className="rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <CardContent className="p-0 divide-y divide-gray-100">
-            <Link href="#" onClick={(e) => { e.preventDefault(); toast.info('Segera hadir'); }} className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+            <Link href="/customer/settings/security/change-password" className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 shrink-0">
                   <Lock size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-sm">Ubah Kata Sandi</h3>
-                  <p className="text-xs text-gray-500">Terakhir diubah 30 hari yang lalu</p>
+                  <h3 className="font-bold text-gray-900 text-sm">Kata Sandi</h3>
+                  <p className="text-xs text-gray-500">Atur atau ubah kata sandi akun</p>
                 </div>
               </div>
               <ChevronRight size={18} className="text-gray-300 shrink-0" />

@@ -87,22 +87,24 @@ serve(async (req) => {
     const wallet = wallets?.[0]
 
     if (wallet?.id) {
-      await supabaseFetch('/wallet_transactions', {
+      const credited = await supabaseFetch(`/rpc/credit_wallet`, {
         method: 'POST',
-        body: JSON.stringify({
-          wallet_id: wallet.id,
-          type: 'escrow_release',
-          amount: order.vendor_payout,
-          status: 'success',
-        }),
+        body: JSON.stringify({ p_wallet_id: wallet.id, p_amount: order.vendor_payout }),
       })
 
-      await supabaseFetch(`/wallets?id=eq.${wallet.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          balance: Number(wallet.balance) + Number(order.vendor_payout),
-        }),
-      })
+      if (credited.ok) {
+        await supabaseFetch('/wallet_transactions', {
+          method: 'POST',
+          body: JSON.stringify({
+            wallet_id: wallet.id,
+            type: 'escrow_release',
+            amount: order.vendor_payout,
+            status: 'success',
+          }),
+        })
+      } else {
+        console.error(`release-payment: failed to credit wallet ${wallet.id}`)
+      }
     }
 
     return new Response(JSON.stringify({ success: true }), {

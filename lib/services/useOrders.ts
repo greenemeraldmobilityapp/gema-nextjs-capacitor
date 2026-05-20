@@ -76,7 +76,7 @@ export function useVendorOrders(vendorId: string | undefined) {
   });
 }
 
-export function useOrder(orderId: string | undefined) {
+export function useOrder(orderId: string | undefined, refetchInterval?: number) {
   return useQuery({
     queryKey: ['order', orderId],
     queryFn: async () => {
@@ -91,6 +91,7 @@ export function useOrder(orderId: string | undefined) {
       return data as Order;
     },
     enabled: !!orderId,
+    refetchInterval,
   });
 }
 

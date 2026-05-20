@@ -3,6 +3,13 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 const XENDIT_SECRET_KEY = Deno.env.get('XENDIT_SECRET_KEY')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const APP_URL = Deno.env.get('APP_URL') || 'http://localhost:3000'
+
+const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'https://gema-app.pages.dev',
+  APP_URL,
+]
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +22,27 @@ serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    const token = authHeader.slice(7)
+    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_SERVICE_ROLE_KEY },
+    })
+    if (!userRes.ok) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+    const user = await userRes.json()
+    const callerId = user.id
+
     const { order_id, origin } = await req.json()
     if (!order_id) {
       return new Response(
@@ -22,7 +50,8 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
-    const baseUrl = origin || 'http://localhost:3000'
+
+    const baseUrl = ALLOWED_ORIGINS.includes(origin) ? origin : APP_URL
 
     const orderRes = await fetch(
       `${SUPABASE_URL}/rest/v1/orders?id=eq.${order_id}&select=*,customer:customer_id(full_name,email)`,
@@ -42,6 +71,13 @@ serve(async (req) => {
     }
 
     const order = orders[0]
+
+    if (order.customer_id !== callerId) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: you do not own this order' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
 
     if (order.payment_status !== 'unpaid') {
       return new Response(

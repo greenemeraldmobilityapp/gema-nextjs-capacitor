@@ -6,6 +6,8 @@ const supabase = createClient();
 import { useAuthStore } from '@/store/auth';
 import { toast } from 'sonner';
 
+const CUSTOM_SCHEME = 'com.greenemerald.gema://callback';
+
 const ADDRESS_COLS = 'address_street, address_rt, address_rw, address_village, address_district, address_city, address_province, address_postal_code, address_full, lat, lng';
 
 async function ensureProfileExists(userId: string, email: string, userMetadata?: { full_name?: string; name?: string; role?: string }) {
@@ -27,7 +29,7 @@ async function ensureProfileExists(userId: string, email: string, userMetadata?:
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { profile, setProfile, setLoading, reset } = useAuthStore();
+  const { profile, setProfile, setLoading, setVendorStatus, checkVendorStatus, setMode, reset } = useAuthStore();
 
   useEffect(() => {
     let mounted = true;
@@ -75,6 +77,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   lat: retryData.lat,
                   lng: retryData.lng,
                 });
+                checkVendorStatus(retryData.id);
+                const savedMode = typeof window !== 'undefined' ? localStorage.getItem('gema_mode') as 'customer' | 'vendor' | null : null;
+                if (savedMode === 'customer' || savedMode === 'vendor') {
+                  setMode(savedMode);
+                } else if (retryData.role === 'vendor') {
+                  setMode('vendor');
+                  localStorage.setItem('gema_mode', 'vendor');
+                } else {
+                  setMode('customer');
+                  localStorage.setItem('gema_mode', 'customer');
+                }
                 if (mounted) setLoading(false);
                 return;
               }
@@ -106,6 +119,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             lat: data.lat,
             lng: data.lng,
           });
+          checkVendorStatus(data.id);
+          const savedMode = typeof window !== 'undefined' ? localStorage.getItem('gema_mode') as 'customer' | 'vendor' | null : null;
+          if (savedMode === 'customer' || savedMode === 'vendor') {
+            setMode(savedMode);
+          } else if (data.role === 'vendor') {
+            setMode('vendor');
+            localStorage.setItem('gema_mode', 'vendor');
+          } else {
+            setMode('customer');
+            localStorage.setItem('gema_mode', 'customer');
+          }
         }
       } catch (err) {
         toast.error('Gagal memuat profil pengguna');
@@ -126,6 +150,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        if (mounted) setLoading(false);
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/update-password')) {
+          window.location.href = '/update-password';
+        }
+        return;
+      }
+
       if (mounted) {
         setLoading(true);
       }
@@ -145,6 +177,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Capacitor OAuth redirect listener
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!(window as any).Capacitor?.isNativePlatform()) return;
+
+    let cleanup: (() => void) | undefined;
+
+    (async () => {
+      try {
+        const { App } = await import('@capacitor/app');
+        const listener = await App.addListener('appUrlOpen', async (event) => {
+          if (event.url.startsWith(CUSTOM_SCHEME)) {
+            try {
+              await supabase.auth.exchangeCodeForSession(event.url);
+            } catch {
+              toast.error('Gagal menyelesaikan autentikasi');
+            }
+          }
+        });
+        cleanup = () => { listener.remove(); };
+      } catch {
+        // Capacitor plugin tidak tersedia
+      }
+    })();
+
+    return () => { cleanup?.(); };
   }, []);
 
   return <>{children}</>;

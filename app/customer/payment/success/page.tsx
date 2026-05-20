@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle, ArrowRight, Loader2, AlertCircle, Clock, Home } from 'lucide-react';
@@ -18,19 +18,9 @@ export default function PaymentSuccessPage() {
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order_id') || '';
-  const { data: order, isLoading } = useOrder(orderId);
-  const [isPolling, setIsPolling] = useState(true);
+  const { data: order, isLoading } = useOrder(orderId, 2000);
 
-  useEffect(() => {
-    if (order?.payment_status === 'escrow' || order?.payment_status === 'released') {
-      setIsPolling(false)
-      return
-    }
-    const timer = setTimeout(() => setIsPolling(false), 15000)
-    return () => clearTimeout(timer)
-  }, [order?.payment_status])
-
-  if (isLoading || (order?.payment_status === 'unpaid' && isPolling)) {
+  if (isLoading || order?.payment_status === 'unpaid') {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-emerald-600 text-white">
         <Loader2 size={32} className="animate-spin mb-4" />

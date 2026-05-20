@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Volume2, VolumeX, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Loader2, AlertCircle, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const slides = [
@@ -169,7 +169,7 @@ export default function OnboardingPage() {
               <div className="w-12 h-1 bg-gradient-to-r from-emerald-500 to-emerald-300 mx-auto my-3 rounded-full" />
 
               {/* Description */}
-              <p className="text-base sm:text-sm text-gray-500 max-w-sm leading-relaxed px-4">
+              <p className="text-base sm:text-sm text-gray-500 max-w-sm leading-relaxed px-4 font-semibold">
                 {slide.description}
               </p>
             </div>
@@ -217,9 +217,9 @@ export default function OnboardingPage() {
           </Button>
         )}
         <div className="text-center pb-4">
-          <span className="text-sm text-gray-500">Sudah punya akun? </span>
-          <Link href="/login" className="text-sm font-bold text-emerald-600 hover:underline">
-            Masuk
+          <span className="text-sm text-gray-500">Sudah memiliki akun? </span>
+          <Link href="/login" className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-600 hover:underline">
+            Masuk <LogIn size={16} />
           </Link>
         </div>
       </div>

@@ -32,10 +32,12 @@ export default function VendorSettingsPage() {
   ];
 
   const securityItems = [
-    { icon: Lock, label: 'Ubah Kata Sandi', desc: 'Perbarui kata sandi akun Anda', href: '#' },
+    { icon: Lock, label: 'Kata Sandi', desc: 'Atur atau ubah kata sandi akun', href: '/vendor/settings/change-password' },
     { icon: Smartphone, label: 'Keamanan Biometrik', desc: 'Gunakan sidik jari atau wajah', href: '#', toggle: true },
-    { icon: Globe, label: 'Bahasa', desc: 'Bahasa Indonesia', href: '#' },
+    { icon: Globe, label: 'Bahasa', desc: 'Bahasa Indonesia', href: '#', disabled: true },
   ];
+
+  const isDisabledLink = (href: string) => href === '#' || (securityItems.find(i => i.href === href) as any)?.disabled;
 
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">
@@ -104,7 +106,7 @@ export default function VendorSettingsPage() {
                     </label>
                   </label>
                 ) : (
-                  <Link key={index} href={item.href === '#' ? '' : item.href} onClick={(e) => { if (item.href === '#') { e.preventDefault(); toast.info('Segera hadir'); } }} className="flex items-center justify-between p-4 cursor-pointer hover:bg-stone-50 transition-colors group">
+                  <Link key={index} href={isDisabledLink(item.href) ? '' : item.href} onClick={(e) => { if (isDisabledLink(item.href)) { e.preventDefault(); toast.info('Segera hadir'); } }} className="flex items-center justify-between p-4 cursor-pointer hover:bg-stone-50 transition-colors group">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 shrink-0">
                         <item.icon size={20} />
