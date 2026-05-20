@@ -110,7 +110,7 @@ jobs:
       - name: Build Release AAB
         run: |
           cd android
-          ./gradlew assembleRelease
+          ./gradlew bundleRelease
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -119,22 +119,15 @@ jobs:
       - name: Rename AAB with version
         run: |
           VERSION=${{ steps.extract_version.outputs.version }}
-          AAB_PATH="android/app/build/outputs/apk/release/app-release.aab"
+          AAB_PATH="android/app/build/outputs/bundle/release/app-release.aab"
           if [ -f "$AAB_PATH" ]; then
             cp "$AAB_PATH" "GEMA-${VERSION}.aab"
             echo "AAB_NAME=GEMA-${VERSION}.aab" >> $GITHUB_ENV
             ls -la "GEMA-${VERSION}.aab"
           else
-            # Try alternative path
-            AAB_PATH_ALT="android/app/build/outputs/bundle/release/app-release.aab"
-            if [ -f "$AAB_PATH_ALT" ]; then
-              cp "$AAB_PATH_ALT" "GEMA-${VERSION}.aab"
-              echo "AAB_NAME=GEMA-${VERSION}.aab" >> $GITHUB_ENV
-            else
-              echo "AAB not found in expected locations"
-              find android -name "*.aab" 2>/dev/null
-              exit 1
-            fi
+            echo "AAB not found at $AAB_PATH"
+            find android -name "*.aab" 2>/dev/null
+            exit 1
           fi
 
       - name: Upload AAB as Artifact

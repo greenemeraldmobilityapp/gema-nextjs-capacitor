@@ -81,8 +81,9 @@ supabase/
 ## Deployment
 
 - **Web:** Static export via `npm run build` → deploy `out/` ke hosting statis
-- **Mobile:** `npm run build && npx cap sync` → build Android/iOS via studio masing-masing
-- Lihat [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) untuk panduan distribusi APK
+- **Mobile (CI):** Push ke `main` → GitHub Actions build APK debug otomatis. Push tag `v*` → build AAB release + GitHub Release.
+- **Mobile (Lokal):** `npm run build && npx cap sync` → build Android/iOS via studio masing-masing
+- Lihat [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) untuk panduan distribusi APK & CI/CD setup
 
 ## Dokumentasi Terkait
 

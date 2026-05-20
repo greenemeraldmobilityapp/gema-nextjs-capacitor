@@ -36,6 +36,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# android keystore (sensitive — committed via base64 in keystore.md)
+*.keystore
+
 # python cache
 __pycache__/
 *.pyc

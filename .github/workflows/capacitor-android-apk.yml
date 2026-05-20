@@ -95,13 +95,13 @@ jobs:
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ vars.FIREBASE_APP_ID }}
-          serviceCredentialsFileContent: ${{ secrets.FIREBASE_TOKEN }}
+          authToken: ${{ secrets.FIREBASE_TOKEN }}
           groups: testers
           file: GEMA-*.apk
 
       - name: Create Release Asset (if main branch)
         if: github.ref == 'refs/heads/main'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0-debug-${{ github.run_number }}
           files: GEMA-*.apk

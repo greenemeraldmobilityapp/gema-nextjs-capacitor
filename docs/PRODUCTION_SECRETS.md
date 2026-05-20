@@ -12,8 +12,6 @@ Setup di: **GitHub → Repo → Settings → Secrets and variables → Actions**
 
 | Secret Name | Required | Description | How to Get |
 |-------------|----------|-------------|------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Production Supabase URL | Supabase → Settings → General → Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Public anon key | Supabase → Settings → API → Project API keys → `anon` key |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Service role key (secret) | Supabase → Settings → API → `service_role` key |
 | `XENDIT_API_KEY` | ✅ | Xendit production API key | Xendit Dashboard → Settings → API Keys |
 | `ANDROID_SIGNING_KEY` | ✅ | Base64 encoded keystore | Create keystore, then `base64 keystore.jks` |
@@ -27,6 +25,8 @@ Setup di: **GitHub → Repo → Settings → Secrets and variables → Actions**
 
 | Variable Name | Required | Description | Example |
 |---------------|----------|-------------|---------|
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Production Supabase URL (public) | `https://xxxxx.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Public anon key (designed to be public) | `eyJhbGciOi...` |
 | `FIREBASE_APP_ID` | Optional | Firebase App ID (1:xxxxxxx) | Firebase Console → Project Settings |
 
 ---
@@ -53,7 +53,7 @@ Setup di: **Supabase Dashboard → Settings → Edge Functions**
 
 ```bash
 # Via Supabase CLI
-npx supabase secrets set XENDIT_API_KEY="xnd_live_..."
+npx supabase secrets set XENDIT_SECRET_KEY="xnd_development_..."
 npx supabase secrets set XENDIT_WEBHOOK_TOKEN="your_webhook_token"
 
 # List current secrets
@@ -64,7 +64,7 @@ npx supabase secrets list
 
 | Variable | Source | Description |
 |----------|--------|-------------|
-| `XENDIT_API_KEY` | Xendit Dashboard | Production API key (prefix: `xnd_live_`) |
+| `XENDIT_SECRET_KEY` | Xendit Dashboard | Prefix `xnd_development_` (sandbox) / `xnd_live_` (production) |
 | `XENDIT_WEBHOOK_TOKEN` | Xendit Dashboard | Generated when creating webhook |
 | `SUPABASE_URL` | Auto | Available in Edge Functions |
 | `SUPABASE_SERVICE_ROLE_KEY` | Auto | Available in Edge Functions |

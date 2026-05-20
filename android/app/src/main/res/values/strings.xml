@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GEMA</string>
+    <string name="title_activity_main">GEMA</string>
+    <string name="package_name">com.greenemerald.gema</string>
+    <string name="custom_url_scheme">com.greenemerald.gema</string>
+</resources>

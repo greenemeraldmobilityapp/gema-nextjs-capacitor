@@ -6,6 +6,43 @@ Panduan distribusi APK untuk testing dan production secara gratis.
 
 ---
 
+## CI/CD Pipeline (GitHub Actions)
+
+Dua workflow sudah tersedia di `.github/workflows/`:
+
+| Workflow | Trigger | Output |
+|----------|---------|--------|
+| `capacitor-android-apk.yml` | Push ke `develop`/`main` + manual `workflow_dispatch` | APK debug + Firebase Distribution |
+| `capacitor-android-aab.yml` | Push tag `v*` (e.g. `v1.0.0`) + manual `workflow_dispatch` | AAB release + GitHub Release |
+
+### Persiapan Sebelum Push Pertama
+
+1. **Generate `android/`** — `npx cap add android` (sekali saja, commit hasilnya)
+2. **Keystore** — Buat dan encode base64 (lihat `PRODUCTION_SECRETS.md`)
+3. **GitHub Secrets** (Settings → Secrets and variables → Actions):
+   - `ANDROID_SIGNING_KEY`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`
+4. **GitHub Variables** (Settings → Variables → Actions):
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `FIREBASE_APP_ID` (opsional, untuk Firebase Distribution)
+5. **Firebase Token** (opsional):
+   - `FIREBASE_TOKEN` via `firebase login:ci` → simpan di secrets
+
+### Cara Memicu Build
+
+```bash
+# Debug APK — push ke main
+git push origin main
+
+# Release AAB — buat tag
+git tag v1.0.0
+git push origin v1.0.0
+
+# Manual via GitHub UI
+# Actions → pilih workflow → Run workflow
+```
+
+---
+
 ## Option 1: Firebase App Distribution (Recommended)
 
 ### Prerequisites
