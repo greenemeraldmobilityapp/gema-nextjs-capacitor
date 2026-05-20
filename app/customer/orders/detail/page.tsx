@@ -156,7 +156,7 @@ function OrderTrackingContent() {
                   <span>{vendor.rating?.toFixed(1) || '0.0'} &bull; {vendor.total_jobs || 0} proyek</span>
                 </div>
               </div>
-              <Link href={`/customer/chat?order_id=${orderId}`}>
+              <Link href={`/customer/chat/detail?order_id=${orderId}`}>
                 <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors shadow-sm">
                   <MessageSquare size={16} />
                 </div>
@@ -284,7 +284,7 @@ function OrderTrackingContent() {
         </Card>
 
         <div className="flex gap-3">
-          <Link href={`/customer/chat?order_id=${orderId}`} className="flex-1">
+          <Link href={`/customer/chat/detail?order_id=${orderId}`} className="flex-1">
             <Button variant="pill" size="lg" className="w-full shadow-sm">
               <MessageSquare size={18} />
               Chat Vendor

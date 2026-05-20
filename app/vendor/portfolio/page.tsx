@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Plus, Briefcase, Wrench, Zap, Droplets, Paintbrush, Thermometer, Cable, Hammer, Bug, Loader2, AlertCircle, ImageIcon, Pencil, Trash2, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useVendorServices, useDeleteService } from '@/lib/services/useVendors';
-import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -253,7 +253,7 @@ export default function VendorPortfolioPage() {
                   <div className="flex items-start gap-4">
                     {service.service_images && service.service_images.length > 0 ? (
                       <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 relative">
-                        <img src={service.service_images[0].image_url} alt={service.title} className="w-full h-full object-cover" />
+                        <Image src={service.service_images[0].image_url} alt={service.title} fill className="object-cover" />
                         {service.service_images.length > 1 && (
                           <span className="absolute bottom-0.5 right-0.5 bg-black/50 text-white text-[8px] font-bold px-1 rounded">
                             +{service.service_images.length - 1}

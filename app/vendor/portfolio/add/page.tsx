@@ -3,7 +3,8 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Upload, X, Clock } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, Loader2, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/auth';
@@ -158,7 +159,7 @@ export default function VendorAddPortfolioPage() {
             <div className="grid grid-cols-3 gap-2">
               {imagePreviews.map((preview, idx) => (
                 <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group">
-                  <img src={preview} alt={`Gambar ${idx + 1}`} className="w-full h-full object-cover" />
+                  <Image src={preview} alt={`Gambar ${idx + 1}`} fill className="object-cover" />
                   <button
                     type="button"
                     onClick={() => removeImage(idx)}

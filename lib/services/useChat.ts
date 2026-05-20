@@ -22,6 +22,24 @@ export type ChatWithOrder = {
   } | null;
 };
 
+export type CustomerChatWithOrder = {
+  id: string;
+  order_id: string;
+  created_at: string;
+  order: {
+    id: string;
+    service_name: string;
+    customer_id: string;
+    vendor_id: string;
+    vendor: { users: { full_name: string } } | null;
+  };
+  last_message: {
+    message: string;
+    created_at: string;
+    sender_id: string;
+  } | null;
+};
+
 export type ChatMessage = {
   id: string;
   chat_id: string;
@@ -95,13 +113,29 @@ export function useCustomerChats(customerId: string | undefined) {
 
       const { data: chats, error: chatsError } = await supabase
         .from('chats')
-        .select('*')
+        .select('*, order:order_id(service_name, customer_id, vendor_id, vendor:vendor_id(users!inner(full_name)))')
         .in('order_id', orderIds)
         .order('created_at', { ascending: false });
 
       if (chatsError) throw chatsError;
 
-      return chats as { id: string; order_id: string; created_at: string }[];
+      const chatsWithMessages = await Promise.all(
+        (chats || []).map(async (chat) => {
+          const { data: messages } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('chat_id', chat.id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          return {
+            ...chat,
+            last_message: messages?.[0] || null,
+          } as CustomerChatWithOrder;
+        })
+      );
+
+      return chatsWithMessages;
     },
     enabled: !!customerId,
     refetchInterval: 5000,

@@ -2,7 +2,8 @@
 
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Star, MapPin, ShieldCheck, Clock, Loader2, MessageSquare, Crown, Briefcase, Calendar, Search } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, ArrowRight, Star, MapPin, ShieldCheck, Clock, Loader2, MessageSquare, Crown, Briefcase, Calendar, AlertCircle, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -95,7 +96,7 @@ function VendorDetailContent() {
       <div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center p-6">
         <div className="bg-white rounded-[24px] p-8 shadow-sm border border-gray-100 text-center max-w-sm w-full">
           <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-            <Search size={28} className="text-red-400" />
+            <AlertCircle size={28} className="text-red-400" />
           </div>
           <h2 className="text-lg font-bold text-gray-900 mb-2">Mitra Tidak Ditemukan</h2>
           <p className="text-sm text-gray-500 mb-6">Mitra yang Anda cari tidak tersedia atau telah dihapus</p>
@@ -135,7 +136,7 @@ function VendorDetailContent() {
                 <div className="flex gap-4 items-start">
                   {vendor.avatar_url ? (
                     <div className="relative shrink-0">
-                      <img src={vendor.avatar_url} alt={vendor.users?.full_name || ''} className="w-20 h-20 rounded-2xl object-cover ring-2 ring-white/30" />
+                      <Image src={vendor.avatar_url} alt={vendor.users?.full_name || ''} width={80} height={80} className="w-20 h-20 rounded-2xl object-cover ring-2 ring-white/30" />
                     </div>
                   ) : (
                     <div className="w-20 h-20 bg-emerald-700/60 rounded-2xl shrink-0 flex items-center justify-center text-white font-bold text-2xl ring-2 ring-white/30">
@@ -355,7 +356,7 @@ function VendorDetailContent() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
                         {project.customer?.avatar_url ? (
-                          <img src={project.customer.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                          <Image src={project.customer.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold shrink-0">
                             {project.customer?.full_name?.charAt(0) || '?'}
@@ -468,7 +469,7 @@ function VendorDetailContent() {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2 min-w-0">
                         {review.customer?.avatar_url ? (
-                          <img src={review.customer.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                          <Image src={review.customer.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold shrink-0">
                             {review.customer?.full_name?.charAt(0) || '?'}

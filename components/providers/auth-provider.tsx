@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 const supabase = createClient();
 import { useAuthStore } from '@/store/auth';
+import { toast } from 'sonner';
 
 const ADDRESS_COLS = 'address_street, address_rt, address_rw, address_village, address_district, address_city, address_province, address_postal_code, address_full, lat, lng';
 
@@ -19,24 +20,19 @@ async function ensureProfileExists(userId: string, email: string, userMetadata?:
   });
 
   if (error && !error.message?.includes('duplicate')) {
-    console.error('[AuthProvider] Failed to create profile:', error);
+    if (process.env.NODE_ENV !== 'production') console.error('[AuthProvider] Failed to create profile:', error);
     return false;
   }
   return true;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { profile, setProfile, setLoading } = useAuthStore();
+  const { profile, setProfile, setLoading, reset } = useAuthStore();
 
   useEffect(() => {
     let mounted = true;
 
     async function fetchProfile(userId: string, email: string, userMetadata?: Record<string, unknown>) {
-      if (profile?.id === userId) {
-        if (mounted) setLoading(false);
-        return;
-      }
-
       try {
         const { data, error } = await supabase
           .from('users')
@@ -84,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
             }
           } else {
-            console.error('Error fetching profile:', error);
+            if (process.env.NODE_ENV !== 'production') console.error('Error fetching profile:', error);
           }
           if (mounted) setProfile(null);
           return;
@@ -112,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } catch (err) {
-        console.error('Unexpected error fetching profile:', err);
+        toast.error('Gagal memuat profil pengguna');
         if (mounted) setProfile(null);
       } finally {
         if (mounted) setLoading(false);
@@ -122,10 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        if (mounted) {
-          setProfile(null);
-          setLoading(false);
-        }
+        if (mounted) reset();
       } else {
         fetchProfile(session.user.id, session.user.email || '', session.user.user_metadata);
       }
@@ -143,10 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
            if (mounted) setLoading(false);
         }
       } else {
-        if (mounted) {
-          setProfile(null);
-          setLoading(false);
-        }
+        if (mounted) reset();
       }
     });
 

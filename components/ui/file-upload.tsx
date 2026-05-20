@@ -1,4 +1,5 @@
 import * as React from "react"
+import Image from "next/image"
 import { Upload, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -87,7 +88,7 @@ function FileUpload({
         />
         {preview ? (
           <div className="relative">
-            <img src={preview} alt="Preview" className="max-h-32 rounded-lg object-cover" />
+            <Image src={preview} alt="Preview" width={0} height={0} sizes="100vw" className="h-auto w-auto max-h-32 rounded-lg object-cover" />
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); handleFile(null); if (inputRef.current) inputRef.current.value = "" }}

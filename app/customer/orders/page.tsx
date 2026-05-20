@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Clock, XCircle, MessageSquare, ArrowRight, Package, History, Star } from 'lucide-react';
+import { Clock, AlertCircle, MessageSquare, ArrowRight, Package, History, Star } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,7 +29,7 @@ export default function OrdersPage() {
   const renderOrderCard = (order: any) => {
     const cfg = statusConfig[order.order_status];
     return (
-      <Card key={order.id} className="rounded-[24px] border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 relative">
+      <Card key={order.id} className="rounded-[24px] border border-gray-100 shadow-sm overflow-hidden group cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-emerald-500 active:scale-[0.98] transition-all duration-200 relative">
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-emerald-600 rounded-l-[24px]" />
         <CardContent className="p-4 pl-5">
           <div className="flex items-start gap-3">
@@ -67,7 +67,7 @@ export default function OrdersPage() {
               <span className="text-lg font-bold text-emerald-600">Rp {order.total_amount.toLocaleString('id-ID')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Link href={`/customer/chat?order_id=${order.id}`}>
+              <Link href={`/customer/chat/detail?order_id=${order.id}`}>
                 <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors">
                   <MessageSquare size={18} />
                 </div>
@@ -157,7 +157,7 @@ export default function OrdersPage() {
 
         {error && (
           <div className="text-center py-16 text-red-400">
-            <XCircle size={32} className="mx-auto mb-2 opacity-50" />
+            <AlertCircle size={32} className="mx-auto mb-2 opacity-50" />
             <p className="text-sm">Gagal memuat pesanan</p>
           </div>
         )}

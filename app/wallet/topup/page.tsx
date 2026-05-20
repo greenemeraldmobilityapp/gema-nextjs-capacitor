@@ -137,7 +137,7 @@ export default function TopupPage() {
                       : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                   )}
                 >
-                  Rp {v.toLocaleString()}
+                  Rp {v.toLocaleString('id-ID')}
                 </button>
               ))}
             </div>
@@ -152,7 +152,7 @@ export default function TopupPage() {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Jumlah Top Up</span>
-            <span className="font-bold text-gray-800">Rp {numericAmount.toLocaleString()}</span>
+            <span className="font-bold text-gray-800">Rp {numericAmount.toLocaleString('id-ID')}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Biaya Layanan</span>
@@ -160,7 +160,7 @@ export default function TopupPage() {
           </div>
           <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
             <span className="font-semibold text-gray-700">Total</span>
-            <span className="font-heading text-xl font-bold text-gray-800">Rp {numericAmount.toLocaleString()}</span>
+            <span className="font-heading text-xl font-bold text-gray-800">Rp {numericAmount.toLocaleString('id-ID')}</span>
           </div>
         </div>
 
@@ -187,7 +187,7 @@ export default function TopupPage() {
           {isProcessing ? (
             <><Loader2 size={20} className="animate-spin mr-2" /> Menyiapkan pembayaran...</>
           ) : (
-            <><Plus size={20} /> Top Up Rp {numericAmount.toLocaleString()}</>
+            <><Plus size={20} /> Top Up Rp {numericAmount.toLocaleString('id-ID')}</>
           )}
         </Button>
       </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft, Upload, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +17,7 @@ const supabase = createClient();
 export default function CertificationPage() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
-  const { data: submission, isLoading } = useLatestSubmission(profile?.id);
+  const { data: submission, isLoading, error } = useLatestSubmission(profile?.id);
   const submitCertificate = useSubmitCertificate();
   const inputRef = useRef<HTMLInputElement>(null);
   const fileDataPromiseRef = useRef<Promise<{ buffer: ArrayBuffer; contentType: string; fileName: string } | null>>(Promise.resolve(null));
@@ -24,6 +25,10 @@ export default function CertificationPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (error) toast.error(error instanceof Error ? error.message : 'Gagal memuat data verifikasi');
+  }, [error]);
 
   useEffect(() => {
     return () => {
@@ -158,6 +163,17 @@ export default function CertificationPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen bg-stone-50 items-center justify-center p-6">
+        <div className="flex flex-col items-center text-red-400">
+          <AlertCircle size={48} className="mb-3 opacity-50" />
+          <p className="font-medium">Gagal memuat data verifikasi</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">
       <div className="bg-white/90 backdrop-blur-lg px-4 pt-6 pb-4 border-b border-stone-100 sticky top-0 z-20">
@@ -183,19 +199,20 @@ export default function CertificationPage() {
         <form onSubmit={handleSubmit} className="flex-1 p-4 space-y-4">
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Upload Sertifikat (Opsional)</label>
+              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Unggah Sertifikat (Opsional)</label>
               <div
                 onClick={() => inputRef.current?.click()}
-                className="flex flex-col items-center justify-center w-full min-h-[8rem] border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50 overflow-hidden"
+                className="relative flex flex-col items-center justify-center w-full min-h-[8rem] border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50 overflow-hidden"
               >
                 {preview ? (
-                  <img src={preview} alt="Preview sertifikat" className="w-full object-contain max-h-40 rounded-2xl" />
+                  <Image src={preview} alt="Preview sertifikat" fill className="object-contain !max-h-40 !rounded-2xl" />
                 ) : submission.certificate_url ? (
-                  <div className="flex flex-col items-center py-6 text-emerald-600">
-                    <img
+                  <div className="relative flex flex-col items-center py-6 text-emerald-600">
+                    <Image
                       src={submission.certificate_url}
                       alt="Sertifikat terupload"
-                      className="w-full object-contain max-h-32 rounded-xl opacity-60"
+                      fill
+                      className="object-contain !max-h-32 !rounded-xl opacity-60"
                     />
                     <p className="text-xs mt-2 text-stone-400">Tap untuk mengganti file</p>
                   </div>

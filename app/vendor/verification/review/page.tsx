@@ -1,15 +1,17 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { Clock, ShieldCheck, XCircle, AlertCircle, Loader2, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useLatestSubmission } from '@/lib/services/useVerification';
+import { toast } from 'sonner';
 
 const statusViews: Record<string, { icon: typeof Clock; bg: string; border: string; iconColor: string; title: string; desc: string[]; cta: { label: string; href: string } }> = {
   pending: {
     icon: Clock, bg: 'bg-amber-50/80', border: 'border border-amber-200/50', iconColor: 'text-amber-600',
-    title: 'Dokumen Sedang Direview',
+    title: 'Dokumen Sedang Ditinjau',
     desc: ['Tim GEMA akan memeriksa dokumen Anda dalam 1-3 hari kerja.', 'Kami akan memberi tahu Anda melalui notifikasi setelah verifikasi selesai.'],
     cta: { label: 'Kembali ke Dashboard', href: '/vendor/dashboard' },
   },
@@ -35,12 +37,25 @@ const statusViews: Record<string, { icon: typeof Clock; bg: string; border: stri
 
 export default function VerificationReviewPage() {
   const profile = useAuthStore((s) => s.profile);
-  const { data: submission, isLoading } = useLatestSubmission(profile?.id);
+  const { data: submission, isLoading, error } = useLatestSubmission(profile?.id);
+
+  useEffect(() => {
+    if (error) toast.error(error instanceof Error ? error.message : 'Gagal memuat data verifikasi');
+  }, [error]);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-stone-50">
         <Loader2 size={24} className="animate-spin text-stone-400" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 text-red-400">
+        <AlertCircle size={48} className="mb-3 opacity-50" />
+        <p className="font-medium">Gagal memuat data verifikasi</p>
       </div>
     );
   }
@@ -56,7 +71,7 @@ export default function VerificationReviewPage() {
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">
       <div className="bg-white/90 backdrop-blur-lg px-4 pt-6 pb-4 border-b border-stone-100">
-        <h1 className="font-heading text-xl font-bold text-stone-800">Review Verifikasi</h1>
+        <h1 className="font-heading text-xl font-bold text-stone-800">Status Verifikasi</h1>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center text-center px-8">

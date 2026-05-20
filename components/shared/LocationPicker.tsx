@@ -28,6 +28,11 @@ export default function LocationPicker({
   const [mapReady, setMapReady] = useState(false);
 
   const center = lat && lng ? { lat, lng } : JAKARTA;
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
     let mounted = true;
@@ -54,12 +59,12 @@ export default function LocationPicker({
 
       marker.on('dragend', () => {
         const pos = marker.getLatLng();
-        onChange(pos.lat, pos.lng);
+        onChangeRef.current(pos.lat, pos.lng);
       });
 
       map.on('click', (e: L.LeafletMouseEvent) => {
         marker.setLatLng(e.latlng);
-        onChange(e.latlng.lat, e.latlng.lng);
+        onChangeRef.current(e.latlng.lat, e.latlng.lng);
       });
 
       mapInstanceRef.current = map;
@@ -76,7 +81,7 @@ export default function LocationPicker({
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [lat, lng]);
 
   useEffect(() => {
     if (!mapReady || !mapInstanceRef.current || lat === null || lng === null) return;

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Mail, Lock, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Mail, Lock, ArrowLeft, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/lib/supabase/client';
@@ -11,7 +12,22 @@ import { createClient } from '@/lib/supabase/client';
 const supabase = createClient();
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get('registered') === 'success';
+  const [showSuccess, setShowSuccess] = useState(registered);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -57,7 +73,6 @@ export default function LoginPage() {
       });
 
       if (authError) throw authError;
-      router.refresh();
     } catch (err: any) {
       setError(err.message || 'Login gagal. Periksa email dan kata sandi.');
     } finally {
@@ -73,7 +88,9 @@ export default function LoginPage() {
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+          redirectTo: typeof window !== 'undefined' && !window.location.protocol.startsWith('file')
+            ? window.location.origin
+            : undefined,
         },
       });
 
@@ -111,6 +128,13 @@ export default function LoginPage() {
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-xl text-sm">
             {error}
+          </div>
+        )}
+
+        {showSuccess && (
+          <div className="mb-4 p-3 bg-emerald-100 border border-emerald-400 text-emerald-700 rounded-xl text-sm flex items-center gap-2">
+            <CheckCircle2 size={16} className="shrink-0" />
+            <span>Akun berhasil dibuat! Silakan cek email untuk konfirmasi, lalu masuk.</span>
           </div>
         )}
 

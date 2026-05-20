@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { User, Settings, HelpCircle, LogOut, Wallet, ChevronRight, Camera, ShieldCheck, MapPin, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
@@ -97,7 +98,7 @@ export default function ProfilePage() {
             <div className="relative mb-3">
               <div className="w-24 h-24 rounded-full ring-4 ring-white/30 shadow-lg overflow-hidden flex items-center justify-center bg-gradient-to-br from-emerald-400 to-emerald-600">
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                  <Image src={avatarPreview} alt="Avatar" width={96} height={96} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-white font-bold text-2xl">{initial}</span>
                 )}

@@ -121,7 +121,7 @@ export default function AdminDisputes() {
 
             {dispute.orders && (
               <div className="flex items-center gap-3 text-xs text-gray-500">
-                <span>Rp {dispute.orders.total_amount.toLocaleString()}</span>
+                <span>Rp {dispute.orders.total_amount.toLocaleString('id-ID')}</span>
                 <span>Status: {dispute.orders.order_status}</span>
               </div>
             )}

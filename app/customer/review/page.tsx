@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft, Star, Loader2, AlertCircle, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -86,7 +87,7 @@ function ReviewContent() {
             <p className="text-sm text-gray-600 mb-4 max-w-md">&ldquo;{existingReview.review_text}&rdquo;</p>
           )}
           {existingReview.review_image && (
-            <img src={existingReview.review_image} alt="Foto ulasan" className="w-24 h-24 rounded-xl object-cover mb-4 border" />
+            <Image src={existingReview.review_image} alt="Foto ulasan" width={96} height={96} className="w-24 h-24 rounded-xl object-cover mb-4 border" />
           )}
           <p className="font-medium text-gray-600 mb-2">Anda sudah memberikan ulasan untuk pesanan ini</p>
           <button

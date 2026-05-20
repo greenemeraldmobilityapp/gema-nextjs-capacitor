@@ -99,7 +99,7 @@ function OrdersContent() {
             </div>
             <div className="flex items-center justify-between pt-3 border-t border-stone-100">
               <div>
-                <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString()}</span>
+                <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString('id-ID')}</span>
                 <p className="text-[10px] text-stone-400 mt-0.5">Pendapatan Anda</p>
               </div>
               <span className="text-xs text-stone-400 flex items-center gap-0.5 group-hover:text-stone-600 transition-colors duration-200">

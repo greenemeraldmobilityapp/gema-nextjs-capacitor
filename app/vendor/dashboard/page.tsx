@@ -166,10 +166,10 @@ export default function VendorDashboard() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-3xl font-bold font-heading text-white drop-shadow-sm">Rp {monthlyEarnings.toLocaleString()}</div>
+                <div className="text-3xl font-bold font-heading text-white drop-shadow-sm">Rp {monthlyEarnings.toLocaleString('id-ID')}</div>
                 <div className="flex items-center gap-1.5 mt-1.5">
                   <div className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-                  <p className="text-emerald-200/80 text-xs">Saldo GemaPay: Rp {(wallet?.balance || 0).toLocaleString()}</p>
+                  <p className="text-emerald-200/80 text-xs">Saldo GemaPay: Rp {(wallet?.balance || 0).toLocaleString('id-ID')}</p>
                 </div>
               </div>
               <Link
@@ -251,7 +251,7 @@ export default function VendorDashboard() {
               <TrendingUp size={16} className="text-white" />
             </div>
             <div className="text-left">
-              <p className="text-xs font-bold text-stone-800">Earnings</p>
+              <p className="text-xs font-bold text-stone-800">Pendapatan</p>
               <p className="text-[10px] text-stone-400">Riwayat</p>
             </div>
           </Link>
@@ -314,7 +314,7 @@ export default function VendorDashboard() {
                         <p className="text-xs text-stone-400 mt-0.5">{order.service_address}</p>
                       </div>
                       <div className="text-right shrink-0 ml-3">
-                        <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString()}</span>
+                        <span className="font-bold text-emerald-600">Rp {order.vendor_payout.toLocaleString('id-ID')}</span>
                         <p className="text-[10px] text-stone-400">Pendapatan Anda</p>
                       </div>
                     </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft, User, Camera, Loader2, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -119,7 +120,7 @@ export default function EditProfilePage() {
         <div className="relative mt-4 mb-8">
           <div className="w-24 h-24 rounded-full ring-4 ring-emerald-200 shadow-lg overflow-hidden flex items-center justify-center bg-gradient-to-br from-emerald-400 to-emerald-600">
             {avatarPreview ? (
-              <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+              <Image src={avatarPreview} alt="Avatar" width={96} height={96} className="w-full h-full object-cover" />
             ) : (
               <span className="text-white font-bold text-2xl">{initial}</span>
             )}

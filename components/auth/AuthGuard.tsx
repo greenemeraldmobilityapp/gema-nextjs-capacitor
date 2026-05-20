@@ -13,13 +13,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (pathname === '/') return;
 
     if (!isLoading && !profile) {
-      if (pathname !== '/login' && pathname !== '/register' && !pathname.startsWith('/onboarding') && !pathname.startsWith('/register/role')) {
+      if (pathname !== '/login' && pathname !== '/register' && !pathname.startsWith('/onboarding') && !pathname.startsWith('/register/role') && !pathname.startsWith('/forgot-password')) {
         router.replace('/login');
       }
     } else if (!isLoading && profile) {
       if (pathname === '/login' || pathname === '/register' || pathname.startsWith('/onboarding') || pathname.startsWith('/register/role')) {
         if (profile.role === 'customer') router.replace('/customer/home');
-        else if (profile.role === 'vendor') router.replace('/vendor/verification');
+        else if (profile.role === 'vendor') router.replace('/vendor/profile/edit');
         else if (profile.role === 'admin') router.replace('/admin/dashboard');
         else router.replace('/register/role');
       }

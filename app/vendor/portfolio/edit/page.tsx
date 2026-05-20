@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Loader2, Upload, X, Trash2, Clock } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, Loader2, Upload, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/auth';
@@ -248,7 +249,7 @@ function EditForm() {
             <div className="grid grid-cols-3 gap-2">
               {existingImages?.map((img) => (
                 <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group">
-                  <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                  <Image src={img.image_url} alt="" fill className="object-cover" />
                   <button
                     type="button"
                     onClick={() => handleDeleteImage(img)}
@@ -265,7 +266,7 @@ function EditForm() {
               ))}
               {newPreviews.map((preview, idx) => (
                 <div key={`new-${idx}`} className="relative aspect-square rounded-xl overflow-hidden border border-emerald-300 ring-2 ring-emerald-200 group">
-                  <img src={preview} alt={`Gambar baru ${idx + 1}`} className="w-full h-full object-cover" />
+                  <Image src={preview} alt={`Gambar baru ${idx + 1}`} fill className="object-cover" />
                   <button
                     type="button"
                     onClick={() => removeNewImage(idx)}
@@ -426,7 +427,7 @@ function EditForm() {
 
 export default function VendorEditPortfolioPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>}>
       <EditForm />
     </Suspense>
   );

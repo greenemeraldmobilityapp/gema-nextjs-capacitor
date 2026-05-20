@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, PlusCircle, ChevronRight, Sparkles, Search, ArrowUpRight, Cable, Hammer, Bug, Thermometer, ChevronDown } from 'lucide-react';
+import Image from 'next/image';
+import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, ChevronRight, Sparkles, Search, AlertCircle, Cable, Hammer, Bug, Thermometer, ChevronDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
@@ -65,7 +66,7 @@ export default function CustomerHome() {
         <Card className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-gray-100 shadow-sm">
           <CardContent className="py-2 px-3 flex gap-2.5 items-start">
             {vendor.avatar_url ? (
-              <img src={vendor.avatar_url} alt={vendor.users?.full_name || ''} className="w-16 h-16 rounded-lg shrink-0 object-cover" />
+                        <Image src={vendor.avatar_url} alt={vendor.users?.full_name || ''} width={64} height={64} className="w-16 h-16 rounded-lg shrink-0 object-cover" />
             ) : (
               <div className="w-16 h-16 bg-gray-100 rounded-lg shrink-0 flex items-center justify-center text-gray-500 font-bold text-xl">
                 {vendor.users?.full_name?.charAt(0) || '?'}
@@ -122,7 +123,7 @@ export default function CustomerHome() {
               <ChevronDown size={14} className="text-white/60 group-hover:text-white/90 transition-colors" />
               <div className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/30 group-hover:ring-white/50 transition-all duration-300">
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt={profile.full_name || ''} className="w-full h-full object-cover" />
+                  <Image src={profile.avatar_url} alt={profile.full_name || ''} fill className="object-cover" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-emerald-300 to-emerald-500 flex items-center justify-center text-white font-bold text-sm">
                     {profile?.full_name?.charAt(0) || 'U'}
@@ -275,7 +276,8 @@ export default function CustomerHome() {
           )}
 
           {error && (
-            <div className="text-center py-8 text-red-400">
+            <div className="flex flex-col items-center py-8 text-red-400">
+              <AlertCircle size={32} className="mb-2 opacity-50" />
               <p className="text-sm">Gagal memuat data vendor</p>
             </div>
           )}
@@ -318,7 +320,7 @@ export default function CustomerHome() {
                   <Card className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-emerald-100 shadow-sm">
                     <CardContent className="py-2 px-3 flex gap-2.5">
                       {vendor.avatar_url ? (
-                        <img src={vendor.avatar_url} alt={vendor.users?.full_name || ''} className="w-16 h-16 rounded-lg shrink-0 object-cover" />
+              <Image src={vendor.avatar_url} alt={vendor.users?.full_name || ''} width={64} height={64} className="w-16 h-16 rounded-lg shrink-0 object-cover" />
                       ) : (
                         <div className="w-16 h-16 bg-emerald-50 rounded-lg shrink-0 flex items-center justify-center text-emerald-600 font-bold text-xl">
                           {vendor.users?.full_name?.charAt(0) || '?'}

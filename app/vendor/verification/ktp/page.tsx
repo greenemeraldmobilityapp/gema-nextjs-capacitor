@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -125,14 +126,14 @@ export default function KtpVerificationPage() {
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Foto KTP</label>
             <div
               onClick={() => inputRef.current?.click()}
-              className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50"
+              className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50"
             >
               {preview ? (
-                <img src={preview} alt="KTP preview" className="h-full object-contain rounded-2xl" />
+                <Image src={preview} alt="KTP preview" fill className="object-contain !rounded-2xl" />
               ) : (
                 <div className="flex flex-col items-center text-stone-400">
                   <Upload size={32} className="mb-2" />
-                  <p className="text-sm font-medium">Tap untuk upload foto KTP</p>
+                  <p className="text-sm font-medium">Ketuk untuk upload foto KTP</p>
                   <p className="text-xs mt-1">Format JPG/PNG, maks 5MB</p>
                 </div>
               )}

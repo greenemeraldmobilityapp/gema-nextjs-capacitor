@@ -25,6 +25,7 @@ interface AuthState {
   isLoading: boolean;
   setProfile: (profile: UserProfile | null) => void;
   setLoading: (isLoading: boolean) => void;
+  reset: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -32,4 +33,5 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
   setProfile: (profile) => set({ profile }),
   setLoading: (isLoading) => set({ isLoading }),
+  reset: () => set({ profile: null, isLoading: false }),
 }));

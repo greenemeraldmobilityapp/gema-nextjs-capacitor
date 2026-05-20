@@ -3,7 +3,8 @@
 import { Suspense, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, Star, MessageSquare, Loader2, AlertCircle, Camera, X } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, Star, MessageSquare, Loader2, AlertCircle, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useVendorReviews } from '@/lib/services/useReviews';
 import { useVendor } from '@/lib/services/useVendors';
@@ -131,7 +132,7 @@ function ReviewsContent() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {review.customer?.avatar_url ? (
-                        <img src={review.customer.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                        <Image src={review.customer.avatar_url} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover shrink-0" />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
                           {review.customer?.full_name?.charAt(0) || 'P'}

@@ -3,21 +3,26 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, IdCard, ScrollText, Clock, Loader2 } from 'lucide-react';
+import { ShieldCheck, IdCard, ScrollText, Clock, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useLatestSubmission } from '@/lib/services/useVerification';
+import { toast } from 'sonner';
 
 const steps = [
   { icon: IdCard, label: 'Verifikasi KTP', desc: 'Upload foto KTP dan isi data diri' },
   { icon: ScrollText, label: 'Sertifikat Profesi', desc: 'Tambahkan sertifikat keahlian (opsional)' },
-  { icon: Clock, label: 'Review', desc: 'Tim GEMA akan mereview dokumen 1-3 hari' },
+  { icon: Clock, label: 'Peninjauan', desc: 'Tim GEMA akan meninjau dokumen 1-3 hari' },
 ];
 
 export default function VerificationIntroPage() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
-  const { data: submission, isLoading: checking } = useLatestSubmission(profile?.id);
+  const { data: submission, isLoading: checking, error } = useLatestSubmission(profile?.id);
+
+  useEffect(() => {
+    if (error) toast.error(error instanceof Error ? error.message : 'Gagal memuat data verifikasi');
+  }, [error]);
 
   useEffect(() => {
     if (checking) return;
@@ -35,6 +40,15 @@ export default function VerificationIntroPage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-stone-50">
         <Loader2 size={24} className="animate-spin text-stone-400" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 text-red-400">
+        <AlertCircle size={48} className="mb-3 opacity-50" />
+        <p className="font-medium">Gagal memuat data verifikasi</p>
       </div>
     );
   }

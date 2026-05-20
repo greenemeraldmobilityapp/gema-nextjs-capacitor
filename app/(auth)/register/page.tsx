@@ -3,10 +3,11 @@
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, ArrowLeft, User as UserIcon, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, User as UserIcon, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
 const supabase = createClient();
 
@@ -26,15 +27,69 @@ function RegisterContent() {
     fullName: '',
     email: '',
     password: '',
+    confirmPassword: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case 'fullName':
+        if (!value.trim()) return 'Nama lengkap wajib diisi';
+        if (value.trim().length < 2) return 'Nama lengkap minimal 2 karakter';
+        return '';
+      case 'email':
+        if (!value.trim()) return 'Email wajib diisi';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) return 'Format email tidak valid';
+        return '';
+      case 'password':
+        if (!value) return 'Kata sandi wajib diisi';
+        if (value.length < 8) return 'Kata sandi minimal 8 karakter';
+        return '';
+      case 'confirmPassword':
+        if (!value) return 'Konfirmasi kata sandi wajib diisi';
+        if (value !== formData.password) return 'Kata sandi tidak cocok';
+        return '';
+      default:
+        return '';
+    }
+  };
+
+  const handleBlur = (field: string) => {
+    setFocusedField(null);
+    const value = formData[field as keyof typeof formData];
+    const err = validateField(field, value);
+    setFieldErrors((prev) => {
+      if (err) return { ...prev, [field]: err };
+      const { [field]: _, ...rest } = prev;
+      return rest;
+    });
+  };
+
+  const handleFocus = (field: string) => {
+    setFocusedField(field);
+    setFieldErrors((prev) => {
+      const { [field]: _, ...rest } = prev;
+      return rest;
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const errors: Record<string, string> = {};
+    for (const field of ['fullName', 'email', 'password', 'confirmPassword'] as const) {
+      const err = validateField(field, formData[field]);
+      if (err) errors[field] = err;
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
     setIsLoading(true);
     setError(null);
 
@@ -62,21 +117,9 @@ function RegisterContent() {
       }
 
       if (!authData.session) {
+        localStorage.setItem('gema_has_onboarded', 'true');
         router.push('/login?registered=success');
         return;
-      }
-
-      const { error: insertError } = await supabase.from('users').insert({
-        id: authData.user.id,
-        full_name: formData.fullName,
-        email: formData.email,
-        role: role as 'customer' | 'vendor',
-      });
-
-      if (insertError) {
-        if (!insertError.message?.includes('duplicate')) {
-          throw new Error(`Gagal menyimpan profil: ${insertError.message}`);
-        }
       }
 
       localStorage.setItem('gema_has_onboarded', 'true');
@@ -88,7 +131,7 @@ function RegisterContent() {
           bio: '',
         });
         if (vendorError && !vendorError.message?.includes('duplicate')) {
-          console.error('Gagal buat vendor profile:', vendorError);
+          if (process.env.NODE_ENV !== 'production') console.error('Gagal buat vendor profile:', vendorError);
         }
         router.push('/vendor/profile/edit?from=register');
       } else {
@@ -153,12 +196,17 @@ function RegisterContent() {
                   required
                   value={formData.fullName}
                   onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                  onFocus={() => setFocusedField('fullName')}
-                  onBlur={() => setFocusedField(null)}
+                  onFocus={() => handleFocus('fullName')}
+                  onBlur={() => handleBlur('fullName')}
                   placeholder="Masukkan nama lengkap"
                   className="pl-10 h-12 bg-transparent border-transparent focus:border-emerald-500 rounded-xl shadow-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
                 />
               </div>
+              {fieldErrors.fullName && (
+                <p className="flex items-center gap-1 text-xs text-red-500 mt-1">
+                  <AlertCircle size={12} /> {fieldErrors.fullName}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -172,13 +220,18 @@ function RegisterContent() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  onFocus={() => setFocusedField('email')}
-                  onBlur={() => setFocusedField(null)}
+                  onFocus={() => handleFocus('email')}
+                  onBlur={() => handleBlur('email')}
                   placeholder="nama@email.com"
                   autoComplete="email"
                   className="pl-10 h-12 bg-transparent border-transparent focus:border-emerald-500 rounded-xl shadow-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
                 />
               </div>
+              {fieldErrors.email && (
+                <p className="flex items-center gap-1 text-xs text-red-500 mt-1">
+                  <AlertCircle size={12} /> {fieldErrors.email}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -192,8 +245,8 @@ function RegisterContent() {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  onFocus={() => setFocusedField('password')}
-                  onBlur={() => setFocusedField(null)}
+                  onFocus={() => handleFocus('password')}
+                  onBlur={() => handleBlur('password')}
                   placeholder="Minimal 8 karakter"
                   autoComplete="new-password"
                   className="pl-10 pr-12 h-12 bg-transparent border-transparent focus:border-emerald-500 rounded-xl shadow-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
@@ -208,6 +261,45 @@ function RegisterContent() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {fieldErrors.password && (
+                <p className="flex items-center gap-1 text-xs text-red-500 mt-1">
+                  <AlertCircle size={12} /> {fieldErrors.password}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Konfirmasi Kata Sandi</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <Lock size={18} className={iconClass('confirmPassword')} />
+                </div>
+                <Input
+                  required
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  onFocus={() => handleFocus('confirmPassword')}
+                  onBlur={() => handleBlur('confirmPassword')}
+                  placeholder="Ulangi kata sandi"
+                  autoComplete="new-password"
+                  className="pl-10 pr-12 h-12 bg-transparent border-transparent focus:border-emerald-500 rounded-xl shadow-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(prev => !prev)}
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label={showConfirmPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {fieldErrors.confirmPassword && (
+                <p className="flex items-center gap-1 text-xs text-red-500 mt-1">
+                  <AlertCircle size={12} /> {fieldErrors.confirmPassword}
+                </p>
+              )}
             </div>
           </div>
 

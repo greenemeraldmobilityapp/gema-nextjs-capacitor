@@ -347,7 +347,7 @@ export default function WithdrawPage() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Penarikan</span>
-              <span className="font-bold text-gray-800">Rp {numericAmount.toLocaleString()}</span>
+              <span className="font-bold text-gray-800">Rp {numericAmount.toLocaleString('id-ID')}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Biaya Transfer</span>
@@ -404,7 +404,7 @@ export default function WithdrawPage() {
           ) : autoDisburse.isPending ? (
             <><Loader2 size={20} className="animate-spin mr-2" /> Mengirim dana...</>
           ) : (
-            <><ArrowUpRight size={20} /> Tarik Rp {numericAmount.toLocaleString()}</>
+            <><ArrowUpRight size={20} /> Tarik Rp {numericAmount.toLocaleString('id-ID')}</>
           )}
         </Button>
       </div>

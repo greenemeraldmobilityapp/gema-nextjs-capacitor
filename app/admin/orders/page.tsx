@@ -109,7 +109,7 @@ export default function AdminOrders() {
                 )}
               </div>
               <span className="text-sm font-bold text-emerald-600 shrink-0">
-                Rp {order.total_amount.toLocaleString()}
+                Rp {order.total_amount.toLocaleString('id-ID')}
               </span>
             </div>
 

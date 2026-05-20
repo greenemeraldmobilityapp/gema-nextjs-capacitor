@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Wallet, TrendingUp, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Wallet, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth';
 import { useVendorOrders } from '@/lib/services/useOrders';
 import { useWallet, useWalletTransactions } from '@/lib/services/useWallet';
@@ -15,6 +16,10 @@ export default function VendorEarningsPage() {
   const { data: orders, isLoading: ordersLoading, error: ordersError } = useVendorOrders(profile?.id);
   const { data: wallet, isLoading: walletLoading } = useWallet(profile?.id);
   const { data: transactions, isLoading: txLoading } = useWalletTransactions(wallet?.id);
+
+  useEffect(() => {
+    if (ordersError) toast.error('Gagal memuat data pendapatan');
+  }, [ordersError]);
 
   const now = new Date();
   const periodCutoff = new Date(now);
@@ -76,11 +81,11 @@ export default function VendorEarningsPage() {
                   Tarik Saldo <ArrowRight size={14} />
                 </button>
               </div>
-              <p className="font-heading text-3xl font-bold text-white mt-1">Rp {(wallet?.balance || 0).toLocaleString()}</p>
+              <p className="font-heading text-3xl font-bold text-white mt-1">Rp {(wallet?.balance || 0).toLocaleString('id-ID')}</p>
               <div className="flex gap-6 mt-4 pt-4 border-t border-white/20">
                 <div>
                   <p className="text-xs text-emerald-100">Total Pendapatan</p>
-                  <p className="font-heading text-lg font-bold text-white">Rp {totalEarnings.toLocaleString()}</p>
+                  <p className="font-heading text-lg font-bold text-white">Rp {totalEarnings.toLocaleString('id-ID')}</p>
                 </div>
                 <div>
                   <p className="text-xs text-emerald-100">Pesanan Selesai</p>
@@ -113,7 +118,7 @@ export default function VendorEarningsPage() {
                     <ArrowUpRight size={16} />
                     <span className="text-xs font-semibold">Pemasukan</span>
                   </div>
-                  <p className="font-heading text-lg font-bold text-stone-800">Rp {totalEarnings.toLocaleString()}</p>
+                  <p className="font-heading text-lg font-bold text-stone-800">Rp {totalEarnings.toLocaleString('id-ID')}</p>
                   <p className="text-xs text-stone-400 mt-0.5">Periode ini ({periodLabel})</p>
                 </div>
                 <div className="bg-gradient-to-br from-amber-50 to-white rounded-2xl p-4 shadow-sm">
@@ -121,7 +126,7 @@ export default function VendorEarningsPage() {
                     <ArrowDownRight size={16} />
                     <span className="text-xs font-semibold">Tertunda</span>
                   </div>
-                  <p className="font-heading text-lg font-bold text-stone-800">Rp {pendingAmount.toLocaleString()}</p>
+                  <p className="font-heading text-lg font-bold text-stone-800">Rp {pendingAmount.toLocaleString('id-ID')}</p>
                   <p className="text-xs text-stone-400 mt-0.5">Menunggu escrow</p>
                 </div>
               </div>
@@ -129,10 +134,10 @@ export default function VendorEarningsPage() {
                 <div className="bg-gradient-to-br from-red-50 to-white rounded-2xl p-4 mt-3 shadow-sm">
                   <div className="flex items-center gap-1.5 text-red-600 mb-1">
                     <ArrowUpRight size={16} />
-                    <span className="text-xs font-semibold">Refund</span>
+                    <span className="text-xs font-semibold">Pengembalian Dana</span>
                   </div>
-                  <p className="font-heading text-lg font-bold text-stone-800">-Rp {refundedAmount.toLocaleString()}</p>
-                  <p className="text-xs text-stone-400 mt-0.5">Total refund</p>
+                  <p className="font-heading text-lg font-bold text-stone-800">-Rp {refundedAmount.toLocaleString('id-ID')}</p>
+                  <p className="text-xs text-stone-400 mt-0.5">Total Pengembalian Dana</p>
                 </div>
               )}
             </div>
@@ -175,7 +180,7 @@ export default function VendorEarningsPage() {
                       'text-sm font-bold',
                       tx.amount > 0 ? 'text-emerald-600' : 'text-red-600'
                     )}>
-                      {tx.amount > 0 ? '+' : ''}Rp {Math.abs(tx.amount).toLocaleString()}
+                      {tx.amount > 0 ? '+' : ''}Rp {Math.abs(tx.amount).toLocaleString('id-ID')}
                     </span>
                   </div>
                 ))}

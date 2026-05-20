@@ -104,7 +104,7 @@ export default function VendorSettingsPage() {
                     </label>
                   </label>
                 ) : (
-                  <Link key={index} href={item.href} className="flex items-center justify-between p-4 cursor-pointer hover:bg-stone-50 transition-colors group">
+                  <Link key={index} href={item.href === '#' ? '' : item.href} onClick={(e) => { if (item.href === '#') { e.preventDefault(); toast.info('Segera hadir'); } }} className="flex items-center justify-between p-4 cursor-pointer hover:bg-stone-50 transition-colors group">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 shrink-0">
                         <item.icon size={20} />

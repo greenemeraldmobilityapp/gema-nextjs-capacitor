@@ -131,7 +131,7 @@ export default function AdminTransactions() {
                   'font-bold',
                   tx.amount > 0 ? 'text-emerald-600' : 'text-red-600'
                 )}>
-                  {tx.amount > 0 ? '+' : ''}Rp {Math.abs(tx.amount).toLocaleString()}
+                  {tx.amount > 0 ? '+' : ''}Rp {Math.abs(tx.amount).toLocaleString('id-ID')}
                 </span>
               </div>
             </div>

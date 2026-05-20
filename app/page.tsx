@@ -47,13 +47,28 @@ export default function SplashScreen() {
     }, dur.phase * 2);
     const t3 = setTimeout(() => setPhase('done'), dur.phase * 3);
     const t4 = setTimeout(async () => {
-      let target = localStorage.getItem('gema_has_onboarded') ? '/login' : '/onboarding';
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.user_metadata?.role === 'admin') {
-          target = '/login';
+      let target: string;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const user = session.user;
+          if (user?.user_metadata?.role === 'admin') {
+            target = '/admin/dashboard';
+          } else {
+            const { data: profile } = await supabase
+              .from('users')
+              .select('role')
+              .eq('id', user?.id)
+              .single();
+            if (profile?.role === 'vendor') target = '/vendor/dashboard';
+            else if (profile?.role === 'customer') target = '/customer/home';
+            else target = '/login';
+          }
+        } else {
+          target = localStorage.getItem('gema_has_onboarded') ? '/login' : '/onboarding';
         }
+      } catch {
+        target = '/login';
       }
       setExit(true);
       setTimeout(() => router.push(target), 400);
@@ -104,7 +119,7 @@ export default function SplashScreen() {
           <img
             src="/images/gema-logo.svg"
             alt="GEMA"
-            className="w-20 h-20 sm:w-24 sm:h-24 drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] motion-reduce:drop-shadow-none"
+            className="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] motion-reduce:drop-shadow-none"
           />
         </div>
 
@@ -170,7 +185,7 @@ export default function SplashScreen() {
             />
           </div>
 
-          <p className="text-white mt-4 text-sm sm:text-base font-light tracking-[0.25em] uppercase drop-shadow-sm">
+          <p className="text-white mt-4 text-sm sm:text-base font-medium tracking-[0.25em] uppercase drop-shadow-sm">
             Kepercayaan di Setiap Layanan
           </p>
 
@@ -208,8 +223,8 @@ export default function SplashScreen() {
                 key={i}
                 className="w-2.5 h-2.5 rounded-full"
                 style={{
-                  background: 'linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%)',
-                  boxShadow: '0 0 10px rgba(255,255,255,0.4), 0 0 20px rgba(52,211,153,0.3)',
+                  background: '#ffffff',
+                  boxShadow: '0 0 10px rgba(255,255,255,0.6), 0 0 20px rgba(255,255,255,0.2)',
                   animation: `elegant-bounce 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite`,
                   animationDelay: `${i * 0.15}s`,
                 }}

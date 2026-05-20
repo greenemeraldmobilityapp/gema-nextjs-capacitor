@@ -1,91 +1,43 @@
 'use client';
 
-import { ArrowLeft, Send, AlertCircle, Phone, Paperclip, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { MessageSquare, Search, Loader2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Suspense, useState, useRef, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useChatByOrder, useChatMessages, useRealtimeMessages, useSendMessage } from '@/lib/services/useChat';
-import { useOrder } from '@/lib/services/useOrders';
-import { useVendor } from '@/lib/services/useVendors';
 import { useAuthStore } from '@/store/auth';
+import { useCustomerChats } from '@/lib/services/useChat';
+import { cn } from '@/lib/utils';
 
-function formatDateSeparator(date: Date): string {
+function formatTime(dateStr: string) {
+  const d = new Date(dateStr);
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const msgDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (msgDate.getTime() === today.getTime()) return 'Hari ini';
-  if (msgDate.getTime() === yesterday.getTime()) return 'Kemarin';
-  return date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  if (diffDays === 0) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (diffDays === 1) return 'Kemarin';
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 }
 
-function shouldShowDateSep(messages: any[], index: number): boolean {
-  if (index === 0) return true;
-  const curr = new Date(messages[index].created_at);
-  const prev = new Date(messages[index - 1].created_at);
-  return curr.toDateString() !== prev.toDateString();
+function getInitials(name: string) {
+  return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
 }
 
-function processMessages(messages: any[], userId: string | undefined) {
-  return messages.map((msg, idx) => {
-    const prev = idx > 0 ? messages[idx - 1] : null;
-    const next = idx < messages.length - 1 ? messages[idx + 1] : null;
-    const isGrouped = prev && prev.sender_id === msg.sender_id;
-    const isLastInGroup = !next || next.sender_id !== msg.sender_id;
-    return { ...msg, isGrouped, isLastInGroup, showDateSep: shouldShowDateSep(messages, idx) };
-  });
-}
-
-export default function ChatPage() {
-  return (
-    <Suspense fallback={<div className="p-4 text-center text-gray-400">Memuat...</div>}>
-      <ChatContent />
-    </Suspense>
-  );
-}
-
-function ChatContent() {
-  const searchParams = useSearchParams();
-  const orderId = searchParams.get('order_id') || '';
+export default function CustomerChatPage() {
+  const [search, setSearch] = useState('');
   const profile = useAuthStore((s) => s.profile);
-  const { data: chat, isLoading: chatLoading } = useChatByOrder(orderId);
-  const { data: order } = useOrder(orderId);
-  const { data: vendor } = useVendor(order?.vendor_id || '');
-  const { data: messages, isLoading: msgLoading } = useChatMessages(chat?.id);
-  useRealtimeMessages(chat?.id);
-  const sendMessage = useSendMessage();
-  const [input, setInput] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const processedMessages = useMemo(
-    () => (messages ? processMessages(messages, profile?.id) : []),
-    [messages, profile?.id]
-  );
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const { data: chats, isLoading, error } = useCustomerChats(profile?.id);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (error) toast.error('Gagal memuat percakapan', { duration: 5000 });
+  }, [error]);
 
-  const handleSend = () => {
-    if (!input.trim() || !chat?.id || !profile) return;
-    sendMessage.mutate(
-      { chatId: chat.id, senderId: profile.id, message: input.trim() },
-      { onSuccess: () => setInput('') }
-    );
-  };
-
-  const vendorInitial = vendor?.users?.full_name?.charAt(0) || 'V';
-  const vendorName = vendor?.users?.full_name || 'Vendor';
-  const serviceName = order?.service_name || 'Chat Pesanan';
+  const filteredChats = (chats || []).filter((chat) => {
+    const vendorName = chat.order?.vendor?.users?.full_name || '';
+    const serviceName = chat.order?.service_name || '';
+    const q = search.toLowerCase();
+    return vendorName.toLowerCase().includes(q) || serviceName.toLowerCase().includes(q);
+  });
 
   return (
     <div
@@ -96,130 +48,81 @@ function ChatContent() {
         backgroundSize: '50px 50px',
       }}
     >
-      <div className="bg-emerald-600/90 backdrop-blur-md text-white px-4 pt-8 pb-4 rounded-b-[24px] sticky top-0 z-10 shadow-sm flex items-center gap-3 shrink-0">
-        <Link
-          href={`/customer/orders/detail?id=${orderId}`}
-          className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 active:scale-90 transition-all duration-200"
-        >
-          <ArrowLeft size={20} />
-        </Link>
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="relative shrink-0">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner">
-              {vendorInitial}
-            </div>
-            <div className="w-3 h-3 bg-emerald-300 rounded-full absolute -bottom-0.5 -right-0.5 border-2 border-emerald-600" />
+      <div className="bg-emerald-600/90 backdrop-blur-md px-4 pt-12 pb-4 rounded-b-[24px] shadow-sm">
+        <h1 className="font-heading text-xl font-bold text-white mb-4">Pesan</h1>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <Search size={18} className="text-emerald-200" />
           </div>
-          <div className="min-w-0">
-            <h2 className="font-heading font-bold leading-tight truncate">{vendorName}</h2>
-            <p className="text-xs text-emerald-200 font-medium truncate">{serviceName}</p>
-          </div>
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Cari vendor atau layanan..."
+            className="pl-10 h-12 bg-white/15 border-transparent rounded-xl text-sm text-white placeholder:text-emerald-200/70 focus:bg-white/20 focus:ring-2 focus:ring-emerald-400/40 transition-all"
+          />
         </div>
-        <button className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all duration-200 shrink-0">
-          <Phone size={18} />
-        </button>
       </div>
 
-      <div
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-1"
-        style={{ overscrollBehavior: 'contain' }}
-      >
-        {chatLoading || msgLoading ? (
-          <div className="space-y-4 pt-4">
-            <div className="flex justify-start">
-              <Skeleton className="h-12 w-48 rounded-[18px] rounded-bl-[6px]" />
-            </div>
-            <div className="flex justify-end">
-              <Skeleton className="h-16 w-56 rounded-[18px] rounded-br-[6px]" />
-            </div>
-            <div className="flex justify-start">
-              <Skeleton className="h-10 w-40 rounded-[18px] rounded-bl-[6px]" />
-            </div>
-            <div className="flex justify-end">
-              <Skeleton className="h-14 w-52 rounded-[18px] rounded-br-[6px]" />
-            </div>
+      <div className="flex-1 px-4 pt-2">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16 text-emerald-600">
+            <Loader2 size={24} className="animate-spin mr-2" />
+            <span>Memuat percakapan...</span>
           </div>
-        ) : !chat ? (
-          <div className="flex flex-col items-center py-16 text-gray-400">
+        ) : error ? (
+          <div className="flex flex-col items-center py-16 text-red-400">
             <AlertCircle size={48} className="mb-3 opacity-50" />
-            <p className="font-medium">Chat tidak tersedia</p>
+            <p className="font-medium">Gagal memuat percakapan</p>
           </div>
-        ) : !messages || messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <Send size={28} className="text-gray-300" />
+        ) : filteredChats.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+              <MessageSquare size={32} className="opacity-50 text-gray-300" />
             </div>
-            <p className="text-sm font-medium">Belum ada pesan</p>
-            <p className="text-xs text-gray-300 mt-1">Kirim pesan untuk memulai percakapan</p>
+            <p className="font-medium">
+              {search ? 'Percakapan tidak ditemukan' : 'Belum ada percakapan'}
+            </p>
+            <p className="text-sm mt-1">
+              {search ? 'Coba kata kunci lain' : 'Percakapan akan muncul setelah ada pesanan'}
+            </p>
           </div>
         ) : (
-          <>
-            {processedMessages.map((msg, idx) => (
-              <div key={msg.id}>
-                {msg.showDateSep && (
-                  <div className="flex items-center justify-center my-6 gap-3">
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
-                    <span className="text-xs font-medium text-gray-500 bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm">
-                      {formatDateSeparator(new Date(msg.created_at))}
-                    </span>
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
-                  </div>
-                )}
-                <div
-                  className={`flex ${msg.sender_id === profile?.id ? 'justify-end' : 'justify-start'} ${msg.isGrouped ? 'mt-0.5' : 'mt-3'}`}
-                  style={{ animation: `messageIn 0.25s ease-out ${idx * 0.025}s both` }}
+          <div className="divide-y divide-gray-100">
+            {filteredChats.map((chat) => {
+              const vendorName = chat.order?.vendor?.users?.full_name || 'Vendor';
+              const initials = getInitials(vendorName);
+              const serviceName = chat.order?.service_name || 'Chat Pesanan';
+
+              return (
+                <Link
+                  key={chat.id}
+                  href={`/customer/chat/detail?order_id=${chat.order_id}`}
+                  className="flex items-center gap-4 px-1 py-4 hover:bg-emerald-50/50 transition-colors rounded-2xl -mx-1 cursor-pointer"
                 >
-                  <div className="relative max-w-[80%]">
-                    <div className={`px-4 py-2.5 shadow-sm ${
-                      msg.sender_id === profile?.id
-                        ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-[18px] rounded-br-[6px]'
-                        : 'bg-white text-gray-800 rounded-[18px] rounded-bl-[6px] border border-gray-100'
-                    } ${!msg.isLastInGroup ? (msg.sender_id === profile?.id ? 'rounded-br-[18px]' : 'rounded-bl-[18px]') : ''}`}>
-                      <p className="text-sm leading-relaxed">{msg.message}</p>
-                      <div className="flex items-center gap-1 mt-1 justify-end">
-                        <span className={`text-[10px] ${msg.sender_id === profile?.id ? 'text-emerald-100' : 'text-gray-400'}`}>
-                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        {msg.sender_id === profile?.id && (
-                          <Check size={11} className="text-emerald-100 -ml-0.5" />
-                        )}
-                      </div>
+                  <div className="relative shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-sm flex items-center justify-center">
+                      <span className="text-sm font-bold text-white">{initials}</span>
+                    </div>
+                    <div className="w-3.5 h-3.5 bg-green-400 rounded-full absolute -bottom-0.5 -right-0.5 border-2 border-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-800 truncate">{vendorName}</h3>
+                      <span className="text-xs text-gray-400 shrink-0 ml-2">
+                        {chat.last_message ? formatTime(chat.last_message.created_at) : ''}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <p className="text-xs text-gray-400 truncate">
+                        {chat.last_message?.message || serviceName}
+                      </p>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </>
+                </Link>
+              );
+            })}
+          </div>
         )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <style>{`
-        @keyframes messageIn {
-          from { opacity: 0; transform: scale(0.92) translateY(8px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-      `}</style>
-
-      <div className="bg-white/80 backdrop-blur-md border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] p-4 pb-safe flex items-center gap-2 shrink-0">
-        <button className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all duration-200 shrink-0 active:scale-90">
-          <Paperclip size={20} />
-        </button>
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Ketik pesan..."
-          className="flex-1 rounded-full border-gray-200 bg-white/80 h-12 focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:shadow-inner transition-all duration-200"
-        />
-        <Button
-          onClick={handleSend}
-          disabled={!input.trim() || sendMessage.isPending || !chat?.id}
-          size="icon"
-          className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shrink-0 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-200 active:scale-90 disabled:opacity-50 disabled:shadow-none"
-        >
-          <Send size={20} />
-        </Button>
       </div>
     </div>
   );

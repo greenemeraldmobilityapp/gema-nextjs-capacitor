@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, Star, Shield, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Clock, Wallet, PlusCircle, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import { User, Star, Shield, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Clock, Wallet, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
@@ -89,7 +90,7 @@ export default function VendorProfilePage() {
           <div className="flex flex-col items-center">
             <div className="relative w-24 h-24 mx-auto mb-3">
               {vendor.avatar_url && !avatarError ? (
-                <img src={vendor.avatar_url} alt="Avatar" onError={() => setAvatarError(true)} className="w-24 h-24 rounded-full object-cover ring-4 ring-white/30 shadow-lg" />
+                <Image src={vendor.avatar_url} alt="Avatar" onError={() => setAvatarError(true)} fill className="rounded-full object-cover ring-4 ring-white/30 shadow-lg" />
               ) : (
                 <div className="w-24 h-24 rounded-full ring-4 ring-white/30 shadow-lg overflow-hidden flex items-center justify-center bg-gradient-to-br from-emerald-400 to-emerald-600">
                   <User size={40} className="text-white" />
@@ -132,7 +133,7 @@ export default function VendorProfilePage() {
                 </div>
                 <div>
                   <p className="text-emerald-100 text-xs">Saldo GemaPay</p>
-                  <p className="font-heading text-xl font-bold">Rp {(wallet?.balance || 0).toLocaleString()}</p>
+                  <p className="font-heading text-xl font-bold">Rp {(wallet?.balance || 0).toLocaleString('id-ID')}</p>
                 </div>
               </div>
               <div className="flex gap-2">

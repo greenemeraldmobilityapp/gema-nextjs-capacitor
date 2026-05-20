@@ -2,22 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Wrench, ShieldCheck, Wallet, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const slides = [
   {
-    icon: Wrench,
+    id: 1,
     title: ['Solusi Layanan Terpercaya', 'di Ujung Jari'],
     description: 'Temukan tukang ahli di dekat Anda — dari perbaikan rumah hingga kebutuhan sehari-hari, semua dalam satu aplikasi.',
   },
   {
-    icon: ShieldCheck,
+    id: 2,
     title: 'Vendor Terpilih, Kualitas Terjamin',
     description: 'Setiap Mitra melewati proses verifikasi ketat, sehingga Anda tidak perlu khawatir tentang kualitas dan keamanan.',
   },
   {
-    icon: Wallet,
+    id: 3,
     title: 'Bayar Setelah Selesai, Tanpa Risiko',
     description: 'Pembayaran ditahan sampai Anda puas. Dana baru dilepaskan ke Mitra setelah pekerjaan selesai dan Anda konfirmasi.',
   },
@@ -26,6 +26,9 @@ const slides = [
 export default function OnboardingPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const isLastSlide = currentSlide === slides.length - 1;
 
   useEffect(() => {
@@ -35,16 +38,18 @@ export default function OnboardingPage() {
 
   const handleNext = () => {
     if (isLastSlide) return;
+    setVideoReady(false);
     setCurrentSlide((prev) => prev + 1);
   };
 
   const handleBack = () => {
     if (currentSlide === 0) return;
+    setVideoReady(false);
     setCurrentSlide((prev) => prev - 1);
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white via-emerald-50/20 to-emerald-100/20 relative overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white via-emerald-50 to-emerald-100 relative overflow-hidden">
       {/* Decorative blur circles */}
       <div className="absolute -top-20 -right-20 w-60 h-60 bg-emerald-100/30 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-emerald-100/20 rounded-full blur-3xl pointer-events-none" />
@@ -76,13 +81,12 @@ export default function OnboardingPage() {
       {/* Slides */}
       <div className="flex-1 relative overflow-hidden w-full">
         {slides.map((slide, index) => {
-          const Icon = slide.icon;
           const isActive = index === currentSlide;
           const offset = index - currentSlide;
 
           return (
             <div
-              key={index}
+              key={slide.id}
               className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center transition-all duration-500 ease-out"
               style={{
                 transform: prefersReducedMotion
@@ -92,20 +96,60 @@ export default function OnboardingPage() {
                 transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
               }}
             >
-              {/* Icon with glow */}
+              {/* Video with glow */}
               <div className="relative mb-8">
                 {isActive && (
-                  <div className="absolute inset-0 w-32 h-32 bg-emerald-200/40 rounded-full blur-xl animate-pulse" />
+                  <div className="absolute inset-0 w-[min(60vw,18rem)] h-[min(80vw,24rem)] bg-emerald-600/30 rounded-2xl blur-2xl scale-50 animate-pulse" />
                 )}
-                <div className="relative w-32 h-32 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200/50 ring-4 ring-emerald-100/50">
-                  <Icon size={56} className="text-emerald-500" />
+                <div className="relative w-[min(60vw,18rem)] h-[min(80vw,24rem)] rounded-2xl overflow-hidden shadow-lg shadow-emerald-200/50 ring-4 ring-emerald-100/50 bg-gradient-to-br from-emerald-50 to-emerald-100">
+                  {isActive ? (
+                    <>
+                      <video
+                        key={slide.id}
+                        src={`/onboarding/video-${slide.id}.mp4`}
+                        autoPlay
+                        muted={isMuted}
+                        loop
+                        playsInline
+                        aria-label={typeof slide.title === 'string' ? slide.title : slide.title[0]}
+                        className={`w-full h-full object-cover transition-opacity duration-300 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
+                        style={{ objectPosition: 'center 10%' }}
+                        onCanPlay={() => setVideoReady(true)}
+                        onError={() => setVideoError(true)}
+                      />
+                      {!videoReady && !videoError && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+                        </div>
+                      )}
+                      {videoError && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-stone-400">
+                          <AlertCircle size={28} />
+                          <span className="text-xs font-medium">Video gagal dimuat</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setIsMuted((prev) => !prev)}
+                        className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors z-10 cursor-pointer"
+                        aria-label={isMuted ? 'Aktifkan suara' : 'Matikan suara'}
+                      >
+                        {isMuted ? (
+                          <VolumeX size={14} className="text-white" />
+                        ) : (
+                          <Volume2 size={14} className="text-white" />
+                        )}
+                      </button>
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-emerald-50 to-emerald-100" />
+                  )}
                 </div>
               </div>
 
               {/* Title */}
               {Array.isArray(slide.title) ? (
                 <h1
-                  className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 mb-4 px-2 leading-tight"
+                  className="font-heading text-2xl sm:text-3xl font-bold text-emerald-600 mb-4 px-2 leading-tight"
                   style={{ textShadow: '0 2px 4px rgba(0,0,0,0.04)' }}
                 >
                   {slide.title.map((line, i) => (
@@ -114,12 +158,15 @@ export default function OnboardingPage() {
                 </h1>
               ) : (
                 <h1
-                  className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 mb-4 line-clamp-2 px-2"
+                  className="font-heading text-2xl sm:text-3xl font-bold text-emerald-600 mb-4 line-clamp-2 px-2"
                   style={{ textShadow: '0 2px 4px rgba(0,0,0,0.04)' }}
                 >
                   {slide.title}
                 </h1>
               )}
+
+              {/* Accent line */}
+              <div className="w-12 h-1 bg-gradient-to-r from-emerald-500 to-emerald-300 mx-auto my-3 rounded-full" />
 
               {/* Description */}
               <p className="text-base sm:text-sm text-gray-500 max-w-sm leading-relaxed px-4">

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Search as SearchIcon, MapPin, Star, SlidersHorizontal, X, ChevronDown, MapPinned, GripHorizontal, RotateCcw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -176,7 +177,7 @@ function SearchContent() {
                 <Card className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-gray-100 shadow-sm">
                   <CardContent className="p-4 flex gap-4">
                     {vendor.avatar_url ? (
-                      <img src={vendor.avatar_url} alt={vendor.full_name || ''} className="w-16 h-16 rounded-xl shrink-0 object-cover" />
+                      <Image src={vendor.avatar_url} alt={vendor.full_name || ''} width={64} height={64} className="w-16 h-16 rounded-xl shrink-0 object-cover" />
                     ) : (
                       <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-xl shrink-0 flex items-center justify-center font-bold text-xl">
                         {vendor.full_name?.charAt(0) || '?'}

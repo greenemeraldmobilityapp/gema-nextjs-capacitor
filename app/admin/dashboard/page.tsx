@@ -20,7 +20,7 @@ export default function AdminDashboard() {
     { icon: Users, label: 'Total User', value: stats?.totalUsers ?? 0, color: 'bg-blue-100 text-blue-600', href: '/admin/vendors' },
     { icon: Store, label: 'Vendor', value: stats?.totalVendors ?? 0, color: 'bg-emerald-100 text-emerald-600', href: '/admin/vendors' },
     { icon: ShoppingCart, label: 'Pesanan', value: stats?.totalOrders ?? 0, color: 'bg-purple-100 text-purple-600', href: '/admin/orders' },
-    { icon: TrendingUp, label: 'Pendapatan', value: `Rp${(stats?.totalRevenue ?? 0).toLocaleString()}`, color: 'bg-amber-100 text-amber-600', href: '/admin/orders' },
+    { icon: TrendingUp, label: 'Pendapatan', value: `Rp${(stats?.totalRevenue ?? 0).toLocaleString('id-ID')}`, color: 'bg-amber-100 text-amber-600', href: '/admin/orders' },
     { icon: Clock, label: 'Verifikasi Tertunda', value: stats?.pendingVerifications ?? 0, color: 'bg-orange-100 text-orange-600', href: '/admin/vendors' },
     { icon: Scale, label: 'Sengketa Aktif', value: stats?.openDisputes ?? 0, color: 'bg-red-100 text-red-600', href: '/admin/disputes' },
   ];

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Star, MessageSquare, Loader2, AlertCircle, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/store/auth';
 import { useVendorReviews } from '@/lib/services/useReviews';
@@ -14,6 +15,10 @@ export default function VendorReviewsPage() {
   const { data: reviews, isLoading, error } = useVendorReviews(profile?.id);
   const [filter, setFilter] = useState('Semua');
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (error) toast.error(error instanceof Error ? error.message : 'Gagal memuat ulasan');
+  }, [error]);
 
   const filteredReviews = useMemo(() => {
     if (!reviews) return [];
@@ -43,7 +48,7 @@ export default function VendorReviewsPage() {
         <Link href="/vendor/dashboard" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-700 hover:bg-emerald-800 transition-colors">
           <ArrowLeft size={20} />
         </Link>
-        <span className="font-heading font-bold text-lg">Ulasan & Feedback</span>
+        <span className="font-heading font-bold text-lg">Ulasan & Umpan Balik</span>
       </div>
 
       <div className="p-4 space-y-4">
