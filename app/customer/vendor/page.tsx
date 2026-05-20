@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, Star, MapPin, ShieldCheck, Clock, Loader2, MessageSquare, Crown, Briefcase, Calendar, AlertCircle, Search } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, ShieldCheck, Clock, Loader2, MessageSquare, Crown, Briefcase, Calendar, AlertCircle, Search, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,7 +11,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useVendor, useVendorActiveServices, useVendorCompletedProjects, haversineDistance } from '@/lib/services/useVendors';
 import { useVendorReviews } from '@/lib/services/useReviews';
 import { useLocationStore } from '@/store/location';
-import ImageLightbox from '@/components/shared/ImageLightbox';
 
 export default function VendorDetailPage() {
   return (
@@ -51,8 +50,6 @@ function VendorDetailContent() {
   const avgRating = reviews && reviews.length > 0
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0;
-
-  const [lightbox, setLightbox] = useState<{ open: boolean; images: { image_url: string }[]; index: number }>({ open: false, images: [], index: 0 });
 
   if (vendorLoading) {
     return (
@@ -235,94 +232,51 @@ function VendorDetailContent() {
           {!servicesLoading && services && services.length > 0 && (
             <div className="space-y-3 pb-24">
               {services.map((service) => (
-                <Card key={service.id} className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-gray-100 shadow-sm">
-                  <CardContent className="p-0">
-                    {service.service_images && service.service_images.length > 0 ? (
-                      <div className="relative w-full h-44 bg-gray-100 overflow-x-auto snap-x snap-mandatory scrollbar-none select-none"
-                        onScroll={(e) => {
-                          const el = e.currentTarget;
-                          const idx = Math.round(el.scrollLeft / el.clientWidth);
-                          const dotIdx = el.querySelector(`[data-dot-idx="${idx}"]`);
-                          if (dotIdx) {
-                            el.querySelectorAll('[data-dot]').forEach((d) => d.classList.remove('bg-white', 'scale-110'));
-                            dotIdx.classList.add('bg-white', 'scale-110');
-                            dotIdx.classList.remove('bg-white/50');
-                          }
-                        }}
-                      >
-                        {service.service_images.map((img, idx) => (
-                          <div
-                            key={idx}
-                            className="snap-center shrink-0 w-full h-full inline-flex cursor-pointer"
-                            onClick={() => setLightbox({ open: true, images: service.service_images || [], index: idx })}
-                          >
+                <Link key={service.id} href={`/customer/service/detail?id=${service.id}`}>
+                  <Card className="rounded-[24px] overflow-hidden cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 border border-gray-100 shadow-sm">
+                    <CardContent className="p-0">
+                      <div className="flex p-3 gap-3">
+                        <div className="w-20 h-20 rounded-[16px] overflow-hidden shrink-0 bg-gray-100">
+                          {service.service_images?.[0] ? (
                             <Image
-                              src={img.image_url}
-                              alt={`${service.title} ${idx + 1}`}
-                              fill
-                              sizes="100vw"
-                              className="object-cover"
-                              draggable={false}
+                              src={service.service_images[0].image_url}
+                              alt={service.title}
+                              width={80}
+                              height={80}
+                              className="w-full h-full object-cover"
                             />
-                          </div>
-                        ))}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                        {service.service_images.length > 1 && (
-                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                            {service.service_images.map((_, idx) => (
-                              <button
-                                key={idx}
-                                data-dot={true}
-                                data-dot-idx={idx}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const parent = e.currentTarget.closest('.snap-x');
-                                  if (parent) {
-                                    parent.scrollTo({ left: idx * parent.clientWidth, behavior: 'smooth' });
-                                  }
-                                }}
-                                className={`w-1.5 h-1.5 rounded-full transition-all ${
-                                  idx === 0 ? 'bg-white scale-110' : 'bg-white/50'
-                                }`}
-                                aria-label={`Gambar ${idx + 1}`}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ) : null}
-
-                    <Link href={`/customer/booking?vendorId=${id}&serviceId=${service.id}`} className="block">
-                      <div className="p-4 space-y-3">
-                        <div className="flex justify-between items-start gap-3">
-                          <h3 className="font-bold text-gray-900 leading-tight">{service.title}</h3>
-                          <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full shrink-0">{service.category}</span>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          {service.duration_minutes ? (
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 rounded-lg px-2.5 py-1.5">
-                              <Clock size={14} className="text-gray-400" />
-                              <span>{service.duration_minutes < 60 ? `${service.duration_minutes} menit` : service.duration_minutes < 1440 ? `${Math.round(service.duration_minutes / 60)} jam` : `${Math.round(service.duration_minutes / 1440)} hari`}</span>
-                            </div>
                           ) : (
-                            <div />
+                            <div className="w-full h-full flex items-center justify-center bg-emerald-50">
+                              <Briefcase size={24} className="text-emerald-300" />
+                            </div>
                           )}
-                          <span className="text-lg font-bold text-emerald-600">{formatPrice(service.price)}</span>
                         </div>
-
-                        {service.description && (
-                          <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">{service.description}</p>
-                        )}
-
-                        <div className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 flex items-center justify-center gap-2 text-white font-semibold text-sm transition-colors">
-                          Pesan Sekarang
-                          <ArrowRight size={16} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2">{service.title}</h3>
+                            <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">{service.category}</span>
+                          </div>
+                          {service.duration_minutes && (
+                            <div className="flex items-center gap-1 mt-1.5">
+                              <Clock size={12} className="text-gray-400 shrink-0" />
+                              <span className="text-xs text-gray-500">
+                                {service.duration_minutes < 60 ? `${service.duration_minutes} menit` : service.duration_minutes < 1440 ? `${Math.round(service.duration_minutes / 60)} jam` : `${Math.round(service.duration_minutes / 1440)} hari`}
+                              </span>
+                            </div>
+                          )}
+                          <p className="text-sm font-bold text-emerald-600 mt-1.5">{formatPrice(service.price)}</p>
+                          {service.description && (
+                            <p className="text-xs text-gray-500 line-clamp-1 mt-1">{service.description}</p>
+                          )}
                         </div>
                       </div>
-                    </Link>
-                  </CardContent>
-                </Card>
+                      <div className="px-3 pb-3 flex items-center justify-end gap-1 text-xs font-semibold text-emerald-600">
+                        <span>Lihat Detail</span>
+                        <ChevronRight size={14} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           )}
@@ -502,14 +456,6 @@ function VendorDetailContent() {
           )}
         </div>
       </div>
-
-      {lightbox.open && (
-        <ImageLightbox
-          images={lightbox.images}
-          initialIndex={lightbox.index}
-          onClose={() => setLightbox({ open: false, images: [], index: 0 })}
-        />
-      )}
 
       <div className="fixed bottom-16 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">

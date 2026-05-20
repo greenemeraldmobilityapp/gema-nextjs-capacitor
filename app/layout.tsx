@@ -8,6 +8,7 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { NotificationInit } from "@/components/shared/NotificationInit";
+import { AndroidBackHandler } from "@/components/shared/AndroidBackHandler";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -57,6 +58,7 @@ export default function RootLayout({
         </QueryProvider>
         <Toaster />
         <NotificationInit />
+        <AndroidBackHandler />
       </body>
     </html>
   );

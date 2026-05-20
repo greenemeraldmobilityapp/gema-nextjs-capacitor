@@ -42,6 +42,12 @@ next-env.d.ts
 # build artifacts
 /releases/
 
+# capacitor / android build artifacts
+android/app/build/
+android/.gradle/
+android/captures/
+android/.externalNativeBuild/
+
 # python cache
 __pycache__/
 *.pyc
