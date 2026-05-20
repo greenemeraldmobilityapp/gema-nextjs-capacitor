@@ -37,14 +37,14 @@ export function useServiceDetail(serviceId: string | undefined) {
         .select(`
           *,
           service_images(image_url, sort_order),
-          vendor_profiles!inner(
+          vendor_profiles(
             user_id,
             specialization,
             rating,
             total_jobs,
             is_verified,
             avatar_url,
-            users:user_id(full_name, avatar_url)
+            users!vendor_profiles_user_id_users_id_fk(full_name, avatar_url)
           )
         `)
         .eq('id', serviceId)

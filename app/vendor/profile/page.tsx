@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { User, Star, Shield, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Clock, Wallet, MapPin, ArrowLeftRight } from 'lucide-react';
+import { User, Star, Shield, ShieldCheck, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Clock, Wallet, MapPin, ArrowLeftRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
@@ -39,22 +39,8 @@ export default function VendorProfilePage() {
     router.push('/login');
   };
 
-  const verificationItem = (() => {
-    const vs = vendor?.verification_status;
-    if (!vs || vs === 'approved') return null;
-
-    const items: Record<string, { icon: typeof Shield; label: string; subtitle: string; href: string }> = {
-      none: { icon: Shield, label: 'Verifikasi Akun', subtitle: 'Lengkapi verifikasi untuk tingkatkan kepercayaan', href: '/vendor/verification' },
-      pending: { icon: Clock, label: 'Verifikasi Diproses', subtitle: 'Dokumen sedang direview tim GEMA', href: '/vendor/verification/review' },
-      rejected: { icon: AlertCircle, label: 'Verifikasi Ditolak', subtitle: vendor.rejection_reason || 'Ajukan ulang verifikasi', href: '/vendor/verification/review' },
-      revoked: { icon: Shield, label: 'Verifikasi Dicabut', subtitle: vendor.rejection_reason || 'Ajukan ulang verifikasi', href: '/vendor/verification/review' },
-    };
-
-    return items[vs] || null;
-  })();
-
   const menuItems = [
-    ...(verificationItem ? [verificationItem] : []),
+    { icon: ShieldCheck, label: 'Verifikasi KYC & Sertifikat', subtitle: 'Verifikasi akun Anda', href: '/vendor/verification', badge: true },
     { icon: User, label: 'Edit Profil', subtitle: 'Nama, spesialisasi, bio', href: '/vendor/profile/edit' },
     { icon: Briefcase, label: 'Portofolio', subtitle: 'Daftar layanan & karya', href: '/vendor/portfolio' },
     { icon: MapPin, label: 'Alamat & Area Layanan', subtitle: 'Lokasi & koordinat', href: '/vendor/profile/address' },
@@ -159,24 +145,55 @@ export default function VendorProfilePage() {
 
         <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
           <CardContent className="p-0">
-            {menuItems.map((item, index) => (
-              <Link
-                key={index}
-                href={item.href}
-                className="flex items-center gap-4 p-4 hover:bg-stone-50 transition-all duration-200 group"
-              >
-                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 group-hover:scale-110 transition-transform duration-200">
-                  <item.icon size={20} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-stone-900 text-sm group-hover:text-emerald-600 transition-colors duration-200">{item.label}</p>
-                  {item.subtitle && (
-                    <p className="text-xs text-stone-400 mt-0.5">{item.subtitle}</p>
+            {menuItems.map((item, index) => {
+              const isKyc = item.label === 'Verifikasi KYC & Sertifikat';
+              const vs = vendor?.verification_status;
+
+              const kycBadge = (() => {
+                if (!isKyc) return null;
+                if (vs === 'approved' && vendor?.is_verified) return { text: 'Terverifikasi', cls: 'text-emerald-600 bg-emerald-50' };
+                if (vs === 'pending') return { text: 'Diproses', cls: 'text-amber-600 bg-amber-50' };
+                if (vs === 'rejected') return { text: 'Ditolak', cls: 'text-red-600 bg-red-50' };
+                if (vs === 'revoked') return { text: 'Dicabut', cls: 'text-stone-500 bg-stone-100' };
+                return { text: 'Mulai', cls: 'text-emerald-600 bg-emerald-50' };
+              })();
+
+              const kycHref = isKyc
+                ? !vs || vs === 'none' ? '/vendor/verification' : '/vendor/verification/review'
+                : item.href;
+
+              return (
+                <Link
+                  key={index}
+                  href={kycHref}
+                  className="flex items-center gap-4 p-4 hover:bg-stone-50 transition-all duration-200 group"
+                >
+                  <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center transition-transform duration-200 group-hover:scale-110 ${
+                    isKyc
+                      ? vs === 'pending' ? 'bg-amber-50 text-amber-600'
+                        : vs === 'rejected' ? 'bg-red-50 text-red-500'
+                        : vs === 'revoked' ? 'bg-stone-100 text-stone-500'
+                        : 'bg-emerald-50 text-emerald-600'
+                      : 'bg-emerald-50 text-emerald-600'
+                  }`}>
+                    <item.icon size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-stone-900 text-sm group-hover:text-emerald-600 transition-colors duration-200">{item.label}</p>
+                    {item.subtitle && (
+                      <p className="text-xs text-stone-400 mt-0.5">{item.subtitle}</p>
+                    )}
+                  </div>
+                  {kycBadge ? (
+                    <div className={`${kycBadge.cls} text-[11px] font-bold px-3 py-1 rounded-full shrink-0`}>
+                      {kycBadge.text}
+                    </div>
+                  ) : (
+                    <ChevronRight size={18} className="text-stone-300 shrink-0 group-hover:translate-x-0.5 transition-transform duration-200" />
                   )}
-                </div>
-                <ChevronRight size={18} className="text-stone-300 shrink-0 group-hover:translate-x-0.5 transition-transform duration-200" />
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
             <div className="h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent mx-4" />
           </CardContent>
         </Card>

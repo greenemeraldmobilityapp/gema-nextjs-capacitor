@@ -26,14 +26,13 @@ export default function VerificationIntroPage() {
 
   useEffect(() => {
     if (checking) return;
-
     if (!submission) return;
 
-    if (submission.status === 'approved') {
-      router.replace('/vendor/dashboard');
-    } else {
-      router.replace('/vendor/verification/review');
-    }
+    router.replace(
+      submission.status === 'approved'
+        ? '/vendor/dashboard'
+        : '/vendor/verification/review'
+    );
   }, [submission, checking, router]);
 
   if (checking) {

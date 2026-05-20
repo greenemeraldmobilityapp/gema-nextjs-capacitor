@@ -32,6 +32,11 @@ const jost = Jost({
 export const metadata: Metadata = {
   title: "GEMA",
   description: "Green Emerald Mobility Apps",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icons/icon-192.webp",
+    apple: "/icons/icon-192.webp",
+  },
 };
 
 export const viewport = {

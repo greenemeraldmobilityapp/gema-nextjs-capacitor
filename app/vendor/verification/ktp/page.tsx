@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, Upload, Camera, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload, Camera, Loader2, Check, User, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/lib/supabase/client';
@@ -23,12 +23,17 @@ async function fileToBuffer(file: File): Promise<{ buffer: ArrayBuffer; contentT
   });
 }
 
+type Step = 'ktp' | 'selfie' | 'selfie_ktp' | 'form';
+
 export default function KtpVerificationPage() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
   const submitKtp = useSubmitKtp();
   const ktpInputRef = useRef<HTMLInputElement>(null);
   const selfieInputRef = useRef<HTMLInputElement>(null);
+  const selfieKtpInputRef = useRef<HTMLInputElement>(null);
+
+  const [step, setStep] = useState<Step>('ktp');
   const [formData, setFormData] = useState({ nik: '', name: '' });
 
   const [ktpFile, setKtpFile] = useState<File | null>(null);
@@ -37,42 +42,56 @@ export default function KtpVerificationPage() {
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
 
-  const [saving, setSaving] = useState(false);
+  const [selfieKtpFile, setSelfieKtpFile] = useState<File | null>(null);
+  const [selfieKtpPreview, setSelfieKtpPreview] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
       if (ktpPreview) URL.revokeObjectURL(ktpPreview);
       if (selfiePreview) URL.revokeObjectURL(selfiePreview);
+      if (selfieKtpPreview) URL.revokeObjectURL(selfieKtpPreview);
     };
-  }, [ktpPreview, selfiePreview]);
+  }, [ktpPreview, selfiePreview, selfieKtpPreview]);
 
-  const handleKtpFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setFile: (f: File | null) => void,
+    setPreview: (p: string | null) => void,
+    nextStep: Step,
+  ) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (ktpPreview) URL.revokeObjectURL(ktpPreview);
-    setKtpFile(f);
-    setKtpPreview(URL.createObjectURL(f));
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    setStep(nextStep);
   };
 
-  const handleSelfieFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (selfiePreview) URL.revokeObjectURL(selfiePreview);
-    setSelfieFile(f);
-    setSelfiePreview(URL.createObjectURL(f));
+  const stepTitle = {
+    ktp: 'Foto KTP',
+    selfie: 'Foto Selfie',
+    selfie_ktp: 'Selfie + Pegang KTP',
+    form: 'Data Diri',
   };
+
+  const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile?.id) {
-      toast.warning('Silakan login terlebih dahulu', { duration: 4000 });
+      toast.warning('Silakan login terlebih dahulu');
       return;
     }
+    if (!ktpFile || !selfieFile || !selfieKtpFile || !formData.nik || !formData.name) {
+      toast.warning('Lengkapi semua data terlebih dahulu');
+      return;
+    }
+
     setSaving(true);
-    const submitPromise = (async () => {
+
+    try {
       const userId = profile.id;
 
-      const ktpData = await fileToBuffer(ktpFile!);
+      const ktpData = await fileToBuffer(ktpFile);
       const safeKtpName = ktpData.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
       const ktpPath = `${userId}/ktp/${Date.now()}_${safeKtpName}`;
       const { error: ktpUploadError } = await supabase.storage
@@ -83,7 +102,7 @@ export default function KtpVerificationPage() {
       const ktpUrl = ktpUrlData?.publicUrl || '';
       if (!ktpUrl) throw new Error('Gagal mendapatkan URL file KTP');
 
-      const selfieData = await fileToBuffer(selfieFile!);
+      const selfieData = await fileToBuffer(selfieFile);
       const safeSelfieName = selfieData.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
       const selfiePath = `${userId}/selfie/${Date.now()}_${safeSelfieName}`;
       const { error: selfieUploadError } = await supabase.storage
@@ -94,49 +113,75 @@ export default function KtpVerificationPage() {
       const selfieUrl = selfieUrlData?.publicUrl || '';
       if (!selfieUrl) throw new Error('Gagal mendapatkan URL file selfie');
 
+      const selfieKtpData = await fileToBuffer(selfieKtpFile);
+      const safeSelfieKtpName = selfieKtpData.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const selfieKtpPath = `${userId}/selfie_ktp/${Date.now()}_${safeSelfieKtpName}`;
+      const { error: selfieKtpUploadError } = await supabase.storage
+        .from('verification')
+        .upload(selfieKtpPath, selfieKtpData.buffer, { contentType: selfieKtpData.contentType });
+      if (selfieKtpUploadError) throw new Error(selfieKtpUploadError.message || 'Gagal upload foto selfie+KTP');
+      const { data: selfieKtpUrlData } = supabase.storage.from('verification').getPublicUrl(selfieKtpPath);
+      const selfieKtpUrl = selfieKtpUrlData?.publicUrl || '';
+      if (!selfieKtpUrl) throw new Error('Gagal mendapatkan URL file selfie+KTP');
+
       await submitKtp.mutateAsync({
         userId: profile.id,
         nik: formData.nik,
         ktpName: formData.name,
         ktpUrl: ktpUrl,
-        selfieUrl: selfieUrl,
+        selfieUrl: selfieKtpUrl,
+        selfieFaceUrl: selfieUrl,
       });
 
-      cleanupOldFiles(userId, 'ktp', ktpPath.split('/').pop()!);
-      cleanupOldFiles(userId, 'selfie', selfiePath.split('/').pop()!);
+      toast.success('Dokumen berhasil disimpan');
 
       router.push('/vendor/verification/certification');
-    })();
-
-    toast.promise(submitPromise, {
-      loading: 'Menyimpan dokumen...',
-      success: 'Dokumen berhasil disimpan',
-      error: (err) => err instanceof Error ? err.message : 'Gagal upload dokumen',
-      duration: 5000,
-    });
-
-    try {
-      await submitPromise;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal upload dokumen');
     } finally {
       setSaving(false);
     }
   };
 
-  async function cleanupOldFiles(userId: string, folder: string, keepFileName: string) {
-    try {
-      const { data: files } = await supabase.storage
-        .from('verification')
-        .list(`${userId}/${folder}`);
-      if (!files?.length) return;
-      const toDelete = files
-        .filter((f) => f.name !== keepFileName)
-        .map((f) => `${userId}/${folder}/${f.name}`);
-      if (toDelete.length > 0) {
-        await supabase.storage.from('verification').remove(toDelete);
-      }
-    } catch {
-    }
-  }
+  const renderUploadZone = (
+    ref: React.RefObject<HTMLInputElement | null>,
+    preview: string | null,
+    label: string,
+    hint: string,
+    icon: typeof Camera | typeof Upload,
+    capture: string,
+    nextStep: Step,
+    setFile: (f: File | null) => void,
+    setPreview: (p: string | null) => void,
+  ) => {
+    const Icon = icon;
+    return (
+      <div>
+        <div
+          onClick={() => ref.current?.click()}
+          className="relative flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50 overflow-hidden"
+        >
+          {preview ? (
+            <Image src={preview} alt={label} fill className="object-contain" />
+          ) : (
+            <div className="flex flex-col items-center text-stone-400">
+              <Icon size={32} className="mb-2" />
+              <p className="text-sm font-medium">{label}</p>
+              <p className="text-xs mt-1">{hint}</p>
+            </div>
+          )}
+        </div>
+        <input
+          ref={ref as React.Ref<HTMLInputElement>}
+          type="file"
+          accept="image/*"
+          capture={capture as 'environment' | 'user'}
+          onChange={(e) => handleFile(e, setFile, setPreview, nextStep)}
+          className="hidden"
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">
@@ -145,84 +190,125 @@ export default function KtpVerificationPage() {
           <Link href="/vendor/verification" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="font-heading text-lg font-bold text-stone-800">Verifikasi Identitas</h1>
+          <div className="flex-1">
+            <h1 className="font-heading text-lg font-bold text-stone-800">{stepTitle[step]}</h1>
+          </div>
+        </div>
+
+        <div className="flex gap-1.5 mt-4 px-1">
+          {(['ktp', 'selfie', 'selfie_ktp', 'form'] as Step[]).map((s, i) => {
+            const idx = ['ktp', 'selfie', 'selfie_ktp', 'form'].indexOf(step);
+            return (
+              <div
+                key={s}
+                className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+                  i <= idx ? 'bg-emerald-500' : 'bg-stone-200'
+                }`}
+              />
+            );
+          })}
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex-1 p-4 space-y-4">
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant space-y-5">
-          <div>
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2 block">Foto KTP</label>
-            <div
-              onClick={() => ktpInputRef.current?.click()}
-              className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50 overflow-hidden"
-            >
-              {ktpPreview ? (
-                <Image src={ktpPreview} alt="KTP preview" fill className="object-contain" />
-              ) : (
-                <div className="flex flex-col items-center text-stone-400">
-                  <Upload size={32} className="mb-2" />
-                  <p className="text-sm font-medium">Upload foto KTP</p>
-                  <p className="text-xs mt-1">Format JPG/PNG, maks 5MB</p>
-                </div>
-              )}
-            </div>
-            <input ref={ktpInputRef} type="file" accept="image/*" capture="environment" onChange={handleKtpFile} className="hidden" />
-          </div>
+          {step === 'ktp' && renderUploadZone(
+            ktpInputRef, ktpPreview, 'Ambil foto KTP', 'Pastikan KTP jelas & terbaca', Upload, 'environment',
+            'selfie', setKtpFile, setKtpPreview,
+          )}
 
-          <div>
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2 block">
-              Selfie + Pegang KTP
-            </label>
-            <div
-              onClick={() => selfieInputRef.current?.click()}
-              className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50 overflow-hidden"
-            >
-              {selfiePreview ? (
-                <Image src={selfiePreview} alt="Selfie preview" fill className="object-contain" />
-              ) : (
-                <div className="flex flex-col items-center text-stone-400">
-                  <Camera size={32} className="mb-2" />
-                  <p className="text-sm font-medium">Ambil foto selfie</p>
-                  <p className="text-xs mt-1">Pastikan KTP terlihat jelas di foto</p>
-                </div>
-              )}
-            </div>
-            <input ref={selfieInputRef} type="file" accept="image/*" capture="user" onChange={handleSelfieFile} className="hidden" />
-          </div>
+          {step === 'selfie' && renderUploadZone(
+            selfieInputRef, selfiePreview, 'Ambil foto selfie', 'Foto wajah Anda saja', Camera, 'user',
+            'selfie_ktp', setSelfieFile, setSelfiePreview,
+          )}
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">NIK</label>
-            <Input
-              required
-              value={formData.nik}
-              onChange={(e) => setFormData(p => ({ ...p, nik: e.target.value }))}
-              placeholder="16 digit NIK"
-              maxLength={16}
-              className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Nama Sesuai KTP</label>
-            <Input
-              required
-              value={formData.name}
-              onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
-              placeholder="Nama lengkap"
-              className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
-            />
-          </div>
+          {step === 'selfie_ktp' && renderUploadZone(
+            selfieKtpInputRef, selfieKtpPreview, 'Selfie + Pegang KTP', 'Pastikan KTP terlihat jelas di foto', Camera, 'user',
+            'form', setSelfieKtpFile, setSelfieKtpPreview,
+          )}
+
+          {step === 'form' && (
+            <>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { img: ktpPreview, label: 'KTP' },
+                  { img: selfiePreview, label: 'Selfie' },
+                  { img: selfieKtpPreview, label: 'Selfie+KTP' },
+                ].map((item, i) => (
+                  <div key={i} className="space-y-1.5">
+                    <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
+                      {item.img ? (
+                        <Image src={item.img} alt={item.label} fill className="object-cover" />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-stone-300">
+                          <User size={24} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center gap-1">
+                      <Check size={12} className="text-emerald-500" />
+                      <p className="text-[10px] font-medium text-stone-500">{item.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="h-px bg-stone-100" />
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">NIK</label>
+                <Input
+                  required
+                  value={formData.nik}
+                  onChange={(e) => setFormData(p => ({ ...p, nik: e.target.value }))}
+                  placeholder="16 digit NIK"
+                  maxLength={16}
+                  className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Nama Sesuai KTP</label>
+                <Input
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
+                  placeholder="Nama lengkap"
+                  className="h-12 bg-stone-50 border-stone-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200"
+                />
+              </div>
+            </>
+          )}
         </div>
 
-        <Button
-          type="submit"
-          disabled={saving || !ktpFile || !selfieFile || !formData.nik || !formData.name}
-          variant="premium"
-          size="lg"
-          className="w-full disabled:opacity-50"
-        >
-          {saving ? <span className="flex items-center gap-2"><Loader2 size={20} className="animate-spin" /> Menyimpan...</span> : 'Simpan & Lanjutkan'}
-        </Button>
+        {step !== 'form' ? (
+          <Button
+            type="button"
+            variant="premium"
+            size="lg"
+            className="w-full"
+            onClick={() => {
+              if (step === 'ktp' && ktpPreview) setStep('selfie');
+              else if (step === 'selfie' && selfiePreview) setStep('selfie_ktp');
+              else if (step === 'selfie_ktp' && selfieKtpPreview) setStep('form');
+            }}
+          >
+            Lanjutkan
+          </Button>
+        ) : (
+          <Button
+            type="submit"
+            disabled={saving || !formData.nik || !formData.name}
+            variant="premium"
+            size="lg"
+            className="w-full disabled:opacity-50"
+          >
+            {saving ? (
+              <span className="flex items-center gap-2"><Loader2 size={20} className="animate-spin" /> Menyimpan...</span>
+            ) : (
+              'Simpan & Lanjutkan'
+            )}
+          </Button>
+        )}
       </form>
     </div>
   );

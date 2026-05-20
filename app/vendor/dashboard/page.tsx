@@ -240,7 +240,10 @@ export default function VendorDashboard() {
               <p className="text-[10px] text-stone-400">Percakapan</p>
             </div>
           </Link>
-          <Link href="/vendor/verification" className="flex items-center gap-2.5 shrink-0 bg-white/90 backdrop-blur-sm border border-stone-200/60 rounded-2xl px-4 py-3 hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200 min-h-12">
+          <Link
+            href={vendor?.verification_status && vendor.verification_status !== 'none' ? '/vendor/verification/review' : '/vendor/verification'}
+            className="flex items-center gap-2.5 shrink-0 bg-white/90 backdrop-blur-sm border border-stone-200/60 rounded-2xl px-4 py-3 hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200 min-h-12"
+          >
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 shadow-md flex items-center justify-center shrink-0">
               <ShieldCheck size={16} className="text-white" />
             </div>

@@ -1,0 +1,1 @@
+ALTER TABLE "verification_submissions" ADD COLUMN "selfie_face_url" text;

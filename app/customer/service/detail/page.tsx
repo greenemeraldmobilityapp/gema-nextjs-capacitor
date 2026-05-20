@@ -33,9 +33,11 @@ export default function ServiceDetailPage() {
 function ServiceDetailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const serviceId = searchParams.get('id') || '';
+  const serviceId = typeof window !== 'undefined'
+    ? (searchParams.get('id') || new URLSearchParams(window.location.search).get('id') || '')
+    : '';
 
-  const { data: service, isLoading, error } = useServiceDetail(serviceId);
+  const { data: service, isLoading, error, isFetched, isPending } = useServiceDetail(serviceId);
   const vendorId = service?.vendor_id || '';
   const { data: reviews } = useVendorReviews(vendorId);
 
@@ -49,13 +51,13 @@ function ServiceDetailContent() {
   const totalReviews = reviews?.length || 0;
   const vendor = service?.vendor_profiles;
 
-  if (isLoading) {
+  if (isLoading || isPending) {
     return (
       <div className="flex flex-col min-h-screen bg-gray-50">
         <div className="bg-white p-4 pt-8">
           <Skeleton className="w-10 h-10 rounded-full" />
         </div>
-        <Skeleton className="h-64 w-full rounded-none" />
+        <Skeleton className="aspect-[4/3] max-h-[420px] w-full rounded-b-[24px]" />
         <div className="p-4 space-y-4">
           <Skeleton className="h-6 w-48 rounded" />
           <Skeleton className="h-4 w-32 rounded" />
@@ -66,7 +68,7 @@ function ServiceDetailContent() {
     );
   }
 
-  if (error || !service) {
+  if (isFetched && (error || !service)) {
     return (
       <div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center p-6">
         <div className="bg-white rounded-[24px] p-8 shadow-sm border border-gray-100 text-center max-w-sm w-full">
@@ -83,11 +85,13 @@ function ServiceDetailContent() {
     );
   }
 
+  if (!service) return null;
+
   return (
     <div className="flex flex-col min-h-screen bg-[#f8faf8]">
       <div className="relative">
         {images.length > 0 ? (
-          <div className="relative w-full h-64 bg-gray-100 overflow-hidden select-none">
+          <div className="relative w-full aspect-[4/3] max-h-[420px] bg-gray-100 overflow-hidden select-none rounded-b-[24px] shadow-sm">
             <div
               className="flex h-full transition-transform duration-300 ease-out"
               style={{ transform: `translateX(-${imgIndex * 100}%)` }}
@@ -114,9 +118,9 @@ function ServiceDetailContent() {
 
             <button
               onClick={() => router.back()}
-              className="absolute top-12 left-4 z-10 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors flex items-center justify-center text-white"
+              className="absolute top-4 left-4 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md shadow-md hover:bg-white transition-all duration-200 flex items-center justify-center text-gray-700"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={18} />
             </button>
 
             {images.length > 1 && (
@@ -124,7 +128,7 @@ function ServiceDetailContent() {
                 {imgIndex > 0 && (
                   <button
                     onClick={() => setImgIndex(imgIndex - 1)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors flex items-center justify-center text-white"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-all duration-200 flex items-center justify-center text-white"
                   >
                     <ChevronLeft size={18} />
                   </button>
@@ -132,7 +136,7 @@ function ServiceDetailContent() {
                 {imgIndex < images.length - 1 && (
                   <button
                     onClick={() => setImgIndex(imgIndex + 1)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors flex items-center justify-center text-white"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-all duration-200 flex items-center justify-center text-white"
                   >
                     <ChevronRight size={18} />
                   </button>
@@ -162,7 +166,7 @@ function ServiceDetailContent() {
           <div className="relative w-full h-48 bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
             <button
               onClick={() => router.back()}
-              className="absolute top-12 left-4 z-10 w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm hover:bg-black/40 transition-colors flex items-center justify-center text-white"
+              className="absolute top-4 left-4 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md shadow-md hover:bg-white transition-all duration-200 flex items-center justify-center text-gray-700"
             >
               <ArrowLeft size={20} />
             </button>
@@ -176,7 +180,7 @@ function ServiceDetailContent() {
         )}
       </div>
 
-      <div className="flex-1 px-4 -mt-6 space-y-4 pb-32">
+      <div className="flex-1 px-4 pt-4 space-y-4 pb-32">
         <div className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100">
           <div className="flex items-start justify-between gap-3 mb-3">
             <h1 className="text-lg font-heading font-bold text-gray-900 leading-tight flex-1">

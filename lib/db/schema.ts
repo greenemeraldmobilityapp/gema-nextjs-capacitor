@@ -49,6 +49,7 @@ export const verificationSubmissions = pgTable('verification_submissions', {
   ktpName: text('ktp_name').notNull(),
   ktpUrl: text('ktp_url').notNull(),
   selfieUrl: text('selfie_url'),
+  selfieFaceUrl: text('selfie_face_url'),
   certificateUrl: text('certificate_url'),
   certificateName: text('certificate_name'),
   certificateIssuer: text('certificate_issuer'),
