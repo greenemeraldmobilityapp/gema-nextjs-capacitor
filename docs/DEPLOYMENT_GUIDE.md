@@ -40,14 +40,15 @@ Dashboard → Pages → **gema-app** → **View build history** → klik timesta
 
 ## CI/CD Pipeline (GitHub Actions)
 
-Dua workflow sudah tersedia di `.github/workflows/`:
+Tiga workflow sudah tersedia di `.github/workflows/`:
 
 | Workflow | Trigger | Output |
 |----------|---------|--------|
 | `capacitor-android-apk.yml` | Push ke `develop`/`main` + manual `workflow_dispatch` | APK debug + Firebase Distribution |
 | `capacitor-android-aab.yml` | Push tag `v*` (e.g. `v1.0.0`) + manual `workflow_dispatch` | AAB release + GitHub Release |
+| `ios-build-test.yml` | Push `main`/`develop` + manual `workflow_dispatch` | **Unsigned IPA** artifact + opsional Firebase Test Lab upload |
 
-### Persiapan Sebelum Push Pertama
+### Persiapan Android — Sebelum Push Pertama
 
 1. **Generate `android/`** — `npx cap add android` (sekali saja, commit hasilnya)
 2. **Keystore** — Buat dan encode base64 (lihat `PRODUCTION_SECRETS.md`)
@@ -59,6 +60,17 @@ Dua workflow sudah tersedia di `.github/workflows/`:
 5. **Firebase Token** (opsional):
    - `FIREBASE_TOKEN` via `firebase login:ci` → simpan di secrets
 
+### Persiapan iOS — Sebelum Push Pertama
+
+1. **iOS platform** — Tidak perlu commit `ios/` ke repo. Workflow akan generate otomatis via `npx cap add ios` di macOS runner.
+2. **Firebase Test Lab** (opsional)— Setup Google Cloud service account:
+   ```bash
+    Firebase Console → Project Settings → Service accounts → Generate new private key
+    ```
+    Simpan JSON key sebagai GitHub secret `FIREBASE_SERVICE_ACCOUNT`
+3. **GitHub Variables**:
+   - `FIREBASE_PROJECT_ID` — ID project Firebase (contoh: `gema-app-testing`)
+
 ### Cara Memicu Build
 
 ```bash
@@ -69,8 +81,12 @@ git push origin main
 git tag v1.0.0
 git push origin v1.0.0
 
-# Manual via GitHub UI
-# Actions → pilih workflow → Run workflow
+# iOS build + Firebase Test Lab — manual via GitHub UI
+# Actions → iOS Build & Firebase Test Lab → Run workflow
+# Centang "Upload to Firebase Test Lab" untuk test di real iPhone
+
+# iOS build saja (artifact IPA) — manual tanpa centang
+# Actions → iOS Build & Firebase Test Lab → Run workflow
 ```
 
 ---
@@ -210,6 +226,70 @@ Add to GitHub secrets:
 
 - APK from unknown sources → Users need to enable "Install unknown apps"
 - Consider adding SHA-256 checksum for verification
+
+---
+
+## iOS — Firebase Test Lab (without Apple Developer Account)
+
+Karena tidak ada macOS/device iOS fisik, testing iOS dilakukan via **Firebase Test Lab** — Google menjalankan IPA di real iPhone dan merekam video + log.
+
+### Alur
+
+```
+Push code → GH Actions macOS runner → 
+npx cap add ios → npx cap sync ios → xcodebuild archive → 
+unsigned IPA → (opsional) gcloud firebase test ios run → 
+Google jalankan di iPhone 15 Pro iOS 17 → 
+lihat video + log di Firebase Console
+```
+
+### Prerequisites
+
+| Item | Biaya | Cara Dapat |
+|------|-------|------------|
+| GitHub Actions macOS runner | ✅ Gratis (2000 menit/bln) | Built-in di GitHub |
+| Firebase project | ✅ Gratis | console.firebase.google.com |
+| Google Cloud service account | ✅ Gratis | Firebase Console → Service accounts |
+| Apple Developer Account | ❌ Tidak perlu | IPA unsigned, Google re-sign |
+
+### Setup
+
+1. **Firebase Console** → Project Settings → **Service accounts** → **Generate new private key** → download JSON
+2. **GitHub Secrets**:
+   - `FIREBASE_SERVICE_ACCOUNT` — isi FULL isi JSON key
+   - `FIREBASE_PROJECT_ID` — project ID (contoh: `gema-app-testing`)
+
+### Cara Pakai
+
+1. **Push ke GitHub** → workflow trigger otomatis untuk build IPA
+2. Buka **GitHub → Actions → iOS Build & Firebase Test Lab → Run workflow**
+3. Centang **"Upload to Firebase Test Lab"** → Run
+4. Tunggu 5-10 menit (build + upload + test)
+5. **Lihat hasil** di Firebase Console → **Test Lab** → **History**
+
+### Output
+
+- **Unsigned IPA** — didownload sebagai artifact (`.github/workflows/` → GEMA-iOS-Debug)
+- **Firebase Test Lab report** — video screen recording + logcat + screenshot tiap langkah
+
+### Limitations
+
+| Issue | Keterangan |
+|-------|------------|
+| Unsigned IPA | Tidak bisa di-sideload ke device pribadi tanpa jailbreak |
+| Hanya automated test | Bukan interactive debug — kamu lihat recording, bukan pegang langsung |
+| Firebase Test Lab antrian | Kadang ada wait time 2-5 menit sebelum test dimulai |
+
+### Scaling ke Production (nanti)
+
+Untuk benar-benar install IPA ke device pribadi atau rilis ke App Store:
+
+| Step | Biaya |
+|------|-------|
+| Apple Developer Program | $99/tahun |
+| Development signing + device UDID | Free (dengan Apple ID free) |
+| App Store Connect | $99/tahun (termasuk) |
+| TestFlight (internal 25 org) | Termasuk $99 |
 
 ---
 

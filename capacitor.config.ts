@@ -7,6 +7,13 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: true,
   },
+  ios: {
+    scheme: 'App',
+  },
+  server: {
+    androidScheme: 'https',
+    iosScheme: 'https',
+  },
 };
 
 export default config;

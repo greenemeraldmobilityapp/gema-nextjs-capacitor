@@ -19,6 +19,7 @@ Setup di: **GitHub → Repo → Settings → Secrets and variables → Actions**
 | `ANDROID_KEY_ALIAS` | ✅ | Key alias name | Alias used in keytool |
 | `ANDROID_KEY_PASSWORD` | ✅ | Key password | Password for key alias |
 | `FIREBASE_TOKEN` | Optional | Firebase CLI token | Run `firebase login:ci` locally |
+| `FIREBASE_SERVICE_ACCOUNT` | Optional (iOS) | Google Cloud service account JSON (Firebase Test Lab) | Firebase Console → Settings → Service accounts → Generate key |
 | `SLACK_WEBHOOK_URL` | Optional | Slack webhook for notifications | Slack → Apps → Incoming Webhooks |
 
 ### GitHub Variables (Non-sensitive)
@@ -28,6 +29,7 @@ Setup di: **GitHub → Repo → Settings → Secrets and variables → Actions**
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Production Supabase URL (public) | `https://xxxxx.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Public anon key (designed to be public) | `eyJhbGciOi...` |
 | `FIREBASE_APP_ID` | Optional | Firebase App ID (1:xxxxxxx) | Firebase Console → Project Settings |
+| `FIREBASE_PROJECT_ID` | Optional (iOS) | Firebase Project ID untuk `gcloud firebase test ios run` | Firebase Console → Project Settings |
 
 ---
 
@@ -121,6 +123,22 @@ firebase login:ci
 1. Firebase Console → App Distribution
 2. Add testers (email list)
 3. Get App ID from Settings
+
+### 5.4 iOS Firebase Test Lab
+
+Untuk test iOS tanpa device fisik. Google menjalankan IPA di real iPhone dan rekam video.
+
+**Step-by-step:**
+
+1. Firebase Console → **Project Settings** → **Service accounts**
+2. Klik **Generate new private key** → download JSON
+3. Simpan JSON key ke **GitHub Secrets** sebagai `FIREBASE_SERVICE_ACCOUNT`
+4. Simpan **Project ID** sebagai `FIREBASE_PROJECT_ID` di GitHub Variables
+5. Trigger workflow: **GitHub → Actions → iOS Build & Firebase Test Lab → Run workflow**
+6. Centang **"Upload to Firebase Test Lab"**
+7. Hasil video + log di **Firebase Console → Test Lab → History**
+
+> **Catatan:** Workflow menggunakan `gcloud firebase test ios run` dengan flag `--xcode-version=16.2` untuk re-sign unsigned IPA secara otomatis. Tidak perlu Apple Developer Account.
 
 ---
 

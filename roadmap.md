@@ -192,7 +192,7 @@ Tasks
 
 - [x] Manual APK build script — APK tersedia di `releases/GEMA-v0.1.0-debug.apk`
 - [ ] GitHub Actions Android build
-- [ ] GitHub Actions iOS build
+- [x] GitHub Actions iOS build + Firebase Test Lab — `.github/workflows/ios-build-test.yml` (unsigned IPA artifact + opsional FTL upload)
 - [ ] Artifact generation
 - [ ] Automated deployment
 

@@ -1,0 +1,119 @@
+name: iOS Build & Firebase Test Lab
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_to_firebase:
+        description: 'Upload IPA to Firebase Test Lab'
+        type: boolean
+        default: false
+
+  push:
+    branches: [main, develop]
+
+jobs:
+  ios-build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static export
+        run: npm run build
+
+      - name: Add iOS platform
+        run: npx cap add ios
+
+      - name: Sync Capacitor to iOS
+        run: npx cap sync ios
+
+      - name: Install CocoaPods
+        run: |
+          cd ios/App
+          pod install
+
+      - name: Create exportOptions.plist
+        run: |
+          cat > /tmp/exportOptions.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>development</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>signingCertificate</key>
+              <string>Apple Development</string>
+              <key>provisioningProfiles</key>
+              <dict/>
+              <key>compileBitcode</key>
+              <false/>
+              <key>generateSwiftPMStructureForBundle</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Build unsigned IPA
+        run: |
+          xcodebuild -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -sdk iphoneos \
+            -configuration Debug \
+            -archivePath ${{ runner.temp }}/GEMA.xcarchive \
+            archive \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+          xcodebuild -exportArchive \
+            -archivePath ${{ runner.temp }}/GEMA.xcarchive \
+            -exportPath ${{ runner.temp }}/ipa \
+            -exportOptionsPlist /tmp/exportOptions.plist \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Upload IPA as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GEMA-iOS-Debug
+          path: ${{ runner.temp }}/ipa/*.ipa
+
+      - name: Set up gcloud
+        if: ${{ github.event.inputs.upload_to_firebase == 'true' && secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        if: ${{ github.event.inputs.upload_to_firebase == 'true' && secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+
+      - name: Upload to Firebase Test Lab
+        if: ${{ github.event.inputs.upload_to_firebase == 'true' && secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+        run: |
+          IPA_PATH=$(ls ${{ runner.temp }}/ipa/*.ipa | head -1)
+          gcloud firebase test ios run \
+            --test "$IPA_PATH" \
+            --device model=iphone15pro,version=17,orientation=portrait \
+            --xcode-version=16.2 \
+            --timeout 10m \
+            --async
+
+      - name: Notify failure
+        if: failure()
+        run: echo "::warning::iOS build failed. Check logs for details."
