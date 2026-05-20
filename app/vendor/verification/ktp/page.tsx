@@ -38,7 +38,7 @@ export default function KtpVerificationPage() {
     fileDataPromiseRef.current = new Promise(resolve => {
       const reader = new FileReader();
       reader.onload = () => resolve({ buffer: reader.result as ArrayBuffer, contentType: f.type || 'image/jpeg', fileName: f.name });
-      reader.onerror = () => { console.error('[KTP] FileReader error'); resolve(null); };
+      reader.onerror = () => { if (process.env.NODE_ENV !== 'production') console.error('[KTP] FileReader error'); resolve(null); };
       reader.readAsArrayBuffer(f);
     });
     setFile(f);

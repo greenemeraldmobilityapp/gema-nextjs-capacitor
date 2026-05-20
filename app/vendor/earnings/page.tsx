@@ -19,7 +19,7 @@ export default function VendorEarningsPage() {
 
   useEffect(() => {
     if (ordersError) toast.error('Gagal memuat data pendapatan');
-  }, [ordersError]);
+  }, [ordersError?.message]);
 
   const now = new Date();
   const periodCutoff = new Date(now);

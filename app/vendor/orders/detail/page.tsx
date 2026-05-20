@@ -3,6 +3,7 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, MapPin, Calendar, Clock, Phone, MessageSquare, Loader2, AlertCircle, ChevronRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -272,9 +273,11 @@ function OrderDetailContent() {
               <p className="text-sm text-stone-600 leading-relaxed">&ldquo;{review.review_text}&rdquo;</p>
             )}
             {review.review_image && (
-              <img
+              <Image
                 src={review.review_image}
                 alt="Foto ulasan"
+                width={96}
+                height={96}
                 className="mt-3 w-24 h-24 rounded-xl object-cover border border-stone-200"
               />
             )}

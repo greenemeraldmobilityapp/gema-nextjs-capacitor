@@ -166,10 +166,12 @@ export default function VendorPortfolioPage() {
                     <div className="aspect-[4/3] bg-stone-100 relative overflow-hidden">
                       {service.service_images && service.service_images.length > 0 ? (
                         <>
-                          <img
+                          <Image
                             src={service.service_images[0].image_url}
                             alt={service.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            fill
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                           {service.service_images.length > 1 && (
                             <span className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">

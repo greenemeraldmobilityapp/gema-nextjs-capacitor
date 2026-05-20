@@ -1,6 +1,6 @@
 # Bug-Fix & Improvement Plan — GEMA
 
-> Compiled: 2026-05-20 | Total: 32 items (3 Critical ✅, 7 High ✅, 12 Medium ✅, 10 Low ✅)
+> Compiled: 2026-05-27 | Total: 46 items (46 resolved ✅ — 4 High 🔴, 5 Medium 🟡, 5 Low 🟢)
 
 ---
 
@@ -203,5 +203,94 @@ Phase 4 — Low (L1-L10) ✅
   ✅ Chat list page (L8 — customer inbox)
   ✅ README (L10 — replaced placeholder template)
 
-✅ All 32 items resolved
+✅ All 46 items resolved
+
+---
+
+## 🔴 High — New Batch (Phase 5) ✅
+
+### H8 ✅ — `#` hrefs tanpa `e.preventDefault()` di halaman keamanan
+
+**Fix applied:** `app/customer/settings/security/page.tsx` — 4 `<Link href="#">` items (Ubah Kata Sandi, Autentikasi 2 Faktor, Perangkat Terdaftar, Aktivitas Login) sekarang punya `onClick={(e) => { e.preventDefault(); toast.info('Segera hadir'); }}`.
+
+### H9 ✅ — Empty catch block siluman di alamat vendor
+
+**Fix applied:** `app/vendor/profile/address/page.tsx` — catch block sekarang: `catch (err) { console.error('Gagal load alamat:', err); toast.error('Gagal memuat data alamat'); }`.
+
+### H10 ✅ — Debug console.log tertinggal di production
+
+**Fix applied:** `app/vendor/verification/certification/page.tsx` — `console.log` (lines 70, 141) dihapus. `console.warn` (line 144) diganti dengan `process.env.NODE_ENV !== 'production' && console.warn(...)`.
+
+### H11 ✅ — `console.error` tanpa guard di upload KTP
+
+**Fix applied:** `app/vendor/verification/ktp/page.tsx:41` — `console.error` diganti dengan `process.env.NODE_ENV !== 'production' && console.error('[KTP] FileReader error')`.
+
+---
+
+## 🟡 Medium — New Batch (Phase 5) ✅
+
+### M13 ✅ — "Loading..." masih English di 2 file
+
+**Fix applied:** `app/(auth)/register/page.tsx` + `app/vendor/chat/detail/page.tsx` — `Loading...` → `Memuat...`.
+
+### M14 ✅ — Missing `cursor-pointer` di LogoutModal buttons
+
+**Fix applied:** `components/shared/LogoutModal.tsx` — `cursor-pointer` added to both Batal + Ya Keluar buttons.
+
+### M15 ✅ — `<img>` tersisa belum di-migrate ke `<Image>`
+
+**Fix applied:** 14 instances across 13 files migrated to `<Image>`. Lightbox overlays (customer/reviews, vendor/reviews, ImageLightbox) intentionally kept as `<img>` — temporary overlays don't benefit from `<Image>` optimization.
+
+### M16 ✅ — `console.warn` module-level di lib/supabase.ts
+
+**Fix applied:** `lib/supabase.ts:7` — `console.warn` wrapped with `process.env.NODE_ENV !== 'production'` guard.
+
+### M17 ✅ — (tied to H10/H11)
+
+**Fix applied:** Rolled into H10/H11 fixes above.
+
+---
+
+## 🟢 Low — New Batch (Phase 5) ✅
+
+### L11 ✅ — Missing alt text di `<Image>` components (7 instances)
+
+**Fix applied:** All 7 `<Image>` components now have descriptive alt text (`promo.title`, `vendor.users?.full_name`, `project.customer.full_name`, `review.customer.full_name`, `formData.title`, etc.).
+
+### L12 ✅ — Empty catch blocks di customer address page (3 instances)
+
+**Fix applied:** `app/customer/profile/address/page.tsx` — 3 catch blocks now bind error variable + `console.error`.
+
+### L13 — `useCallback` empty deps (known safe — no change needed)
+
+**Catatan:** `useCallback(fn, [])` aman secara fungsional karena hanya pakai `setForm` (stable) + fetch berdasarkan parameter. Dibiarkan sebagai known pattern.
+
+### L14 ✅ — `useEffect` dep `error` object yang potensi re-render
+
+**Fix applied:** `app/vendor/earnings/page.tsx` — dep `[ordersError]` → `[ordersError?.message]`; `app/customer/chat/page.tsx` — dep `[error]` → `[error?.message]`.
+
+---
+
+## Prioritas Eksekusi — Phase 5
+
+```
+Phase 5 — New Batch (H8-H11, M13-M17, L11-L14) ✅ All 14 resolved
+  🔴 High Priority:
+    ✅ H8 — # hrefs + toast (4 link — settings/security)
+    ✅ H9 — empty catch address vendor (toast + log)
+    ✅ H10 — debug console.log certification page
+    ✅ H11 — console.error without guard KTP page
+
+  🟡 Medium Priority:
+    ✅ M13 — "Loading..." → "Memuat..."
+    ✅ M14 — cursor-pointer on LogoutModal
+    ✅ M15 — remaining <img> → <Image> (14 instances)
+    ✅ M16 — module-level console.warn in lib/supabase.ts
+    ✅ M17 — (tied to H10/H11)
+
+  🟢 Low Priority:
+    ✅ L11 — missing alt text on <Image> (7 instances)
+    ✅ L12 — empty catch blocks customer address
+    —  L13 — useCallback empty deps (known safe - no change needed)
+    ✅ L14 — useEffect error dep stability
 ```

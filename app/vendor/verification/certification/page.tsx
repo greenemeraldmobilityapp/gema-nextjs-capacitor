@@ -67,7 +67,6 @@ export default function CertificationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[Cert] handleSubmit, submission:', submission?.id);
     if (!profile?.id) {
       toast.warning('Silakan login terlebih dahulu', { duration: 4000 });
       return;
@@ -138,10 +137,10 @@ export default function CertificationPage() {
         .map((f) => `${userId}/certificate/${f.name}`);
       if (toDelete.length > 0) {
         await supabase.storage.from('verification').remove(toDelete);
-        console.log('[Cert] cleaned up', toDelete.length, 'old file(s)');
+        if (process.env.NODE_ENV !== 'production') console.log('[Cert] cleaned up', toDelete.length, 'old file(s)');
       }
     } catch (err) {
-      console.warn('[Cert] cleanup error (non-fatal):', err);
+      if (process.env.NODE_ENV !== 'production') console.warn('[Cert] cleanup error (non-fatal):', err);
     }
   }
 

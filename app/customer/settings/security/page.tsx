@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Lock, Smartphone, ShieldCheck, ChevronRight, LogOut, Monitor } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function SecuritySettingsPage() {
   const [biometric, setBiometric] = useState(false);
@@ -31,7 +32,7 @@ export default function SecuritySettingsPage() {
 
         <Card className="rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <CardContent className="p-0 divide-y divide-gray-100">
-            <Link href="#" className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+            <Link href="#" onClick={(e) => { e.preventDefault(); toast.info('Segera hadir'); }} className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 shrink-0">
                   <Lock size={20} />
@@ -65,7 +66,7 @@ export default function SecuritySettingsPage() {
               </label>
             </label>
 
-            <Link href="#" className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+            <Link href="#" onClick={(e) => { e.preventDefault(); toast.info('Segera hadir'); }} className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 shrink-0">
                   <ShieldCheck size={20} />
@@ -84,7 +85,7 @@ export default function SecuritySettingsPage() {
           <h3 className="text-sm font-bold text-gray-700 px-1 mb-2">Aktivitas</h3>
           <Card className="rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <CardContent className="p-0 divide-y divide-gray-100">
-              <Link href="#" className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+              <Link href="#" onClick={(e) => { e.preventDefault(); toast.info('Segera hadir'); }} className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 shrink-0">
                     <Monitor size={20} />
@@ -97,7 +98,7 @@ export default function SecuritySettingsPage() {
                 <ChevronRight size={18} className="text-gray-300 shrink-0" />
               </Link>
 
-              <Link href="#" className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+              <Link href="#" onClick={(e) => { e.preventDefault(); toast.info('Segera hadir'); }} className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 shrink-0">
                     <LogOut size={20} />

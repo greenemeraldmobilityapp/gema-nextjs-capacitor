@@ -69,7 +69,7 @@ function PromoDetailContent() {
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
           {promo.image_url && (
-            <Image src={promo.image_url} alt="" width={80} height={80} className="w-20 h-20 object-contain mx-auto mb-4 relative" />
+            <Image src={promo.image_url} alt={promo.title} width={80} height={80} className="w-20 h-20 object-contain mx-auto mb-4 relative" />
           )}
           <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 relative backdrop-blur-sm border border-white/10">
             <Percent size={28} className="text-white" />

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Star, MessageSquare, Loader2, AlertCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -149,9 +150,11 @@ export default function VendorReviewsPage() {
                         onClick={() => setLightboxUrl(review.review_image!)}
                         className="w-20 h-20 rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity cursor-pointer"
                       >
-                        <img
+                        <Image
                           src={review.review_image}
                           alt="Foto ulasan"
+                          width={80}
+                          height={80}
                           className="w-full h-full object-cover"
                         />
                       </button>

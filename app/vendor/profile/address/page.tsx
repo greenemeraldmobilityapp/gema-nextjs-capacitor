@@ -115,8 +115,9 @@ export default function VendorAddressPage() {
             setOperatingHours(vendorData.operating_hours as Record<string, { open: string; close: string; active: boolean }>);
           }
         }
-      } catch {
-        // silent
+      } catch (err) {
+        console.error('Gagal load data alamat:', err);
+        toast.error('Gagal memuat data alamat');
       } finally {
         setLoading(false);
       }

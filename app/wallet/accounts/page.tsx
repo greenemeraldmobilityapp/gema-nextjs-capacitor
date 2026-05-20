@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth';
 import { useSavedBankAccounts, useCreateBankAccount, useUpdateBankAccount, useDeleteBankAccount, useSetPrimaryAccount, banks } from '@/lib/services/useSavedBankAccounts';
 import BottomSheetSelect from '@/components/shared/BottomSheetSelect';
+import ConfirmModal from '@/components/shared/ConfirmModal';
 
 export default function WalletAccounts() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function WalletAccounts() {
   const [formNumber, setFormNumber] = useState('');
   const [formHolder, setFormHolder] = useState('');
   const [formPrimary, setFormPrimary] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const resetForm = () => {
     setShowForm(false);
@@ -72,11 +74,15 @@ export default function WalletAccounts() {
 
   const handleDelete = (id: string) => {
     if (!profile?.id) return;
-    if (!confirm('Hapus rekening ini?')) return;
-    const deletePromise = deleteAccount.mutateAsync({ id, userId: profile.id });
+    setDeleteId(id);
+  };
+
+  const executeDelete = () => {
+    if (!profile?.id || !deleteId) return;
+    const deletePromise = deleteAccount.mutateAsync({ id: deleteId, userId: profile.id });
     toast.promise(deletePromise, {
       loading: 'Menghapus rekening...',
-      success: 'Rekening berhasil dihapus',
+      success: () => { setDeleteId(null); return 'Rekening berhasil dihapus'; },
       error: (err) => err?.message || 'Gagal menghapus rekening',
     });
   };
@@ -239,6 +245,16 @@ export default function WalletAccounts() {
           )
         )}
       </div>
+
+      <ConfirmModal
+        open={deleteId !== null}
+        title="Hapus Rekening"
+        message="Apakah Anda yakin ingin menghapus rekening ini? Tindakan ini tidak dapat dibatalkan."
+        confirmLabel="Ya, Hapus"
+        variant="danger"
+        onConfirm={executeDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

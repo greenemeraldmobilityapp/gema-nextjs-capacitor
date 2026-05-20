@@ -118,7 +118,8 @@ export default function AddressPage() {
       const res = await fetch(`${CDN}/cities/${kode}.json`);
       const data: [string, string][] = await res.json();
       setCities(data.map(([k, n]) => ({ kode: k, nama: n })));
-    } catch {
+    } catch (err) {
+      console.error('Gagal load kota:', err);
       toast.error('Gagal memuat daftar kota', { duration: 5000 });
     } finally {
       setFetchingCities(false);
@@ -138,7 +139,8 @@ export default function AddressPage() {
       const res = await fetch(`${CDN}/districts/${kode}.json`);
       const data: [string, string][] = await res.json();
       setDistricts(data.map(([k, n]) => ({ kode: k, nama: n })));
-    } catch {
+    } catch (err) {
+      console.error('Gagal load kecamatan:', err);
       toast.error('Gagal memuat daftar kecamatan', { duration: 5000 });
     } finally {
       setFetchingDistricts(false);
@@ -157,7 +159,8 @@ export default function AddressPage() {
       const res = await fetch(`${CDN}/villages/${kode}.json`);
       const data: [string, string][] = await res.json();
       setVillages(data.map(([k, n]) => ({ kode: k, nama: n })));
-    } catch {
+    } catch (err) {
+      console.error('Gagal load desa:', err);
       toast.error('Gagal memuat daftar desa', { duration: 5000 });
     } finally {
       setFetchingVillages(false);

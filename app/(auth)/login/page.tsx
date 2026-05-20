@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { Mail, Lock, ArrowLeft, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -116,9 +117,11 @@ function LoginContent() {
 
       <div className="flex-1 p-6 flex flex-col">
         <div className="mb-8 text-center">
-          <img
+          <Image
             src="/images/gema-logo.png"
             alt="GEMA Logo"
+            width={56}
+            height={56}
             className="w-14 h-14 mx-auto mb-4"
           />
           <h1 className="font-heading text-3xl font-bold text-gray-900 mb-2">Selamat Datang!</h1>

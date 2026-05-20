@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
+import Image from 'next/image';
 import { ArrowLeft, User, Camera, Loader2, ImageOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -235,9 +236,11 @@ function EditProfileForm() {
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant text-center">
           <div className="relative w-24 h-24 mx-auto">
             {avatarPreview && !imgError ? (
-              <img
+              <Image
                 src={avatarPreview}
                 alt="Avatar"
+                width={96}
+                height={96}
                 onError={() => setImgError(true)}
                 className="w-24 h-24 rounded-full object-cover shadow-md border-2 border-white"
               />

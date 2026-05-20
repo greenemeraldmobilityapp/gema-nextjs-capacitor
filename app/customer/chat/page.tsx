@@ -30,7 +30,7 @@ export default function CustomerChatPage() {
 
   useEffect(() => {
     if (error) toast.error('Gagal memuat percakapan', { duration: 5000 });
-  }, [error]);
+  }, [error?.message]);
 
   const filteredChats = (chats || []).filter((chat) => {
     const vendorName = chat.order?.vendor?.users?.full_name || '';

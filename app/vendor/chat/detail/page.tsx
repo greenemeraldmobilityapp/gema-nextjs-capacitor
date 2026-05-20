@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 
 export default function VendorChatDetailPage() {
   return (
-    <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="p-4 text-center">Memuat...</div>}>
       <ChatDetailContent />
     </Suspense>
   );

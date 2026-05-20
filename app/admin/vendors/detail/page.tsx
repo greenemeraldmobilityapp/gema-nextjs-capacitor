@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft, Loader2, AlertCircle, CheckCircle, XCircle, Clock, ShieldCheck, IdCard, ScrollText, User, Mail, Phone, FileText, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -198,11 +199,14 @@ function DetailContent() {
                 {submission.ktp_url && (
                   <div className="rounded-xl overflow-hidden bg-gray-100">
                     {!imgError['ktp'] ? (
-                      <img
+                      <Image
                         src={submission.ktp_url}
                         alt="Foto KTP"
+                        width={0}
+                        height={0}
+                        sizes="100vw"
                         onError={() => setImgError(p => ({ ...p, ktp: true }))}
-                        className="w-full object-contain max-h-60"
+                        className="w-full object-contain max-h-60 h-auto"
                       />
                     ) : (
                       <div className="flex flex-col items-center py-6 text-gray-400">
@@ -246,11 +250,14 @@ function DetailContent() {
                     <div className="rounded-xl overflow-hidden bg-gray-100">
                       {submission.certificate_url.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
                         !imgError['cert'] ? (
-                          <img
+                          <Image
                             src={submission.certificate_url}
                             alt="Sertifikat"
+                            width={0}
+                            height={0}
+                            sizes="100vw"
                             onError={() => setImgError(p => ({ ...p, cert: true }))}
-                            className="w-full object-contain max-h-40"
+                            className="w-full object-contain max-h-40 h-auto"
                           />
                         ) : (
                           <div className="flex flex-col items-center py-4 text-gray-400">

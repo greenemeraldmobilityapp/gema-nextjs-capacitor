@@ -249,7 +249,7 @@ function EditForm() {
             <div className="grid grid-cols-3 gap-2">
               {existingImages?.map((img) => (
                 <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group">
-                  <Image src={img.image_url} alt="" fill className="object-cover" />
+                  <Image src={img.image_url} alt={formData.title || 'Gambar layanan'} fill className="object-cover" />
                   <button
                     type="button"
                     onClick={() => handleDeleteImage(img)}

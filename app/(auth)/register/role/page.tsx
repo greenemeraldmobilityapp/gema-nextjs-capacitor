@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader } from '@/components/ui/card';
+import Image from 'next/image';
 import { UserCircle, Wrench, ArrowLeft, Circle, CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -75,9 +76,11 @@ export default function RoleSelectionPage() {
         <div className={`mb-8 text-center transition-all duration-500 delay-75 ${
           mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}>
-          <img
+          <Image
             src="/images/gema-logo.png"
             alt="GEMA Logo"
+            width={56}
+            height={56}
             className="w-14 h-14 mx-auto mb-4"
           />
           <h1 className="font-heading text-3xl font-bold text-gray-900 mb-2">Bergabung dengan GEMA</h1>

@@ -116,7 +116,7 @@ function VendorCompletedProjectsContent() {
           <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
             <div className="flex items-center gap-4">
               {vendor.avatar_url ? (
-                <Image src={vendor.avatar_url} alt="" width={56} height={56} className="w-14 h-14 rounded-full object-cover shrink-0" />
+                <Image src={vendor.avatar_url} alt={vendor.users?.full_name || ''} width={56} height={56} className="w-14 h-14 rounded-full object-cover shrink-0" />
               ) : (
                 <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-lg shrink-0">
                   {vendor.users?.full_name?.charAt(0) || '?'}
@@ -158,7 +158,7 @@ function VendorCompletedProjectsContent() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
                     {project.customer?.avatar_url ? (
-                      <Image src={project.customer.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                      <Image src={project.customer.avatar_url} alt={project.customer.full_name || ''} width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold shrink-0">
                         {project.customer?.full_name?.charAt(0) || '?'}

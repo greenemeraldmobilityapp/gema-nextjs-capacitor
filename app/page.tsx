@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
 type SplashPhase = 'logo' | 'title' | 'tagline' | 'done';
@@ -116,10 +117,13 @@ export default function SplashScreen() {
           }`}
           style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
         >
-          <img
+          <Image
             src="/images/gema-logo.svg"
             alt="GEMA"
+            width={128}
+            height={128}
             className="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] motion-reduce:drop-shadow-none"
+            priority
           />
         </div>
 

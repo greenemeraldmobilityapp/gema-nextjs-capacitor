@@ -132,7 +132,7 @@ function ReviewsContent() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {review.customer?.avatar_url ? (
-                        <Image src={review.customer.avatar_url} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                        <Image src={review.customer.avatar_url} alt={review.customer.full_name || ''} width={40} height={40} className="w-10 h-10 rounded-full object-cover shrink-0" />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
                           {review.customer?.full_name?.charAt(0) || 'P'}
@@ -160,9 +160,11 @@ function ReviewsContent() {
                         onClick={() => setLightboxUrl(review.review_image!)}
                         className="w-20 h-20 rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity cursor-pointer"
                       >
-                        <img
+                        <Image
                           src={review.review_image}
                           alt="Foto ulasan"
+                          width={80}
+                          height={80}
                           className="w-full h-full object-cover"
                         />
                       </button>

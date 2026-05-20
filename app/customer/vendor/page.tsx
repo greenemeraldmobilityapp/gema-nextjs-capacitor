@@ -256,10 +256,12 @@ function VendorDetailContent() {
                             className="snap-center shrink-0 w-full h-full inline-flex cursor-pointer"
                             onClick={() => setLightbox({ open: true, images: service.service_images || [], index: idx })}
                           >
-                            <img
+                            <Image
                               src={img.image_url}
                               alt={`${service.title} ${idx + 1}`}
-                              className="w-full h-full object-cover"
+                              fill
+                              sizes="100vw"
+                              className="object-cover"
                               draggable={false}
                             />
                           </div>
@@ -356,7 +358,7 @@ function VendorDetailContent() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
                         {project.customer?.avatar_url ? (
-                          <Image src={project.customer.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                          <Image src={project.customer.avatar_url} alt={project.customer?.full_name || ''} width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold shrink-0">
                             {project.customer?.full_name?.charAt(0) || '?'}
@@ -469,7 +471,7 @@ function VendorDetailContent() {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2 min-w-0">
                         {review.customer?.avatar_url ? (
-                          <Image src={review.customer.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                          <Image src={review.customer.avatar_url} alt={review.customer?.full_name || ''} width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold shrink-0">
                             {review.customer?.full_name?.charAt(0) || '?'}

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity, User, Image, MessageCircle, ShieldCheck, Star, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
+import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity, User, Image as ImageIcon, MessageCircle, ShieldCheck, Star, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
@@ -116,9 +117,11 @@ export default function VendorDashboard() {
           <div className="flex items-center gap-3">
             <Link href="/vendor/profile" className="shrink-0 group/avatar">
               {vendor?.avatar_url && !avatarError ? (
-                <img
+                <Image
                   src={vendor.avatar_url}
                   alt="Avatar"
+                  width={44}
+                  height={44}
                   onError={() => setAvatarError(true)}
                   className="w-11 h-11 rounded-full object-cover ring-2 ring-white/40 shadow-lg transition-all duration-300 group-hover/avatar:ring-4 group-hover/avatar:ring-white/60"
                 />
@@ -221,7 +224,7 @@ export default function VendorDashboard() {
         <div className="flex gap-2 overflow-x-auto -mx-4 px-4 scrollbar-none">
           <Link href="/vendor/portfolio" className="flex items-center gap-2.5 shrink-0 bg-white/90 backdrop-blur-sm border border-stone-200/60 rounded-2xl px-4 py-3 hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200 min-h-12">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-sky-400 to-sky-500 shadow-md flex items-center justify-center shrink-0">
-              <Image size={16} className="text-white" />
+              <ImageIcon size={16} className="text-white" />
             </div>
             <div className="text-left">
               <p className="text-xs font-bold text-stone-800">Portfolio</p>
