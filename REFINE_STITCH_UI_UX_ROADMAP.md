@@ -816,7 +816,7 @@ Sesi 3:
 - [x] 28. Chat Detail — HALAMAN BARU
 - [x] 29. Earnings — icon w-10 + "Tarik Saldo" pill
 - [x] 30. Verification Intro
-- [x] 31. KTP Verification
+- [x] 31. KTP Verification → enhanced: combined KTP + selfie pegang KTP upload with camera capture (`capture="user"`/`"environment"`)
 - [x] 32. Certification
 - [x] 33. Review Status
 
@@ -898,4 +898,5 @@ Sesi 3:
 | Radius change → komponen pecah | Visual mismatch | Update `--radius` di globals.css dulu, baru komponen |
 | Touch target h-8 → h-12 | Layout perlu space lebih | Container harus `min-h-12`, cek padding di form |
 | Batch 3 terlalu besar | Burnout | Kerjakan per sesi, prioritaskan bug fix dulu |
-| Verification flow perlu storage | Tidak bisa upload | Setup Supabase storage bucket untuk KTP/sertifikat |
+| Verification flow perlu storage | Tidak bisa upload | Setup Supabase storage bucket untuk KTP/sertifikat/selfie |
+| Selfie + KTP di 1 halaman | Form terlalu panjang | Gunakan 2 upload area terpisah (KTP + selfie) dengan preview inline + camera capture native |

@@ -100,7 +100,7 @@ PHASE 5 — Vendor Operations MVP
 
 Tasks
 
-- [x] KYC onboarding (KTP + certificate upload, `verification_submissions` table, storage bucket, admin review/approve/reject)
+- [x] KYC onboarding (KTP + selfie + certificate upload, `verification_submissions` table, storage bucket, admin review/approve/reject)
 - [x] Portfolio upload
 - [x] Vendor dashboard
 - [x] Order management
@@ -109,7 +109,7 @@ Tasks
 
 Output
 
-Vendor flow complete
+Vendor flow complete — KYC includes KTP + selfie pegang KTP (dual upload, camera capture via `capture="user"`/`capture="environment"`)
 
 ---
 
@@ -164,28 +164,33 @@ PHASE 9 — QA / UAT
 Tasks
 
 - [x] Code audit (Auth, Customer, Vendor, Admin, Wallet, Edge Functions, RLS)
-- [x] Build verification (62 pages, 0 errors)
+- [x] Build verification (70 pages, 0 errors)
 - [x] Payment flow audit + fixes
-- [x] Bug fixing (15 bugs fixed — see docs/TESTING_CHECKLIST.md K.31)
+- [x] Bug fixing (76 bugs fixed across 6 phases — see docs/bug_fix_plan.md)
 - [x] RLS migration (0008) — INSERT/UPDATE/SELECT policies for all tables
-- [x] Edge function fixes — atomic wallet credit, proper JWT auth
-- [x] Schema fixes — `accepted_at`/`started_at`, `handle_new_user` trigger, wallet auto-create
+- [x] Security migration — revoke EXECUTE from `anon` on 16 functions, `search_path` on 18 SECURITY DEFINER functions
+- [x] Edge function fixes + re-deploy — atomic wallet credit, proper JWT auth, idempotent webhook, origin validation
+  - `create-invoice` v10, `xendit-webhook` v13, `create-disbursement` v4, `release-payment` v7
+- [x] Schema fixes — `accepted_at`/`started_at`, `handle_new_user` trigger, wallet auto-create, wallet credit ordering, disbursement timeout idempotency
 - [ ] Payment testing (blocked — sandbox env unavailable)
-- [ ] Device testing (blocked — no device/simulator)
+- [ ] Device testing (blocked — no device/simulator; APK debug available at `releases/GEMA-v0.1.0-debug.apk`)
 - [ ] Load testing (blocked — no staging DB)
 - [ ] Security testing (blocked — no staging env)
-- [x] Known gaps documented
+- [x] Known gaps documented (see bug_fix_plan.md + AGENTS.md Known Gaps)
 
 Output
 
-Code quality verified — 62 pages, 0 build errors, 15 bugs fixed, RLS hardening applied
+Code quality verified — 70 pages, 0 build errors, 76 bugs fixed, 4 Edge Functions re-deployed, security migration applied
 
 ---
 
 PHASE 10 — CI/CD Automation
 
+> **Catatan:** Saat ini APK di-build manual di lokal via `npx cap sync && npx cap open android`, output disimpan ke `releases/GEMA-v0.1.0-debug.apk`. Belum ada GitHub Actions atau CI/CD otomatis.
+
 Tasks
 
+- [x] Manual APK build script — APK tersedia di `releases/GEMA-v0.1.0-debug.apk`
 - [ ] GitHub Actions Android build
 - [ ] GitHub Actions iOS build
 - [ ] Artifact generation
@@ -193,38 +198,55 @@ Tasks
 
 Output
 
-Automated build pipeline
+Automated build pipeline (manual untuk saat ini)
 
 ---
 
 PHASE 11 — Beta Launch
 
+> Lihat panduan detail: [`docs/PHASE_11_BETA_LAUNCH.md`](./docs/PHASE_11_BETA_LAUNCH.md)
+
 Tasks
 
-- [ ] Launch in 1 city
-- [ ] Onboard early users
-- [ ] Collect feedback
-- [ ] Monitor failures
+- [ ] Production environment setup (Supabase, Cloudflare, Xendit live keys)
+- [ ] Android release APK signing & distribution (Firebase App Distribution)
+- [ ] Vendor recruitment pipeline — target 50+ vendor terverifikasi
+- [ ] Customer acquisition campaign (ads, influencer, referral)
+- [ ] Monitoring & observability (Sentry, Supabase, uptime)
+- [ ] Support & ops setup (channel, SLA, escalation matrix)
+- [ ] Pilot city execution (Jaksel, Tangsel, Bekasi, Surabaya)
+- [ ] Feedback collection & rapid iteration
+- [ ] Go/No-Go evaluation untuk Phase 12
 
 Output
 
-Real-world validation
+Real-world validation — 50 vendor, 500 customer, 200 transaksi/bulan
 
 ---
 
 PHASE 12 — Scale Phase
 
+> Lihat panduan detail: [`docs/PHASE_12_SCALE_PHASE.md`](./docs/PHASE_12_SCALE_PHASE.md)
+
 Tasks
 
-- [ ] Expand categories
-- [ ] Add courier vertical
-- [ ] Add subscriptions
-- [ ] Add loyalty program
-- [ ] Multi-city rollout
+- [ ] Multi-city expansion (Jabodetabek → 20+ kota)
+- [ ] Category expansion (cleaning, garden, IT, tutoring)
+- [ ] Courier vertical — real-time tracking, dynamic pricing
+- [ ] Remote freelance IT — online delivery, video call
+- [ ] Subscription model — 3 tier (Basic/Pro/Enterprise)
+- [ ] AI recommendations & smart search
+- [ ] Loyalty program — points, tiers, rewards
+- [ ] Insurance & protection partnership
+- [ ] CI/CD automation (GitHub Actions)
+- [ ] Infrastructure scale (indexes, read replicas, CDN)
+- [ ] Multiple payment methods (QRIS, e-wallet)
+- [ ] Team scaling & SOP documentation
+- [ ] Regulatory compliance (UU PDP, tax, HAKI)
 
 Output
 
-Growth expansion
+Growth expansion — 500 vendor, 5,000 customer, 1,000 transaksi/bulan, breakeven
 
 ---
 

@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, Loader2, AlertCircle, CheckCircle, XCircle, Clock, ShieldCheck, IdCard, ScrollText, User, Mail, Phone, FileText, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, CheckCircle, XCircle, Clock, ShieldCheck, IdCard, ScrollText, User, Mail, Phone, FileText, ExternalLink, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton, SkeletonDetail } from '@/components/ui/skeleton';
@@ -238,6 +238,42 @@ function DetailContent() {
                 <p className="text-xs text-gray-400">Diupload: {new Date(submission.submitted_at).toLocaleDateString('id-ID')}</p>
               </div>
             </div>
+
+            {submission.selfie_url && (
+              <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
+                <h2 className="font-bold text-gray-900 flex items-center gap-2">
+                  <Camera size={18} className="text-emerald-600" />
+                  Selfie + Pegang KTP
+                </h2>
+                <div className="rounded-xl overflow-hidden bg-gray-100">
+                  {!imgError['selfie'] ? (
+                    <Image
+                      src={submission.selfie_url}
+                      alt="Selfie verifikasi"
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      onError={() => setImgError(p => ({ ...p, selfie: true }))}
+                      className="w-full object-contain max-h-60 h-auto"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center py-6 text-gray-400">
+                      <AlertCircle size={32} className="mb-2" />
+                      <p className="text-sm">Gagal memuat gambar</p>
+                      <a
+                        href={submission.selfie_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-600 hover:underline text-xs mt-2 flex items-center gap-1"
+                      >
+                        <ExternalLink size={12} />
+                        Buka di tab baru
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {(submission.certificate_url || submission.certificate_name) && (
               <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">

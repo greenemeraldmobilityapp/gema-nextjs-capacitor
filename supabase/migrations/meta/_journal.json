@@ -71,6 +71,13 @@
       "when": 1779206146448,
       "tag": "0009_worried_giant_man",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1779305455090,
+      "tag": "0010_sparkling_hemingway",
+      "breakpoints": true
     }
   ]
 }

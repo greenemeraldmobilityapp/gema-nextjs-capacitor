@@ -10,6 +10,7 @@ export type VerificationSubmission = {
   nik: string;
   ktp_name: string;
   ktp_url: string;
+  selfie_url: string | null;
   certificate_url: string | null;
   certificate_name: string | null;
   certificate_issuer: string | null;
@@ -49,6 +50,7 @@ export function useSubmitKtp() {
       nik: string;
       ktpName: string;
       ktpUrl: string;
+      selfieUrl: string;
     }) => {
       const { data, error } = await supabase
         .from('verification_submissions')
@@ -58,6 +60,7 @@ export function useSubmitKtp() {
           nik: params.nik,
           ktp_name: params.ktpName,
           ktp_url: params.ktpUrl,
+          selfie_url: params.selfieUrl,
         })
         .select()
         .single();

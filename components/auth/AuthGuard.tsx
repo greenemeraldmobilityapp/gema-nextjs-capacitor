@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 
-const AUTH_PAGES = ['/login', '/register', '/onboarding', '/forgot-password', '/update-password'];
+const AUTH_PAGES = ['/login', '/register', '/onboarding', '/forgot-password', '/update-password', '/terms', '/privacy'];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { profile, isLoading, isVendor, mode } = useAuthStore();

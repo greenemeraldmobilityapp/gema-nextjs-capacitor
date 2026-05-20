@@ -1680,6 +1680,27 @@ npx supabase functions logs create-topup-invoice --tail
 | 7 | Cancel/CCT back | Kembali ke halaman login, tidak ada loading state stuck |
 | 8 | Build verification | `npm run build` → 0 errors |
 
+#### K.39. Selfie + Pegang KTP Verification (`/vendor/verification/ktp`)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Buka halaman `/vendor/verification/ktp` | Halaman dengan header "Verifikasi Identitas", ada 2 upload area: KTP + Selfie |
+| 2 | Upload foto KTP | Klik area upload → terbuka kamera belakang (`capture="environment"`) → preview foto muncul |
+| 3 | Upload selfie + pegang KTP | Klik area kamera → terbuka kamera depan (`capture="user"`) → preview foto muncul |
+| 4 | Desktop fallback (no camera) | File picker muncul → pilih file → preview muncul tanpa error |
+| 5 | Isi NIK (16 digit) | Input text dengan maxLength=16, validasi required |
+| 6 | Isi Nama sesuai KTP | Input text untuk nama lengkap |
+| 7 | Submit form tanpa selfie | Button disabled (required) |
+| 8 | Submit form lengkap | Loading state → toast loading → redirect ke `/vendor/verification/certification` |
+| 9 | Storage — file path | KTP: `{userId}/ktp/{timestamp}_{filename}`; Selfie: `{userId}/selfie/{timestamp}_{filename}` |
+| 10 | Storage — old file cleanup | Re-upload KTP/Selfie → file lama otomatis terhapus dari bucket |
+| 11 | DB — `selfie_url` | Row `verification_submissions.selfie_url` terisi public URL selfie |
+| 12 | Vendor review page (`/vendor/verification/review`) | Jika `selfie_url` ada → tampilkan card "Selfie + Pegang KTP" dengan foto |
+| 13 | Admin detail page (`/admin/vendors/detail`) | Muncul card "Selfie + Pegang KTP" di antara KTP dan Sertifikat — side-by-side review |
+| 14 | Admin approve verification | Workflow normal — selfie_url ikut tersimpan tanpa error |
+| 15 | Image error fallback | Jika URL selfie broken → tampilkan "Gagal memuat gambar" + link buka tab baru |
+| 16 | Build verification | `npm run build` → 0 errors |
+
 #### Config — Tiga tempat registrasi custom scheme `com.greenemerald.gema://callback`:
 - ✅ Supabase Dashboard → Authentication → Settings → Redirect URLs: `com.greenemerald.gema://callback/**`
 - ✅ `AndroidManifest.xml` → intent filter `android:scheme="com.greenemerald.gema"`

@@ -319,10 +319,19 @@ function LoginContent() {
           </Button>
         </form>
 
-        <div className="mt-8 text-center pb-6">
+        <div className="mt-8 text-center pb-2">
           <span className="text-sm text-gray-500">Belum punya akun? </span>
           <Link href="/register/role" className="text-sm font-bold text-emerald-600 hover:underline">
             Daftar Sekarang
+          </Link>
+        </div>
+        <div className="text-center pb-6">
+          <Link href="/terms" className="text-xs text-gray-400 hover:text-emerald-600 underline underline-offset-2 transition-colors">
+            Syarat &amp; Ketentuan
+          </Link>
+          <span className="text-xs text-gray-300 mx-1.5">·</span>
+          <Link href="/privacy" className="text-xs text-gray-400 hover:text-emerald-600 underline underline-offset-2 transition-colors">
+            Kebijakan Privasi
           </Link>
         </div>
       </div>

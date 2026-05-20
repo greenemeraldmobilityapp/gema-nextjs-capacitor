@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { Clock, ShieldCheck, XCircle, AlertCircle, Loader2, Ban } from 'lucide-react';
+import Image from 'next/image';
+import { Clock, ShieldCheck, XCircle, AlertCircle, Loader2, Ban, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useLatestSubmission } from '@/lib/services/useVerification';
@@ -82,6 +83,28 @@ export default function VerificationReviewPage() {
         {view.desc.map((d, i) => (
           <p key={i} className={`text-sm text-stone-500 max-w-xs ${i > 0 ? 'mt-1' : 'mb-2'}`}>{d}</p>
         ))}
+
+        {submission?.selfie_url && (
+          <div className="mt-6 w-full max-w-xs">
+            <div className="bg-white/80 border border-stone-200 rounded-2xl p-4 text-left">
+              <div className="flex items-center gap-2 mb-3">
+                <Camera size={16} className="text-stone-500" />
+                <p className="text-xs font-semibold text-stone-600">Selfie + Pegang KTP</p>
+              </div>
+              <div className="rounded-xl overflow-hidden bg-stone-100">
+                <Image
+                  src={submission.selfie_url}
+                  alt="Selfie verifikasi"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  unoptimized
+                  className="w-full object-contain max-h-48 h-auto"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {(status === 'rejected' || status === 'revoked') && submission?.rejection_reason && (
           <div className={`mt-4 w-full max-w-xs border rounded-2xl p-4 text-left ${status === 'rejected' ? 'bg-red-50/80 border-red-200/50' : 'bg-gray-50/80 border-gray-200/50'}`}>
