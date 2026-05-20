@@ -39,6 +39,9 @@ next-env.d.ts
 # android keystore (sensitive — committed via base64 in keystore.md)
 *.keystore
 
+# build artifacts
+/releases/
+
 # python cache
 __pycache__/
 *.pyc
