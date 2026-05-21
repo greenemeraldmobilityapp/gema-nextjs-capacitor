@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Clock, AlertCircle, MessageSquare, ArrowRight, Package, History, Star } from 'lucide-react';
+import { Clock, AlertCircle, MessageSquare, ArrowRight, Package, History, Star, ShieldCheck, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -43,6 +43,12 @@ export default function OrdersPage() {
               {order.service_category && (
                 <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{getCategoryLabel(categories, order.service_category)}</span>
               )}
+              {order.payment_status === 'escrow' && (
+                <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full inline-flex items-center gap-1 mt-0.5">
+                  <ShieldCheck size={10} />
+                  Dilindungi Escrow
+                </span>
+              )}
               <div className="flex items-start justify-between gap-2 mt-0.5">
                 <h3 className="font-bold text-gray-900 text-sm leading-tight">{order.service_name}</h3>
                 <span className={cn('text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 flex items-center gap-1.5 shadow-sm', cfg?.color)}>
@@ -76,11 +82,18 @@ export default function OrdersPage() {
                 </div>
               </Link>
               {order.order_status === 'completed' && (
-                <Link href={`/customer/review?order_id=${order.id}`}>
-                  <div className="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-600 hover:bg-yellow-100 transition-colors" title="Beri Ulasan">
-                    <Star size={18} />
-                  </div>
-                </Link>
+                <>
+                  <Link href={`/customer/booking?vendorId=${order.vendor_id}&serviceId=${order.service_id}&rebook=1`}>
+                    <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors" title="Pesan Lagi">
+                      <RotateCcw size={18} />
+                    </div>
+                  </Link>
+                  <Link href={`/customer/review?order_id=${order.id}`}>
+                    <div className="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-600 hover:bg-yellow-100 transition-colors" title="Beri Ulasan">
+                      <Star size={18} />
+                    </div>
+                  </Link>
+                </>
               )}
               <Link href={`/customer/orders/detail?id=${order.id}`}>
                 <Button variant="pill" size="sm" className="h-10 px-5 text-xs shadow-sm">

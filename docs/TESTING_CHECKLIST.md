@@ -729,13 +729,66 @@ ORDER BY w.balance DESC LIMIT 10;
 | 4 | Vendor tap "Berhenti Bagikan Lokasi" | Sharing berhenti |
 | 5 | Cek customer page | Lokasi terakhir masih tampil |
 
-### K.19. Push Notification (Scaffolding)
+### K.19. Push Notification (Fase 1–3: Firebase + DB + Backend)
 
 | Langkah | Skenario | Expected Result |
 |---------|----------|----------------|
-| 1 | Buka aplikasi | Service worker terdaftar (cek di DevTools → Application → Service Workers) |
-| 2 | Cek `public/sw.js` | File exist dengan event listeners untuk push, notificationclick |
-| 3 | Notifikasi | Push notification siap diintegrasikan dengan FCM/Capacitor nanti |
+| 1 | Cek tabel `push_tokens` di DB | Ada: id, user_id, token, platform, device_info, created_at, updated_at |
+| 2 | Cek tabel `notifications` di DB | Ada: id, user_id, category (enum), title, body, icon, url, metadata, is_read, created_at, read_at |
+| 3 | Cek tabel `notification_preferences` di DB | Ada: id, user_id, channel, push_enabled, email_enabled, created_at, updated_at |
+| 4 | Cek RLS `push_tokens` | User hanya bisa lihat/insert/update/delete token sendiri |
+| 5 | Cek RLS `notifications` | User hanya bisa lihat dan update (read) notifikasi sendiri |
+| 6 | Cek trigger `after_user_insert` | Setiap user baru auto dapat 4 baris preferences (order, chat, promo, system) |
+| 7 | Cek `lib/firebase/client.ts` | File exist dengan initFirebase, getFirebaseApp, getFirebaseMessaging, getFcmToken |
+| 8 | Cek `public/firebase-messaging-sw.js` | File exist dengan FCM SDK import, onBackgroundMessage handler |
+| 9 | Cek `firebase` di package.json | Dependency terinstall |
+| 10 | Edge Function `send-push` deployed | Ada di Supabase Dashboard → Edge Functions |
+| 11 | EF `send-push` — cek preference | Kirim push ke user dengan `push_enabled=false` → skip (tidak error) |
+| 12 | EF `send-push` — no token | Kirim push ke user tanpa token → skip gracefully |
+| 13 | EF `send-push` — invalid token | Token FCM invalid → hapus token dari `push_tokens`, lanjut |
+| 14 | Webhook payment `PAID` → push customer | Bayar order via Xendit → customer terima "Pembayaran Diterima" |
+| 15 | Webhook payment `PAID` → push vendor | Bayar order via Xendit → vendor terima "Pesanan Baru Masuk!" |
+| 16 | `release-payment` → push vendor | Admin release escrow → vendor terima "Dana Pesanan Dirilis" |
+| 17 | `release-payment` → push customer | Admin release escrow → customer terima "Pesanan Selesai" |
+| 18 | Bell icon di customer home | Unread badge muncul sesuai `useUnreadCount` |
+| 19 | Bell icon di vendor dashboard | Badge notifikasi, bukan badge pesanan |
+| 20 | Tap bell → notifikasi list | Navigasi ke `/customer/notifications` atau `/vendor/notifications` |
+| 21 | Notifikasi list — grouped by date | Notifikasi terkelompok per hari |
+| 22 | Notifikasi list — unread indicator | Notifikasi belum dibaca punya dot biru + bold title |
+| 23 | Tap notifikasi → mark as read | Dot hilang, title jadi regular weight, redirect ke `url` |
+| 24 | "Baca Semua" button | Semua notifikasi jadi read, unread count = 0 |
+| 25 | Empty state notif list | Icon Bell + "Belum ada notifikasi" |
+| 26 | Customer settings notifikasi — persist | Toggle menggunakan `useNotificationPreferences` + `useUpdateNotificationPreference` |
+| 27 | Vendor settings notifikasi — persist | Toggle menggunakan hook yang sama, toast "diperbarui" |
+| 28 | Customer profile → ada link "Notifikasi" | Navigasi ke `/customer/notifications` |
+| 29 | Vendor profile → ada link "Notifikasi" | Navigasi ke `/vendor/notifications` |
+| 30 | Firebase Console | Belum disetup — kredensial FCM kosong di `.env.local` |
+| 31 | `@capacitor/push-notifications` terinstall | Di `package.json` + sync ke `android/` |
+| 32 | `useCapacitorPush` hook ada | File `lib/services/useCapacitorPush.ts` — guard `Capacitor.isNativePlatform()` |
+| 33 | Native push — registrasi token | Di Android: `PushNotifications.requestPermissions()` → `register()` → `registration` event → token tersimpan di `push_tokens` |
+| 34 | Native push — foreground | Push masuk saat app terbuka → muncul toast sonner (title + body) |
+| 35 | Native push — tap navigasi | Push masuk → tap notif → navigasi ke `data.url` via `window.location.href` |
+| 36 | Android manifest `POST_NOTIFICATIONS` | Permission sudah ditambahkan di `AndroidManifest.xml` |
+| 37 | `google-services.json` | Belum ada — harus didownload dari Firebase Console setelah project dibuat |
+
+### K.19.1. Push Notification Broadcast (Admin Fase 6)
+
+| Langkah | Skenario | Expected Result |
+|---------|----------|----------------|
+| 1 | Login sebagai Admin, buka `/admin/broadcast` | Form title, body, link, target selector muncul |
+| 2 | Isi judul + isi pesan | Form valid |
+| 3 | Pilih target "Semua Pengguna" | Radio terpilih, border emerald |
+| 4 | Pilih target "Customer Saja" | Radio terpilih |
+| 5 | Pilih target "Vendor Saja" | Radio terpilih |
+| 6 | Submit dengan title/body kosong | Toast "Judul dan isi pesan harus diisi" |
+| 7 | Submit dengan data valid | Loading → toast "Broadcast berhasil dikirim!" |
+| 8 | Result card muncul | Total users, tokens found, delivered, failed, notifications created |
+| 9 | Cek DB: `notifications` | Semua user di target punya row notification baru |
+| 10 | Cek DB: `push_tokens` | Token valid diproses, invalid dihapus |
+| 11 | Cek Edge Function logs | `broadcast-push` log sukses |
+| 12 | Bottom nav → "Broadcast" tab | Ada di overflow sheet (MoreHorizontal) |
+| 13 | Tap overflow → "Broadcast" | Navigasi ke `/admin/broadcast` |
+| 14 | **Role guard:** Non-admin akses `/admin/broadcast` | Redirect ke dashboard masing-masing |
 
 ---
 

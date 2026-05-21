@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { MapPin, Star, LayoutGrid, Map as MapIcon, Wallet, ChevronRight, Sparkles, Search, AlertCircle, ChevronDown, Store } from 'lucide-react';
+import { MapPin, Star, LayoutGrid, Map as MapIcon, Wallet, ChevronRight, Sparkles, Search, AlertCircle, ChevronDown, Store, Bell } from 'lucide-react';
+import NotifBell from '@/components/shared/NotifBell';
 import { PromoCarousel } from '@/components/shared/PromoCarousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
@@ -135,10 +136,12 @@ export default function CustomerHome() {
                 </p>
               </div>
             </div>
-            <Link
-              href="/customer/profile"
-              className="flex items-center gap-1.5 ml-3 shrink-0 bg-emerald-900/40 backdrop-blur-xl rounded-full pl-3 pr-1 py-1 border border-white/15 hover:bg-emerald-900/50 transition-all duration-300 group"
-            >
+            <div className="flex items-center gap-2">
+              <NotifBell href="/customer/notifications" />
+              <Link
+                href="/customer/profile"
+                className="flex items-center gap-1.5 shrink-0 bg-emerald-900/40 backdrop-blur-xl rounded-full pl-3 pr-1 py-1 border border-white/15 hover:bg-emerald-900/50 transition-all duration-300 group"
+              >
               <span className="text-sm font-semibold truncate max-w-[72px]">{profile?.full_name?.split(' ')[0] || 'User'}</span>
               <ChevronDown size={14} className="text-white/60 group-hover:text-white/90 transition-colors" />
               <div className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/30 group-hover:ring-white/50 transition-all duration-300">
@@ -151,6 +154,7 @@ export default function CustomerHome() {
                 )}
               </div>
             </Link>
+            </div>
           </div>
 
           <div className="rounded-3xl shadow-lg shadow-black/10 overflow-hidden bg-emerald-900/40 backdrop-blur-xl border border-white/15 hover:bg-emerald-900/50 transition-all relative">

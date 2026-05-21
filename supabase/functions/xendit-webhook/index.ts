@@ -3,6 +3,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 const XENDIT_WEBHOOK_TOKEN = Deno.env.get('XENDIT_WEBHOOK_TOKEN')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const APP_URL = Deno.env.get('APP_URL') || 'http://localhost:3000'
 
 const supabaseFetch = (path: string, options: RequestInit = {}) =>
   fetch(`${SUPABASE_URL}/rest/v1${path}`, {
@@ -14,6 +15,30 @@ const supabaseFetch = (path: string, options: RequestInit = {}) =>
       'Content-Type': 'application/json',
     },
   })
+
+async function sendPush(payload: {
+  userId: string
+  category: 'order' | 'chat' | 'promo' | 'system'
+  title: string
+  body: string
+  url?: string
+}) {
+  try {
+    const fnRes = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!fnRes.ok) {
+      console.error(`send-push failed for user ${payload.userId}: ${fnRes.status}`)
+    }
+  } catch (err) {
+    console.error('send-push error:', err)
+  }
+}
 
 async function creditWallet(walletId: string, amount: number): Promise<boolean> {
   const rpcRes = await supabaseFetch(`/rpc/credit_wallet`, {
@@ -152,6 +177,22 @@ serve(async (req) => {
             body: JSON.stringify({ status: 'success' }),
           })
           console.log(`Topup ${txId} processed: ${tx.amount} credited to wallet ${tx.wallet_id}`)
+
+          // Notify user: topup success
+          const walletRes = await supabaseFetch(
+            `/wallets?id=eq.${tx.wallet_id}&select=user_id`,
+          )
+          const walletData = await walletRes.json()
+          const wallet = walletData?.[0]
+          if (wallet?.user_id) {
+            sendPush({
+              userId: wallet.user_id,
+              category: 'system',
+              title: 'Top Up Berhasil',
+              body: `Saldo GEMA Pay Anda bertambah Rp ${(tx.amount || 0).toLocaleString('id-ID')}.`,
+              url: '/wallet',
+            })
+          }
         } else {
           console.error(`Topup ${txId}: failed to credit wallet ${tx.wallet_id}`)
         }
@@ -178,6 +219,33 @@ serve(async (req) => {
       })
 
       console.log(`Order ${orderId} set to escrow`)
+
+      // Fetch order details for push notifications
+      const orderDetailRes = await supabaseFetch(
+        `/orders?id=eq.${orderId}&select=customer_id,vendor_id,service_name,total_amount,customer:customer_id(full_name)`,
+      )
+      const orderDetails = await orderDetailRes.json()
+      const orderData = orderDetails?.[0]
+
+      if (orderData) {
+        // Notify customer: payment confirmed
+        sendPush({
+          userId: orderData.customer_id,
+          category: 'order',
+          title: 'Pembayaran Diterima',
+          body: `Pembayaran Rp ${(orderData.total_amount || 0).toLocaleString('id-ID')} untuk ${orderData.service_name} sudah dikonfirmasi.`,
+          url: `/customer/orders/detail?id=${orderId}`,
+        })
+
+        // Notify vendor: new paid order
+        sendPush({
+          userId: orderData.vendor_id,
+          category: 'order',
+          title: 'Pesanan Baru Masuk!',
+          body: `Pesanan ${orderData.service_name} dari ${orderData.customer?.full_name || 'Pelanggan'} — pembayaran sudah masuk escrow.`,
+          url: `/vendor/orders/detail?id=${orderId}`,
+        })
+      }
     } else if (status === 'EXPIRED') {
       if (external_id.startsWith('topup_')) {
         const txId = external_id.replace('topup_', '')

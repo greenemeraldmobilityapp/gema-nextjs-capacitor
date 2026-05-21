@@ -375,14 +375,14 @@ Integrasi setelah UI stabil.
 ## Features
 - [x] live location updates (basic: watchPosition + localStorage)
 - [x] chat realtime (Supabase Realtime subscriptions + polling fallback)
-- [x] push notifications (service worker scaffolding)
+- [x] push notifications (Fase 1 selesai: DB + Firebase client + SW upgrade)
 - [ ] online/offline vendor status
 - [x] live order progress (milestones via React Query polling)
 
 ## Dependencies
 - [x] Supabase realtime (subscriptions implemented for messages table)
 - [x] Capacitor geolocation (navigator.geolocation for nearby vendors)
-- [x] push notifications (service worker scaffolding)
+- [x] push notifications (Fase 1 selesai: DB + Firebase client + SW upgrade)
 
 ---
 

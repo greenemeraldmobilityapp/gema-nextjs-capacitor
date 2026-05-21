@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useVendor, useVendorActiveServices, useVendorCompletedProjects, haversineDistance } from '@/lib/services/useVendors';
+import { useVendor, useVendorActiveServices, useVendorCompletedProjects, useVendorOperatingHours, haversineDistance } from '@/lib/services/useVendors';
 import { useVendorReviews } from '@/lib/services/useReviews';
 import { useLocationStore } from '@/store/location';
 
@@ -33,6 +33,7 @@ function VendorDetailContent() {
   const { data: services, isLoading: servicesLoading } = useVendorActiveServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useVendorReviews(id);
   const { data: completedProjects, isLoading: projectsLoading } = useVendorCompletedProjects(id);
+  const { data: operatingHours } = useVendorOperatingHours(id);
   const userLocation = useLocationStore((s) => s.lat !== null && s.lng !== null ? { lat: s.lat, lng: s.lng } : null);
 
   const distance = vendor?.users?.lat && vendor?.users?.lng && userLocation
@@ -205,6 +206,26 @@ function VendorDetailContent() {
           <div className="bg-white rounded-[24px] p-4 shadow-sm border border-gray-100">
             <h3 className="text-sm font-bold text-gray-900 mb-2">Tentang</h3>
             <p className="text-sm text-gray-600 leading-relaxed">{vendor.bio}</p>
+          </div>
+        </div>
+      )}
+
+      {operatingHours && operatingHours.length > 0 && (
+        <div className="px-4 -mt-3">
+          <div className="bg-white rounded-[24px] p-4 shadow-sm border border-gray-100">
+            <h3 className="text-sm font-bold text-gray-900 mb-3">Jam Operasional</h3>
+            <div className="space-y-2">
+              {operatingHours.map((h: any) => (
+                <div key={h.dayOfWeek} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 w-20">{['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][h.dayOfWeek]}</span>
+                  {h.isActive ? (
+                    <span className="text-gray-900 font-medium">{h.openTime} - {h.closeTime}</span>
+                  ) : (
+                    <span className="text-red-400">Libur</span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

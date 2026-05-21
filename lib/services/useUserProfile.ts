@@ -10,7 +10,7 @@ export function useUserProfile(userId: string | undefined) {
       if (!userId) return null;
       const { data, error } = await supabase
         .from('users')
-        .select('id, email, full_name, role, phone, lat, lng')
+        .select('id, email, full_name, role, phone, lat, lng, address_full')
         .eq('id', userId)
         .single();
 

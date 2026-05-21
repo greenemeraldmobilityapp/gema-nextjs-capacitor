@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bell, TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity, User, Image as ImageIcon, MessageCircle, ShieldCheck, Star, ChevronRight } from 'lucide-react';
+import { TrendingUp, CheckCircle, Clock, Loader2, AlertCircle, Activity, User, Image as ImageIcon, MessageCircle, ShieldCheck, Star, ChevronRight } from 'lucide-react';
+import NotifBell from '@/components/shared/NotifBell';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
@@ -136,16 +137,7 @@ export default function VendorDashboard() {
               <p className="text-emerald-100/80 text-sm">{vendor?.specialization || 'Ringkasan hari ini'}</p>
             </div>
           </div>
-          <Link href="/vendor/orders" className="relative group/bell">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 group-hover/bell:bg-white/30 group-hover/bell:scale-110">
-              <Bell size={20} className="text-white" />
-            </div>
-            {pendingOrders.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-emerald-600 flex items-center justify-center text-[10px] font-bold text-white animate-pulse">
-                {pendingOrders.length > 9 ? '9+' : pendingOrders.length}
-              </span>
-            )}
-          </Link>
+          <NotifBell href="/vendor/notifications" />
         </div>
       </div>
 

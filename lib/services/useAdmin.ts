@@ -469,6 +469,39 @@ export function useDeletePromo() {
   });
 }
 
+export function usePushBroadcast() {
+  return useMutation({
+    mutationFn: async (params: {
+      title: string;
+      body: string;
+      url?: string;
+      target: 'all' | 'customers' | 'vendors';
+    }) => {
+      const { data: session } = await supabase.auth.getSession();
+      const accessToken = session?.session?.access_token;
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/broadcast-push`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(params),
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Broadcast failed (${res.status})`);
+      }
+
+      return res.json();
+    },
+  });
+}
+
 export type AdminTransaction = {
   id: string;
   wallet_id: string;

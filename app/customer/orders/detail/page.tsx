@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, MessageSquare, MapPin, Clock, Star, CheckCircle2, XCircle, AlertCircle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, MessageSquare, MapPin, Clock, Star, CheckCircle2, XCircle, AlertCircle, ShieldCheck, RotateCcw, FileText } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
 import { useVendor } from '@/lib/services/useVendors';
-import { useChatByOrder } from '@/lib/services/useChat';
+import { useChatByOrder, postSystemMessage } from '@/lib/services/useChat';
 import { useCategories } from '@/lib/services/useCategories';
 import { getCategoryLabel } from '@/lib/category-utils';
 import { useOrderReview } from '@/lib/services/useReviews';
@@ -168,6 +168,24 @@ function OrderTrackingContent() {
           </Card>
         )}
 
+        {order.payment_status === 'escrow' && (
+          <div className="rounded-3xl bg-gradient-to-br from-blue-50 to-blue-100/80 border border-blue-200 p-4 flex items-start gap-3 shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shrink-0 shadow-sm">
+              <ShieldCheck size={20} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-blue-700">Dilindungi Escrow GEMA</p>
+              <p className="text-xs text-blue-600 mt-0.5">
+                Dana Rp {order.total_amount.toLocaleString('id-ID')} aman ditahan sampai pekerjaan selesai dan Anda puas
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-200/50 rounded-full shrink-0">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              <span className="text-[10px] font-semibold text-blue-700">Aktif</span>
+            </div>
+          </div>
+        )}
+
         {order.payment_status === 'refunded' && (
           <div className="rounded-3xl bg-gradient-to-br from-emerald-50 to-emerald-100/80 border border-emerald-200 p-4 flex items-center gap-3 shadow-sm">
             <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 shadow-sm">
@@ -295,6 +313,28 @@ function OrderTrackingContent() {
           </Link>
         </div>
 
+        <Link
+          href={`/customer/orders/invoice?order_id=${orderId}`}
+          className="block w-full"
+        >
+          <Button className="w-full h-12 rounded-xl bg-white border border-gray-200 text-gray-700 flex items-center justify-center gap-2 shadow-sm hover:bg-gray-50">
+            <FileText className="w-5 h-5" />
+            Lihat Invoice
+          </Button>
+        </Link>
+
+        {order.order_status === 'completed' && (
+          <Link
+            href={`/customer/booking?vendorId=${order.vendor_id}&serviceId=${order.service_id}&rebook=1`}
+            className="block w-full"
+          >
+            <Button className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium flex items-center justify-center gap-2 shadow-sm">
+              <RotateCcw className="w-5 h-5" />
+              Pesan Lagi
+            </Button>
+          </Link>
+        )}
+
         {order.order_status === 'pending' && (
           <Button
             onClick={() => {
@@ -305,6 +345,7 @@ function OrderTrackingContent() {
                 {
                   onSuccess: () => {
                     toast.dismiss(loadingId);
+                    if (chat) postSystemMessage(chat.id, '❌ Pesanan telah dibatalkan.')
                     toast('Pesanan dibatalkan', {
                       description: 'Anda dapat mengurungkan pembatalan dalam 6 detik',
                       action: {

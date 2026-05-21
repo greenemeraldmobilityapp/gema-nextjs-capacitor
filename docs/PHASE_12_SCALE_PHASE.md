@@ -353,7 +353,7 @@ Seiring scale, buka kategori baru:
 - [ ] Evaluate Cloudflare plan — Workers/Bandwidth unlimited di free tier
 - [ ] Optimasi cost per transaksi — batch Xendit disbursement jika memungkinkan
 - [ ] Evaluasi: in-house OCR vs Supabase Storage untuk KYC
-- [ ] Evaluasi: push notification in-house vs Firebase
+- [x] Evaluasi: push notification in-house vs Firebase (FCM gratis, terpilih)
 
 ---
 

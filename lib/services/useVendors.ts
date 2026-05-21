@@ -254,6 +254,96 @@ export type CompletedProject = {
   }[];
 };
 
+export function useVendorOperatingHours(vendorId: string | undefined) {
+  return useQuery({
+    queryKey: ['vendor-operating-hours', vendorId],
+    queryFn: async () => {
+      if (!vendorId) return [];
+      const { data, error } = await supabase
+        .from('vendor_operating_hours')
+        .select('*')
+        .eq('vendor_id', vendorId)
+        .order('day_of_week', { ascending: true });
+      if (error) throw error;
+      return data as { id: string; vendorId: string; dayOfWeek: number; openTime: string; closeTime: string; isActive: boolean }[];
+    },
+    enabled: !!vendorId,
+  });
+}
+
+export function useUpdateOperatingHours() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ vendorId, hours }: { vendorId: string; hours: { dayOfWeek: number; openTime: string; closeTime: string; isActive: boolean }[] }) => {
+      const { error } = await supabase
+        .from('vendor_operating_hours')
+        .upsert(hours.map(h => ({ vendor_id: vendorId, ...h })), { onConflict: 'vendor_id,day_of_week' });
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-operating-hours', variables.vendorId] });
+    },
+  });
+}
+
+export function useVendorDateBlocks(vendorId: string | undefined) {
+  return useQuery({
+    queryKey: ['vendor-date-blocks', vendorId],
+    queryFn: async () => {
+      if (!vendorId) return [];
+      const { data, error } = await supabase
+        .from('vendor_date_blocks')
+        .select('*')
+        .eq('vendor_id', vendorId)
+        .order('blocked_date', { ascending: true });
+      if (error) throw error;
+      return data as { id: string; vendorId: string; blockedDate: string; reason: string | null }[];
+    },
+    enabled: !!vendorId,
+  });
+}
+
+export function useAddDateBlock() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ vendorId, blockedDate, reason }: { vendorId: string; blockedDate: string; reason?: string }) => {
+      const { error } = await supabase
+        .from('vendor_date_blocks')
+        .insert({ vendor_id: vendorId, blocked_date: blockedDate, reason });
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-date-blocks', variables.vendorId] });
+    },
+  });
+}
+
+export function useRemoveDateBlock() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, vendorId }: { id: string; vendorId: string }) => {
+      const { error } = await supabase.from('vendor_date_blocks').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-date-blocks', variables.vendorId] });
+    },
+  });
+}
+
+export function useUpdateVendorOnlineStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, isOnline }: { userId: string; isOnline: boolean }) => {
+      const { error } = await supabase.from('users').update({ is_online: isOnline }).eq('id', userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendor'] });
+    },
+  });
+}
+
 export function useVendorCompletedProjects(vendorId: string | undefined, limit: number = 20) {
   return useQuery({
     queryKey: ['vendor-completed-projects', vendorId, limit],

@@ -43,9 +43,32 @@ function PaymentSuccessContent() {
               <CheckCircle size={56} className="text-white animate-in zoom-in-0 duration-500" />
             </div>
             <h1 className="text-3xl font-heading font-bold mb-2">Pembayaran Berhasil!</h1>
-            <p className="text-emerald-100 mb-8 max-w-sm text-lg">
+            <p className="text-emerald-100 mb-6 max-w-sm text-lg">
               Dana Anda telah diamankan (Escrow). Tukang segera menuju lokasi Anda.
             </p>
+
+            <div className="flex items-center justify-center gap-2 mb-8">
+              <div className="flex flex-col items-center">
+                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
+                  <span className="text-white text-sm font-bold">1</span>
+                </div>
+                <span className="text-[10px] text-emerald-200 mt-1">Dana Ditahan</span>
+              </div>
+              <div className="w-12 h-0.5 bg-emerald-400/50 -mt-5" />
+              <div className="flex flex-col items-center">
+                <div className="w-10 h-10 rounded-full bg-white/20 border border-emerald-400/50 flex items-center justify-center">
+                  <span className="text-white/70 text-sm font-bold">2</span>
+                </div>
+                <span className="text-[10px] text-emerald-200/70 mt-1">Pekerjaan</span>
+              </div>
+              <div className="w-12 h-0.5 bg-emerald-400/50 -mt-5" />
+              <div className="flex flex-col items-center">
+                <div className="w-10 h-10 rounded-full bg-white/20 border border-emerald-400/50 flex items-center justify-center">
+                  <span className="text-white/70 text-sm font-bold">3</span>
+                </div>
+                <span className="text-[10px] text-emerald-200/70 mt-1">Dana Dilepas</span>
+              </div>
+            </div>
           </>
         ) : (
           <>

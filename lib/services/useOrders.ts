@@ -23,6 +23,7 @@ export type Order = {
   created_at: string;
   completed_at: string | null;
   cancelled_at: string | null;
+  invoice_number: string | null;
   customer?: {
     full_name: string;
     phone: string | null;

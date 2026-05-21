@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
-import { ArrowLeft, User, Camera, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Camera, Loader2, Power, PowerOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import BottomSheetSelect, { type BottomSheetOption } from '@/components/shared/BottomSheetSelect';
@@ -47,6 +47,17 @@ function EditProfileForm() {
   });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      if (!profile?.id) return;
+      const supabase = createClient();
+      const { data } = await supabase.from('users').select('is_online').eq('id', profile.id).single();
+      if (data) setIsOnline(data.is_online ?? false);
+    };
+    fetchStatus();
+  }, [profile?.id]);
   const [errorMsg, setErrorMsg] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -281,6 +292,40 @@ function EditProfileForm() {
             {errorMsg}
           </div>
         )}
+
+        <div className="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm">
+          <div className="flex items-center gap-3">
+            {isOnline ? (
+              <Power className="w-5 h-5 text-emerald-500" />
+            ) : (
+              <PowerOff className="w-5 h-5 text-gray-400" />
+            )}
+            <div>
+              <p className="font-semibold text-gray-900">Status Online</p>
+              <p className="text-sm text-gray-500">{isOnline ? 'Menerima pesanan baru' : 'Tidak menerima pesanan'}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={async () => {
+              if (!profile?.id) return;
+              const newStatus = !isOnline;
+              setIsOnline(newStatus);
+              try {
+                const supabase = createClient();
+                const { error } = await supabase.from('users').update({ is_online: newStatus }).eq('id', profile.id);
+                if (error) throw error;
+                toast.success(newStatus ? 'Online' : 'Offline');
+              } catch (err) {
+                setIsOnline(!newStatus);
+                toast.error('Gagal mengubah status');
+              }
+            }}
+            className={`relative h-8 w-16 rounded-full transition-colors ${isOnline ? 'bg-emerald-500' : 'bg-gray-300'}`}
+          >
+            <div className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${isOnline ? 'translate-x-9' : 'translate-x-1'}`} />
+          </button>
+        </div>
 
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant space-y-4">
           <div className="space-y-1.5">

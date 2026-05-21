@@ -4,10 +4,11 @@ import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { User, Settings, HelpCircle, LogOut, Wallet, ChevronRight, Camera, ShieldCheck, MapPin, Loader2, Store, ArrowLeftRight } from 'lucide-react';
+import { User, Settings, HelpCircle, LogOut, Wallet, ChevronRight, Camera, ShieldCheck, MapPin, Loader2, Store, ArrowLeftRight, Award, Bell } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 import { useWallet } from '@/lib/services/useWallet';
+import { useLoyalty, getTier } from '@/lib/services/useLoyalty';
 import { createClient } from '@/lib/supabase/client';
 import { compressImage, deleteFolderContents } from '@/lib/image-utils';
 import LogoutModal from '@/components/shared/LogoutModal';
@@ -17,6 +18,7 @@ const primaryMenu = [
   { icon: User, label: 'Informasi Akun', subtitle: 'Nama, email, nomor HP', href: '/customer/profile/edit' },
   { icon: Wallet, label: 'Dompet Saya', subtitle: 'Saldo & riwayat transaksi', href: '/wallet' },
   { icon: MapPin, label: 'Alamat', subtitle: 'Atur alamat pengerjaan', href: '/customer/profile/address' },
+  { icon: Bell, label: 'Notifikasi', subtitle: 'Daftar notifikasi & pengaturan', href: '/customer/notifications' },
   { icon: ShieldCheck, label: 'Keamanan', subtitle: 'Kata sandi & autentikasi', href: '/customer/settings/security' },
 ];
 
@@ -33,6 +35,8 @@ export default function ProfilePage() {
   const setMode = useAuthStore((s) => s.setMode);
   const setProfile = useAuthStore((s) => s.setProfile);
   const { data: wallet, isLoading: walletLoading } = useWallet(profile?.id);
+  const { data: loyalty } = useLoyalty(profile?.id);
+  const tier = getTier(loyalty?.totalSpent ?? 0);
   const [uploading, setUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(profile?.avatar_url || null);
   const [showLogout, setShowLogout] = useState(false);
@@ -174,6 +178,27 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Loyalty Card */}
+        <Link href="/wallet/loyalty">
+          <Card className="rounded-2xl border-none shadow-sm overflow-hidden bg-gradient-to-br from-purple-500 to-purple-700 text-white cursor-pointer transition-colors duration-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <Award size={24} />
+                  </div>
+                  <div>
+                    <p className="text-purple-100 text-xs">Poin Loyalty</p>
+                    <p className="font-heading text-xl font-bold">{loyalty?.points ?? 0}</p>
+                    <p className="text-[10px] text-purple-200 mt-0.5">{tier.name}</p>
+                  </div>
+                </div>
+                <ChevronRight size={20} className="text-purple-200" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
 
         <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
           <CardContent className="p-0">

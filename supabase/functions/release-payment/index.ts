@@ -19,6 +19,30 @@ const supabaseFetch = (path: string, options: RequestInit = {}) =>
     },
   })
 
+async function sendPush(payload: {
+  userId: string
+  category: 'order' | 'chat' | 'promo' | 'system'
+  title: string
+  body: string
+  url?: string
+}) {
+  try {
+    const fnRes = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!fnRes.ok) {
+      console.error(`send-push failed for user ${payload.userId}: ${fnRes.status}`)
+    }
+  } catch (err) {
+    console.error('send-push error:', err)
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -48,7 +72,7 @@ serve(async (req) => {
     }
 
     const orderRes = await supabaseFetch(
-      `/orders?id=eq.${order_id}&select=*,vendor_id,order_status,payment_status,vendor_payout`,
+      `/orders?id=eq.${order_id}&select=*,vendor_id,customer_id,service_name,order_status,payment_status,vendor_payout`,
     )
     const orders = await orderRes.json()
     const order = orders?.[0]
@@ -101,6 +125,24 @@ serve(async (req) => {
             amount: order.vendor_payout,
             status: 'success',
           }),
+        })
+
+        // Notify vendor: payment released
+        sendPush({
+          userId: order.vendor_id,
+          category: 'order',
+          title: 'Dana Pesanan Dirilis',
+          body: `Pembayaran Rp ${(order.vendor_payout || 0).toLocaleString('id-ID')} untuk ${order.service_name} sudah masuk ke dompet Anda.`,
+          url: `/vendor/orders/detail?id=${order_id}`,
+        })
+
+        // Notify customer: order completed, payment released
+        sendPush({
+          userId: order.customer_id,
+          category: 'order',
+          title: 'Pesanan Selesai',
+          body: `Pesanan ${order.service_name} sudah selesai. Terima kasih telah menggunakan GEMA!`,
+          url: `/customer/orders/detail?id=${order_id}`,
         })
       } else {
         console.error(`release-payment: failed to credit wallet ${wallet.id}`)

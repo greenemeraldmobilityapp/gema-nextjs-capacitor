@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Loader2, CalendarDays, Clock, Wallet, Building2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, MapPin, Loader2, CalendarDays, Clock, Wallet, Building2, ExternalLink, RotateCcw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useCreateOrder } from '@/lib/services/useOrders';
 import { useWallet } from '@/lib/services/useWallet';
 import { useAuthStore } from '@/store/auth';
+import { useVendorOperatingHours, useVendorDateBlocks, useVendor } from '@/lib/services/useVendors';
 
 const supabase = createClient();
 
@@ -26,6 +27,7 @@ function BookingContent() {
   const router = useRouter();
   const vendorId = searchParams.get('vendorId') || '';
   const serviceId = searchParams.get('serviceId') || '';
+  const isRebook = searchParams.get('rebook') === '1';
   const profile = useAuthStore((s) => s.profile);
   const { data: wallet } = useWallet(profile?.id);
   const createOrder = useCreateOrder();
@@ -55,7 +57,7 @@ function BookingContent() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('users')
-        .select('full_name')
+        .select('full_name, is_online')
         .eq('id', vendorId)
         .single();
       if (error) throw error;
@@ -63,6 +65,24 @@ function BookingContent() {
     },
     enabled: !!vendorId,
   });
+
+  const { data: operatingHours } = useVendorOperatingHours(vendorId);
+  const { data: dateBlocks } = useVendorDateBlocks(vendorId);
+
+  const dayOfWeek = selectedDate ? new Date(selectedDate + 'T00:00:00').getDay() : -1;
+  const todayHours = operatingHours?.find(h => h.dayOfWeek === dayOfWeek);
+  const isBlockedDate = dateBlocks?.some(
+    (b: any) => {
+      const bd = new Date(b.blockedDate);
+      const sd = new Date(selectedDate + 'T00:00:00');
+      return bd.toDateString() === sd.toDateString();
+    }
+  );
+  const isVendorOnline = vendor?.is_online ?? true;
+  const scheduleError = !isVendorOnline ? 'Vendor sedang offline' :
+    isBlockedDate ? 'Vendor tidak tersedia pada tanggal ini' :
+    todayHours && !todayHours.isActive ? `Vendor libur pada hari ${['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][dayOfWeek]}` :
+    null;
 
   const platformFee = service ? Math.round(service.price * 0.05) : 5000;
   const totalAmount = service ? service.price + platformFee : 155000;
@@ -89,6 +109,18 @@ function BookingContent() {
         </Link>
         <span className="font-heading font-bold text-lg">Detail Pesanan</span>
       </div>
+
+      {isRebook && (
+        <div className="mx-4 mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-2.5">
+          <RotateCcw className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-emerald-800">Pesan Lagi</p>
+            <p className="text-xs text-emerald-600 mt-0.5">
+              Anda memesan {service?.title || 'layanan ini'} sebelumnya. Form sudah terisi otomatis.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="p-4 space-y-4 flex-1">
         {isLoading ? (
@@ -214,6 +246,13 @@ function BookingContent() {
               )}
             </div>
 
+            {scheduleError && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5">
+                <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-700">{scheduleError}</p>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-900 px-1">Metode Pembayaran</label>
               <div className="space-y-2">
@@ -308,7 +347,7 @@ function BookingContent() {
               <p className="font-heading text-lg font-bold text-emerald-600">Rp {totalAmount.toLocaleString('id-ID')}</p>
             </div>
             <Button
-              disabled={!selectedTime || createOrder.isPending}
+              disabled={!selectedTime || createOrder.isPending || !!scheduleError}
               onClick={async () => {
                 if (!service || !profile) return;
                 const platformFee = Math.round(service.price * 0.05);

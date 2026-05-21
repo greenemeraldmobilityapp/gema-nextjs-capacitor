@@ -5,3 +5,7 @@ verify_jwt = false
 [functions.release-payment]
 [functions.create-topup-invoice]
 [functions.create-disbursement]
+[functions.send-push]
+verify_jwt = false
+[functions.broadcast-push]
+verify_jwt = false

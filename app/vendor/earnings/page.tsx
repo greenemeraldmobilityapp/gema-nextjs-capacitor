@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wallet, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, Loader2, AlertCircle, ArrowRight, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -92,6 +92,16 @@ export default function VendorEarningsPage() {
                   <p className="font-heading text-lg font-bold text-white">{completedJobs}</p>
                 </div>
               </div>
+            </div>
+
+            <div className="px-1">
+              <button
+                onClick={() => router.push('/vendor/earnings/report')}
+                className="w-full h-12 rounded-xl bg-white border border-stone-200 text-stone-700 text-sm flex items-center justify-center gap-2 shadow-sm hover:bg-stone-50 cursor-pointer"
+              >
+                <FileText className="w-4 h-4" />
+                Laporan Bulanan
+              </button>
             </div>
 
             <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-5 shadow-elegant">

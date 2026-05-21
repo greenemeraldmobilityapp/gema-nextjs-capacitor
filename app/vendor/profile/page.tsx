@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { User, Star, Shield, ShieldCheck, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Clock, Wallet, MapPin, ArrowLeftRight } from 'lucide-react';
+import { User, Star, Shield, ShieldCheck, Briefcase, ChevronRight, Settings, LogOut, Loader2, AlertCircle, Clock, Wallet, MapPin, ArrowLeftRight, Bell } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
@@ -40,6 +40,7 @@ export default function VendorProfilePage() {
   };
 
   const menuItems = [
+    { icon: Bell, label: 'Notifikasi', subtitle: 'Daftar notifikasi & pengaturan', href: '/vendor/notifications' },
     { icon: ShieldCheck, label: 'Verifikasi KYC & Sertifikat', subtitle: 'Verifikasi akun Anda', href: '/vendor/verification', badge: true },
     { icon: User, label: 'Edit Profil', subtitle: 'Nama, spesialisasi, bio', href: '/vendor/profile/edit' },
     { icon: Briefcase, label: 'Portofolio', subtitle: 'Daftar layanan & karya', href: '/vendor/portfolio' },

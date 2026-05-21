@@ -250,6 +250,25 @@ Growth expansion — 500 vendor, 5,000 customer, 1,000 transaksi/bulan, breakeve
 
 ---
 
+PHASE 13 — Push Notification
+
+> Lihat panduan detail: [`docs/PUSH_NOTIFICATION_DEVELOPMENT_PLAN.md`](./docs/PUSH_NOTIFICATION_DEVELOPMENT_PLAN.md)
+
+Tasks
+
+- [x] Fase 1: Setup Firebase project & database tables (push_tokens, notifications, notification_preferences)
+- [x] Fase 2: Token registration + permission flow (usePushNotifications hooks, useNotifications hooks)
+- [x] Fase 3: Backend push engine (Edge Function send-push, integrasi webhook)
+- [x] Fase 4: Frontend UI (bell icon, notif list, settings persist)
+- [x] Fase 5: Capacitor native (Android/iOS)
+- [x] Fase 6 (opsional): Promo broadcast, advanced features
+
+Output
+
+Push notification berfungsi di web, Android, dan iOS
+
+---
+
 Development Rules
 
 NEVER:

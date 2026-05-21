@@ -15,6 +15,7 @@ import {
   Gift,
   X,
   ChevronRight,
+  Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +31,7 @@ const overflowItems = [
   { icon: Scale, label: 'Sengketa', href: '/admin/disputes' },
   { icon: ArrowLeftRight, label: 'Transaksi', href: '/admin/transactions' },
   { icon: Gift, label: 'Promo', href: '/admin/promos' },
+  { icon: Megaphone, label: 'Broadcast', href: '/admin/broadcast' },
 ];
 
 const overflowPaths = overflowItems.map((i) => i.href);

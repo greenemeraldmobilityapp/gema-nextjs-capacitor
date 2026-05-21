@@ -1,11 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Wallet, ArrowUpRight, ArrowDownRight, CheckCircle2, Clock, Loader2, AlertCircle, Plus, Gift, Banknote, Sparkles, TrendingUp, ArrowLeft, Building2 } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownRight, CheckCircle2, Clock, Loader2, AlertCircle, Plus, Gift, Banknote, Sparkles, TrendingUp, ArrowLeft, Building2, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
 import { useWallet, useWalletTransactions } from '@/lib/services/useWallet';
+import { useLoyalty, getTier } from '@/lib/services/useLoyalty';
 import { Skeleton, SkeletonList } from '@/components/ui/skeleton';
 
 export default function WalletPage() {
@@ -13,6 +15,11 @@ export default function WalletPage() {
   const profile = useAuthStore((s) => s.profile);
   const { data: wallet, isLoading: walletLoading, error: walletError } = useWallet(profile?.id);
   const { data: transactions, isLoading: txLoading } = useWalletTransactions(wallet?.id);
+  const { data: loyalty } = useLoyalty(profile?.id);
+  const totalSpent = loyalty?.totalSpent ?? 0;
+  const tier = getTier(totalSpent);
+  const nextTierTarget = totalSpent < 500000 ? 500000 : totalSpent < 2000000 ? 2000000 : totalSpent < 5000000 ? 5000000 : 0;
+  const progressPct = nextTierTarget > 0 ? Math.min(100, (totalSpent / nextTierTarget) * 100) : 100;
 
   const isLoading = walletLoading;
   const error = walletError;
@@ -108,6 +115,31 @@ export default function WalletPage() {
                 </div>
               </div>
             </div>
+
+            {/* Loyalty Card */}
+            {profile && (
+              <Link
+                href="/wallet/loyalty"
+                className="block p-4 bg-gradient-to-r from-purple-500 to-purple-700 rounded-2xl shadow-sm text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs opacity-80">Poin Loyalty</p>
+                    <p className="text-2xl font-bold">{loyalty?.points || 0}</p>
+                    <p className="text-[10px] opacity-70">Tier: {tier.name}</p>
+                  </div>
+                  <div className="text-right">
+                    <Award className="w-8 h-8 opacity-80 ml-auto" />
+                    <p className="text-[10px] mt-1 opacity-70">Tukar Poin →</p>
+                  </div>
+                </div>
+                {tier.name !== 'Platinum' && (
+                  <div className="mt-2 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                    <div className="h-full bg-white rounded-full" style={{ width: `${progressPct}%` }} />
+                  </div>
+                )}
+              </Link>
+            )}
 
             {/* Quick Stats */}
             {transactions && transactions.length > 0 && (

@@ -4,12 +4,13 @@ import { Suspense, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, MapPin, Calendar, Clock, Phone, MessageSquare, Loader2, AlertCircle, ChevronRight, Star } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Clock, Phone, MessageSquare, Loader2, AlertCircle, ChevronRight, Star, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
 import { useOrderReview } from '@/lib/services/useReviews';
+import { useChatByOrder, postSystemMessage } from '@/lib/services/useChat';
 import { useCategories } from '@/lib/services/useCategories';
 import { getCategoryLabel } from '@/lib/category-utils';
 import { useAuthStore } from '@/store/auth';
@@ -25,6 +26,7 @@ function OrderDetailContent() {
   const { data: order, isLoading, error } = useOrder(id);
   const { data: categories = [] } = useCategories();
   const { data: review } = useOrderReview(id);
+  const { data: chat } = useChatByOrder(id);
   const updateStatus = useUpdateOrderStatus();
   const queryClient = useQueryClient();
   const profile = useAuthStore((s) => s.profile);
@@ -77,8 +79,21 @@ function OrderDetailContent() {
         if (!res.ok) throw new Error(data.error || 'Gagal melepaskan pembayaran');
         queryClient.invalidateQueries({ queryKey: ['order', order.id] });
         queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
+        if (chat) {
+          await postSystemMessage(chat.id, '✅ Pekerjaan selesai! Jangan lupa konfirmasi.')
+          await postSystemMessage(chat.id, '💰 Pembayaran telah dilepaskan ke Vendor.')
+        }
       } else {
         await updateStatus.mutateAsync(mutations[action]);
+        if (chat) {
+          if (action === 'accept') {
+            await postSystemMessage(chat.id, `✅ Vendor telah menerima pesanan Anda.`)
+          } else if (action === 'start') {
+            await postSystemMessage(chat.id, '🔧 Pekerjaan sedang dimulai.')
+          } else if (action === 'decline') {
+            await postSystemMessage(chat.id, '❌ Pesanan telah dibatalkan.')
+          }
+        }
       }
 
       router.refresh();
@@ -292,6 +307,16 @@ function OrderDetailContent() {
             <VendorLocationSharer orderId={order.id} />
           </div>
         )}
+
+        <div className="px-4">
+          <Link
+            href={`/vendor/orders/invoice?order_id=${order.id}`}
+            className="flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-white border border-stone-200 text-stone-700 text-sm shadow-sm hover:bg-stone-50"
+          >
+            <FileText className="w-4 h-4" />
+            Lihat Invoice
+          </Link>
+        </div>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/90 border-t border-stone-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] p-4 flex gap-3">

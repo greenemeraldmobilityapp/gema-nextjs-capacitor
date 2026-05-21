@@ -43,8 +43,9 @@ export type CustomerChatWithOrder = {
 export type ChatMessage = {
   id: string;
   chat_id: string;
-  sender_id: string;
-  message: string;
+  sender_id: string | null;
+  message: string | null;
+  attachment_url: string | null;
   created_at: string;
 };
 
@@ -235,4 +236,49 @@ export function useSendMessage() {
       queryClient.invalidateQueries({ queryKey: ['chat-messages', variables.chatId] });
     },
   });
+}
+
+export function useSendImage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ chatId, senderId, file }: {
+      chatId: string
+      senderId: string
+      file: File
+    }) => {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${chatId}/${Date.now()}.${fileExt}`
+      const { error: uploadError } = await supabase.storage
+        .from('chat-images')
+        .upload(fileName, file)
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-images')
+        .getPublicUrl(fileName)
+
+      const { error } = await supabase.from('messages').insert({
+        chat_id: chatId,
+        sender_id: senderId,
+        attachment_url: publicUrl,
+        message: null,
+      })
+      if (error) throw error
+    },
+    onSuccess: (_, { chatId }) => {
+      queryClient.invalidateQueries({ queryKey: ['chat-messages', chatId] })
+    },
+  })
+}
+
+export async function postSystemMessage(chatId: string, message: string) {
+  const { error } = await supabase
+    .from('messages')
+    .insert({
+      chat_id: chatId,
+      sender_id: null,
+      message,
+    })
+  if (error) throw error
 }

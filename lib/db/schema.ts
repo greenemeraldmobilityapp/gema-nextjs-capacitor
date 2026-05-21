@@ -114,6 +114,7 @@ export const orders = pgTable('orders', {
   startedAt: timestamp('started_at'),
   completedAt: timestamp('completed_at'),
   cancelledAt: timestamp('cancelled_at'),
+  invoiceNumber: text('invoice_number'),
 });
 
 export const chats = pgTable('chats', {
@@ -125,10 +126,26 @@ export const chats = pgTable('chats', {
 export const messages = pgTable('messages', {
   id: uuid('id').primaryKey().defaultRandom(),
   chatId: uuid('chat_id').references(() => chats.id).notNull(),
-  senderId: uuid('sender_id').references(() => users.id).notNull(),
+  senderId: uuid('sender_id').references(() => users.id),
   message: text('message'),
   attachmentUrl: text('attachment_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const vendorOperatingHours = pgTable('vendor_operating_hours', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  vendorId: uuid('vendor_id').notNull().references(() => vendorProfiles.userId, { onDelete: 'cascade' }),
+  dayOfWeek: integer('day_of_week').notNull(),
+  openTime: text('open_time').notNull(),
+  closeTime: text('close_time').notNull(),
+  isActive: boolean('is_active').notNull().default(true),
+});
+
+export const vendorDateBlocks = pgTable('vendor_date_blocks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  vendorId: uuid('vendor_id').notNull().references(() => vendorProfiles.userId, { onDelete: 'cascade' }),
+  blockedDate: timestamp('blocked_date', { mode: 'date' }).notNull(),
+  reason: text('reason'),
 });
 
 export const reviews = pgTable('reviews', {
@@ -158,6 +175,34 @@ export const walletTransactions = pgTable('wallet_transactions', {
   accountNumber: text('account_number'),
   accountHolder: text('account_holder'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const loyaltyTiers = pgTable('loyalty_tiers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  points: integer('points').notNull().default(0),
+  totalSpent: integer('total_spent').notNull().default(0),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const loyaltyRewards = pgTable('loyalty_rewards', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  description: text('description'),
+  pointsRequired: integer('points_required').notNull(),
+  rewardType: text('reward_type').notNull(),
+  rewardValue: integer('reward_value').notNull(),
+  active: boolean('active').notNull().default(true),
+  stock: integer('stock'),
+});
+
+export const loyaltyRedemptions = pgTable('loyalty_redemptions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  rewardId: uuid('reward_id').notNull().references(() => loyaltyRewards.id),
+  pointsSpent: integer('points_spent').notNull(),
+  status: text('status').notNull().default('used'),
+  usedAt: timestamp('used_at').notNull().defaultNow(),
 });
 
 export const promos = pgTable('promos', {
@@ -197,6 +242,42 @@ export const savedBankAccounts = pgTable('saved_bank_accounts', {
   isPrimary: boolean('is_primary').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const notificationCategoryEnum = pgEnum('notification_category', ['order', 'chat', 'promo', 'system']);
+
+export const pushTokens = pgTable('push_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  token: text('token').notNull(),
+  platform: text('platform').notNull().default('web'),
+  deviceInfo: jsonb('device_info'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const notificationPreferences = pgTable('notification_preferences', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  channel: text('channel').notNull(),
+  pushEnabled: boolean('push_enabled').default(true).notNull(),
+  emailEnabled: boolean('email_enabled').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  category: notificationCategoryEnum('category').notNull(),
+  title: text('title').notNull(),
+  body: text('body').notNull(),
+  icon: text('icon'),
+  url: text('url'),
+  metadata: jsonb('metadata'),
+  isRead: boolean('is_read').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  readAt: timestamp('read_at'),
 });
 
 export const disputes = pgTable('disputes', {

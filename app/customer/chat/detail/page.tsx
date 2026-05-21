@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Send, AlertCircle, Phone, Paperclip, Check } from 'lucide-react';
+import { ArrowLeft, Send, AlertCircle, Phone, Paperclip, Check, ShieldCheck, ImageIcon, X, Loader2, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense, useState, useRef, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
-import { useChatByOrder, useChatMessages, useRealtimeMessages, useSendMessage } from '@/lib/services/useChat';
+import { useChatByOrder, useChatMessages, useRealtimeMessages, useSendMessage, useSendImage } from '@/lib/services/useChat';
+import ImageLightbox from '@/components/shared/ImageLightbox';
+import { ContactRevealModal } from '@/components/shared/ContactRevealModal';
+import { detectPatterns, maskText } from '@/lib/utils/chatDetection';
 import { useOrder } from '@/lib/services/useOrders';
 import { useVendor } from '@/lib/services/useVendors';
 import { useAuthStore } from '@/store/auth';
@@ -60,8 +63,13 @@ function ChatContent() {
   const { data: messages, isLoading: msgLoading } = useChatMessages(chat?.id);
   useRealtimeMessages(chat?.id);
   const sendMessage = useSendMessage();
+  const sendImage = useSendImage();
   const [input, setInput] = useState('');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
+  const [pendingReveal, setPendingReveal] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processedMessages = useMemo(
     () => (messages ? processMessages(messages, profile?.id) : []),
@@ -125,10 +133,22 @@ function ChatContent() {
         </button>
       </div>
 
+      {order?.payment_status === 'escrow' && (
+        <div className="mx-4 mt-3 p-3 bg-blue-50/80 border border-blue-200 rounded-2xl flex items-start gap-2.5">
+          <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-blue-800">Dilindungi Escrow GEMA</p>
+            <p className="text-xs text-blue-600 mt-0.5">
+              Dana Rp {order.total_amount.toLocaleString('id-ID')} aman ditahan sampai pekerjaan selesai
+            </p>
+          </div>
+        </div>
+      )}
+
       <div
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-1"
-        style={{ overscrollBehavior: 'contain' }}
-      >
+          className="flex-1 overflow-y-auto px-4 py-4 space-y-1"
+          style={{ overscrollBehavior: 'contain' }}
+        >
         {error ? (
           <div className="flex flex-col items-center py-16 text-red-400">
             <AlertCircle size={48} className="mb-3 opacity-50" />
@@ -175,34 +195,105 @@ function ChatContent() {
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
                   </div>
                 )}
-                <div
-                  className={`flex ${msg.sender_id === profile?.id ? 'justify-end' : 'justify-start'} ${msg.isGrouped ? 'mt-0.5' : 'mt-3'}`}
-                  style={{ animation: `messageIn 0.25s ease-out ${idx * 0.025}s both` }}
-                >
-                  <div className="relative max-w-[80%]">
-                    <div className={`px-4 py-2.5 shadow-sm ${
-                      msg.sender_id === profile?.id
-                        ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-[18px] rounded-br-[6px]'
-                        : 'bg-white text-gray-800 rounded-[18px] rounded-bl-[6px] border border-gray-100'
-                    } ${!msg.isLastInGroup ? (msg.sender_id === profile?.id ? 'rounded-br-[18px]' : 'rounded-bl-[18px]') : ''}`}>
-                      <p className="text-sm leading-relaxed">{msg.message}</p>
-                      <div className="flex items-center gap-1 mt-1 justify-end">
-                        <span className={`text-[10px] ${msg.sender_id === profile?.id ? 'text-emerald-100' : 'text-gray-400'}`}>
-                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        {msg.sender_id === profile?.id && (
-                          <Check size={11} className="text-emerald-100 -ml-0.5" />
-                        )}
+                {!msg.sender_id ? (
+                  <div className="flex justify-center py-1.5">
+                    <span className="text-xs text-gray-400 italic bg-white/60 px-3 py-1.5 rounded-full">
+                      {msg.message}
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    className={`flex ${msg.sender_id === profile?.id ? 'justify-end' : 'justify-start'} ${msg.isGrouped ? 'mt-0.5' : 'mt-3'}`}
+                    style={{ animation: `messageIn 0.25s ease-out ${idx * 0.025}s both` }}
+                  >
+                    <div className="relative max-w-[80%]">
+                      <div className={`px-4 py-2.5 shadow-sm ${
+                        msg.sender_id === profile?.id
+                          ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-[18px] rounded-br-[6px]'
+                          : 'bg-white text-gray-800 rounded-[18px] rounded-bl-[6px] border border-gray-100'
+                      } ${!msg.isLastInGroup ? (msg.sender_id === profile?.id ? 'rounded-br-[18px]' : 'rounded-bl-[18px]') : ''}`}>
+                        {msg.attachment_url ? (
+                          <img
+                            src={msg.attachment_url}
+                            alt="Gambar"
+                            className="max-w-[200px] rounded-xl cursor-pointer"
+                            onClick={() => setPreviewImage(msg.attachment_url)}
+                          />
+                        ) : (() => {
+                          const patterns = detectPatterns(msg.message || '')
+                          const isRevealed = revealedIds.has(msg.id)
+                          if (patterns.length > 0 && !isRevealed) {
+                            return (
+                              <div className="relative">
+                                <p className="text-sm blur-sm select-none">
+                                  {maskText(msg.message || '', patterns)}
+                                </p>
+                                <button
+                                  onClick={() => setPendingReveal(msg.id)}
+                                  className="absolute inset-0 flex items-center justify-center gap-1 bg-white/60 rounded-lg text-xs text-amber-600 font-medium"
+                                >
+                                  <EyeOff className="w-3.5 h-3.5" />
+                                  Tampilkan
+                                </button>
+                              </div>
+                            )
+                          }
+                          return <p className="text-sm leading-relaxed">{msg.message}</p>
+                        })()}
+                        <div className="flex items-center gap-1 mt-1 justify-end">
+                          <span className={`text-[10px] ${msg.sender_id === profile?.id ? 'text-emerald-100' : 'text-gray-400'}`}>
+                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          {msg.sender_id === profile?.id && (
+                            <Check size={11} className="text-emerald-100 -ml-0.5" />
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             ))}
           </>
         )}
         <div ref={messagesEndRef} />
       </div>
+
+      {previewImage && (
+        <ImageLightbox images={[{ image_url: previewImage }]} initialIndex={0} onClose={() => setPreviewImage(null)} />
+      )}
+
+      <ContactRevealModal
+        open={!!pendingReveal}
+        patterns={pendingReveal ? (messages || []).filter(m => m.id === pendingReveal).flatMap(m => detectPatterns(m.message || '')) : []}
+        onConfirm={() => {
+          if (pendingReveal) {
+            setRevealedIds(prev => new Set(prev).add(pendingReveal))
+            setPendingReveal(null)
+          }
+        }}
+        onCancel={() => setPendingReveal(null)}
+      />
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (!file || !chat?.id || !profile) return
+          if (file.size > 10 * 1024 * 1024) {
+            toast.error('Maksimal 10 MB')
+            return
+          }
+          sendImage.mutate(
+            { chatId: chat.id, senderId: profile.id, file },
+            { onError: (err) => toast.error(err instanceof Error ? err.message : 'Gagal upload gambar') }
+          )
+          e.target.value = ''
+        }}
+      />
 
       <style>{`
         @keyframes messageIn {
@@ -212,8 +303,12 @@ function ChatContent() {
       `}</style>
 
       <div className="bg-white/80 backdrop-blur-md border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] p-4 pb-safe flex items-center gap-2 shrink-0">
-        <button className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all duration-200 shrink-0 active:scale-90">
-          <Paperclip size={20} />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={sendImage.isPending}
+          className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all duration-200 shrink-0 active:scale-90 disabled:opacity-50"
+        >
+          {sendImage.isPending ? <Loader2 size={18} className="animate-spin" /> : <Paperclip size={20} />}
         </button>
         <Input
           value={input}
