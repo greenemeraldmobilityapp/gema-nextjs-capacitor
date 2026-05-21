@@ -7,29 +7,21 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
+import { useCategories } from '@/lib/services/useCategories';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
 const supabase = createClient();
-
-const SPECIALIZATIONS = [
-  { value: 'Tukang Bangunan', label: 'Tukang Bangunan' },
-  { value: 'Teknisi Listrik', label: 'Teknisi Listrik' },
-  { value: 'Plumbing', label: 'Plumbing' },
-  { value: 'Cat & Interior', label: 'Cat & Interior' },
-  { value: 'AC & Kulkas', label: 'AC & Kulkas' },
-  { value: 'Elektronik', label: 'Elektronik' },
-  { value: 'Furniture', label: 'Furniture' },
-  { value: 'Pest Control', label: 'Pest Control' },
-];
 
 export default function RegisterVendorPage() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
   const setMode = useAuthStore((s) => s.setMode);
   const setVendorStatus = useAuthStore((s) => s.setVendorStatus);
+  const { data: categories = [] } = useCategories();
 
   const [specialization, setSpecialization] = useState('');
+  const [categoryId, setCategoryId] = useState('');
   const [storeName, setStoreName] = useState('');
   const [bio, setBio] = useState('');
   const [showSpecializations, setShowSpecializations] = useState(false);
@@ -59,6 +51,7 @@ export default function RegisterVendorPage() {
       const { error: insertError } = await supabase.from('vendor_profiles').insert({
         user_id: profile.id,
         specialization,
+        category_id: categoryId || null,
         bio: bio.trim(),
       });
 
@@ -161,21 +154,22 @@ export default function RegisterVendorPage() {
               </p>
             )}
             {showSpecializations && (
-              <div className="mt-1 border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
-                {SPECIALIZATIONS.map((opt) => (
+              <div className="mt-1 border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white max-h-48 overflow-y-auto">
+                {categories.map((cat) => (
                   <button
-                    key={opt.value}
+                    key={cat.id}
                     type="button"
                     onClick={() => {
-                      setSpecialization(opt.value);
+                      setSpecialization(cat.name);
+                      setCategoryId(cat.id);
                       setShowSpecializations(false);
                       setFieldErrors((prev) => ({ ...prev, specialization: '' }));
                     }}
                     className={`w-full text-left px-4 py-3 text-sm hover:bg-emerald-50 transition-colors cursor-pointer ${
-                      specialization === opt.value ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700'
+                      specialization === cat.name ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700'
                     }`}
                   >
-                    {opt.label}
+                    {cat.name}
                   </button>
                 ))}
               </div>

@@ -144,6 +144,26 @@ export default function VerificationReviewPage() {
               </div>
             </div>
           )}
+
+          {submission?.certificate_url && (
+            <div className="bg-white/80 border border-stone-200 rounded-2xl p-4 text-left">
+              <div className="flex items-center gap-2 mb-3">
+                <Camera size={16} className="text-stone-500" />
+                <p className="text-xs font-semibold text-stone-600">Foto Sertifikat</p>
+              </div>
+              <div className="rounded-xl overflow-hidden bg-stone-100">
+                <Image
+                  src={submission.certificate_url}
+                  alt="Foto sertifikat"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  unoptimized
+                  className="w-full object-contain max-h-48 h-auto"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {(status === 'rejected' || status === 'revoked') && submission?.rejection_reason && (

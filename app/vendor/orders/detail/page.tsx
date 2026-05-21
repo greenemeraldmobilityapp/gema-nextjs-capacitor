@@ -10,6 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
 import { useOrderReview } from '@/lib/services/useReviews';
+import { useCategories } from '@/lib/services/useCategories';
+import { getCategoryLabel } from '@/lib/category-utils';
 import { useAuthStore } from '@/store/auth';
 import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -21,6 +23,7 @@ function OrderDetailContent() {
   const router = useRouter();
   const id = searchParams.get('id') || '';
   const { data: order, isLoading, error } = useOrder(id);
+  const { data: categories = [] } = useCategories();
   const { data: review } = useOrderReview(id);
   const updateStatus = useUpdateOrderStatus();
   const queryClient = useQueryClient();
@@ -175,7 +178,7 @@ function OrderDetailContent() {
             </div>
             <div>
               <p className="text-xs text-stone-400">Kategori</p>
-              <p className="text-sm font-medium text-stone-800">{order.service_category}</p>
+              <p className="text-sm font-medium text-stone-800">{getCategoryLabel(categories, order.service_category)}</p>
             </div>
             <div className="flex items-start gap-2">
               <MapPin size={16} className="text-stone-400 mt-0.5 shrink-0" />

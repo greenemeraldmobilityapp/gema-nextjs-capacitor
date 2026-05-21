@@ -54,7 +54,7 @@ export default function VoucherHistoryPage() {
                 onClick={() => router.push(`/wallet/promo?id=${promo.id}`)}
                 className="w-full text-left cursor-pointer"
               >
-                <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-sm border border-gray-100 overflow-hidden relative hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-sm border border-gray-100 hover:border-emerald-300 overflow-hidden relative hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                   <div className="absolute top-1/2 -left-3 w-6 h-6 bg-gray-50 rounded-full -translate-y-1/2 z-10 border border-gray-100" />
                   <div className="absolute top-1/2 -right-3 w-6 h-6 bg-gray-50 rounded-full -translate-y-1/2 z-10 border border-gray-100" />
                   <div className="flex p-4 gap-4 border-l-4 border-emerald-500">

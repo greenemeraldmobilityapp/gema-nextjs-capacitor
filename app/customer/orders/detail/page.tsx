@@ -11,6 +11,8 @@ import { useSearchParams } from 'next/navigation';
 import { useOrder, useUpdateOrderStatus } from '@/lib/services/useOrders';
 import { useVendor } from '@/lib/services/useVendors';
 import { useChatByOrder } from '@/lib/services/useChat';
+import { useCategories } from '@/lib/services/useCategories';
+import { getCategoryLabel } from '@/lib/category-utils';
 import { useOrderReview } from '@/lib/services/useReviews';
 import { CustomerLocationViewer } from '@/components/shared/LiveTracker';
 
@@ -77,6 +79,7 @@ function OrderTrackingContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('id') || '';
   const { data: order, isLoading, error } = useOrder(orderId);
+  const { data: categories = [] } = useCategories();
   const { data: vendor } = useVendor(order?.vendor_id || '');
   const { data: chat } = useChatByOrder(orderId);
   const { data: existingReview } = useOrderReview(orderId);
@@ -128,7 +131,7 @@ function OrderTrackingContent() {
                <Clock size={24} />}
             </div>
             <div className="flex-1">
-              <p className="text-sm text-gray-500">{order.service_category}</p>
+              <p className="text-sm text-gray-500">{getCategoryLabel(categories, order.service_category)}</p>
               <h2 className="font-heading font-bold text-gray-900 text-lg">{order.service_name}</h2>
             </div>
             <span className={`text-xs font-semibold px-3 py-1 rounded-full ${status.color} bg-white border shadow-sm shrink-0`}>{status.label}</span>

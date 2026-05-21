@@ -8,6 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useCustomerOrders } from '@/lib/services/useOrders';
+import { useCategories } from '@/lib/services/useCategories';
+import { getCategoryLabel } from '@/lib/category-utils';
 import { cn } from '@/lib/utils';
 
 const statusConfig: Record<string, { label: string; color: string; dotColor: string; pulse?: boolean }> = {
@@ -22,6 +24,7 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const { profile } = useAuthStore();
   const { data: orders, isLoading, error } = useCustomerOrders(profile?.id);
+  const { data: categories = [] } = useCategories();
 
   const activeOrders = (orders || []).filter(o => !['completed', 'cancelled'].includes(o.order_status));
   const historyOrders = (orders || []).filter(o => ['completed', 'cancelled'].includes(o.order_status));
@@ -38,7 +41,7 @@ export default function OrdersPage() {
             </div>
             <div className="flex-1 min-w-0">
               {order.service_category && (
-                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{order.service_category}</span>
+                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{getCategoryLabel(categories, order.service_category)}</span>
               )}
               <div className="flex items-start justify-between gap-2 mt-0.5">
                 <h3 className="font-bold text-gray-900 text-sm leading-tight">{order.service_name}</h3>

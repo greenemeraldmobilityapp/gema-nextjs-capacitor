@@ -10,6 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useServiceDetail } from '@/lib/services/useServices';
 import { useVendorReviews } from '@/lib/services/useReviews';
+import { useCategories } from '@/lib/services/useCategories';
+import { getCategoryLabel } from '@/lib/category-utils';
 import ImageLightbox from '@/components/shared/ImageLightbox';
 
 function formatPrice(amount: number) {
@@ -38,6 +40,7 @@ function ServiceDetailContent() {
     : '';
 
   const { data: service, isLoading, error, isFetched, isPending } = useServiceDetail(serviceId);
+  const { data: categories = [] } = useCategories();
   const vendorId = service?.vendor_id || '';
   const { data: reviews } = useVendorReviews(vendorId);
 
@@ -187,7 +190,7 @@ function ServiceDetailContent() {
               {service.title}
             </h1>
             <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full shrink-0">
-              {service.category}
+              {getCategoryLabel(categories, service.category)}
             </span>
           </div>
 

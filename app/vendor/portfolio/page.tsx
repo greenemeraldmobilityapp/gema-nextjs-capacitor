@@ -4,34 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Plus, Briefcase, Wrench, Zap, Droplets, Paintbrush, Thermometer, Cable, Hammer, Bug, Loader2, AlertCircle, ImageIcon, Pencil, Trash2, LayoutGrid, List } from 'lucide-react';
+import { Plus, Briefcase, Loader2, AlertCircle, ImageIcon, Pencil, Trash2, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { useVendorServices, useDeleteService } from '@/lib/services/useVendors';
+import { useCategories } from '@/lib/services/useCategories';
+import { getCategoryIcon, getCategoryLabel } from '@/lib/category-utils';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-
-const categoryIcons: Record<string, typeof Wrench> = {
-  'tukang-bangunan': Wrench,
-  'teknisi-listrik': Zap,
-  'plumbing': Droplets,
-  'cat-interior': Paintbrush,
-  'ac-kulkas': Thermometer,
-  'elektronik': Cable,
-  'furniture': Hammer,
-  'pest-control': Bug,
-};
-
-const categoryLabels: Record<string, string> = {
-  'tukang-bangunan': 'Tukang Bangunan',
-  'teknisi-listrik': 'Teknisi Listrik',
-  'plumbing': 'Plumbing',
-  'cat-interior': 'Cat & Interior',
-  'ac-kulkas': 'AC & Kulkas',
-  'elektronik': 'Elektronik',
-  'furniture': 'Furniture',
-  'pest-control': 'Pest Control',
-};
 
 const ALL_CATEGORY = 'all';
 
@@ -39,6 +19,7 @@ export default function VendorPortfolioPage() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
   const { data: services, isLoading, error } = useVendorServices(profile?.id);
+  const { data: categories = [] } = useCategories();
   const deleteService = useDeleteService();
   const [filter, setFilter] = useState(ALL_CATEGORY);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -101,21 +82,21 @@ export default function VendorPortfolioPage() {
             >
               Semua ({services.length})
             </button>
-            {Object.entries(categoryLabels).map(([key, label]) => {
-              const count = services.filter((s) => s.category === key).length;
+            {categories.map((cat) => {
+              const count = services.filter((s) => s.category === cat.slug).length;
               if (count === 0) return null;
               return (
                 <button
-                  key={key}
-                  onClick={() => setFilter(key)}
+                  key={cat.slug}
+                  onClick={() => setFilter(cat.slug)}
                   className={cn(
                     "shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors",
-                    filter === key
+                    filter === cat.slug
                       ? 'bg-emerald-600 text-white border-emerald-600'
                       : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'
                   )}
                 >
-                  {label} ({count})
+                  {cat.name} ({count})
                 </button>
               );
             })}
@@ -156,7 +137,7 @@ export default function VendorPortfolioPage() {
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-2 gap-3">
             {filteredServices?.map((service) => {
-              const Icon = categoryIcons[service.category] || Briefcase;
+              const Icon = getCategoryIcon(service.category);
               return (
                 <div
                   key={service.id}
@@ -193,7 +174,7 @@ export default function VendorPortfolioPage() {
                       <div className="flex items-center gap-1.5 mb-1">
                         <Icon size={12} className="text-emerald-600" />
                         <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">
-                          {categoryLabels[service.category] || service.category}
+                          {getCategoryLabel(categories, service.category)}
                         </span>
                       </div>
                       <h3 className="font-semibold text-sm text-stone-800 line-clamp-2 leading-snug">{service.title}</h3>
@@ -246,7 +227,7 @@ export default function VendorPortfolioPage() {
         ) : (
           <div className="space-y-3">
             {filteredServices?.map((service) => {
-              const Icon = categoryIcons[service.category] || Briefcase;
+              const Icon = getCategoryIcon(service.category);
               return (
                 <div
                   key={service.id}
@@ -270,7 +251,7 @@ export default function VendorPortfolioPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">
-                          {categoryLabels[service.category] || service.category}
+                          {getCategoryLabel(categories, service.category)}
                         </span>
                       </div>
                       <h3 className="font-semibold text-stone-800">{service.title}</h3>

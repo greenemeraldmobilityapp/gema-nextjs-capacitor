@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Loader2, AlertCircle, CheckCircle, XCircle, Search, Briefcase, User, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAllServices, useUpdateServiceStatus } from '@/lib/services/useAdmin';
+import { useCategories } from '@/lib/services/useCategories';
+import { getCategoryLabel } from '@/lib/category-utils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -14,19 +16,9 @@ const statusLabels: Record<string, string> = {
   rejected: 'Ditolak',
 };
 
-const categoryLabels: Record<string, string> = {
-  'tukang-bangunan': 'Tukang Bangunan',
-  'teknisi-listrik': 'Teknisi Listrik',
-  'plumbing': 'Plumbing',
-  'cat-interior': 'Cat & Interior',
-  'ac-kulkas': 'AC & Kulkas',
-  'elektronik': 'Elektronik',
-  'furniture': 'Furniture',
-  'pest-control': 'Pest Control',
-};
-
 export default function AdminServices() {
   const { data: services, isLoading, error } = useAllServices();
+  const { data: categories = [] } = useCategories();
   const updateStatus = useUpdateServiceStatus();
   const [filter, setFilter] = useState<'all' | 'pending' | 'active' | 'rejected'>('all');
   const [search, setSearch] = useState('');
@@ -150,7 +142,7 @@ export default function AdminServices() {
                   <h3 className="font-bold text-gray-900">{service.title}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                      {categoryLabels[service.category] || service.category}
+                      {getCategoryLabel(categories, service.category)}
                     </span>
                     <span className="font-bold text-emerald-600 text-sm">
                       Rp {service.price.toLocaleString('id-ID')}

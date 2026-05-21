@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth';
 import { createClient } from '@/lib/supabase/client';
-import { compressImage, deleteExistingAvatar } from '@/lib/image-utils';
+import { compressImage, deleteFolderContents } from '@/lib/image-utils';
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -47,13 +47,14 @@ export default function EditProfilePage() {
     try {
       const supabase = createClient();
       const compressedBlob = await compressImage(file);
-      const filePath = `${profile.id}/avatar.jpg`;
+      const timestamp = Date.now();
+      const filePath = `customer/${profile.id}/avatar_${timestamp}.jpg`;
 
-      await deleteExistingAvatar(supabase, profile.id);
+      await deleteFolderContents(supabase, 'avatars', `customer/${profile.id}`);
 
       await supabase.storage
         .from('avatars')
-        .upload(filePath, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
+        .upload(filePath, compressedBlob, { contentType: 'image/jpeg' });
 
       const { data: urlData } = supabase.storage
         .from('avatars')

@@ -10,19 +10,9 @@ import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/auth';
 import { useCreateService } from '@/lib/services/useVendors';
 import { useUploadMultipleServiceImages } from '@/lib/services/useServiceImages';
+import { useCategories } from '@/lib/services/useCategories';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-
-const CATEGORIES = [
-  { id: 'tukang-bangunan', label: 'Tukang Bangunan' },
-  { id: 'teknisi-listrik', label: 'Teknisi Listrik' },
-  { id: 'plumbing', label: 'Plumbing' },
-  { id: 'cat-interior', label: 'Cat & Interior' },
-  { id: 'ac-kulkas', label: 'AC & Kulkas' },
-  { id: 'elektronik', label: 'Elektronik' },
-  { id: 'furniture', label: 'Furniture' },
-  { id: 'pest-control', label: 'Pest Control' },
-];
 
 const DURATION_TYPES = [
   { value: 30, label: '30 menit' },
@@ -42,10 +32,12 @@ export default function VendorAddPortfolioPage() {
   const profile = useAuthStore((s) => s.profile);
   const createService = useCreateService();
   const uploadImagesMutation = useUploadMultipleServiceImages();
+  const { data: categories = [] } = useCategories();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: '',
     category: '',
+    categoryId: '',
     price: '',
     description: '',
   });
@@ -95,7 +87,7 @@ export default function VendorAddPortfolioPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile?.id) return;
-    if (!formData.category) {
+    if (!formData.category || !formData.categoryId) {
       toast.warning('Pilih kategori terlebih dahulu', { duration: 4000 });
       return;
     }
@@ -106,6 +98,7 @@ export default function VendorAddPortfolioPage() {
         vendor_id: profile.id,
         title: formData.title,
         category: formData.category,
+        category_id: formData.categoryId || undefined,
         price: Number(formData.price),
         description: formData.description || undefined,
         duration_minutes: durationMinutes,
@@ -205,19 +198,19 @@ export default function VendorAddPortfolioPage() {
           <div className="space-y-2">
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Kategori</label>
             <div className="grid grid-cols-2 gap-2">
-              {CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <button
                   key={cat.id}
                   type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, category: cat.id }))}
+                  onClick={() => setFormData(prev => ({ ...prev, category: cat.slug, categoryId: cat.id }))}
                   className={cn(
                     "py-3 rounded-xl text-sm font-semibold border-2 transition-all duration-200",
-                    formData.category === cat.id
+                    formData.category === cat.slug
                       ? 'border-emerald-400 bg-emerald-50 text-emerald-700 shadow-sm'
                       : 'border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-300'
                   )}
                 >
-                  {cat.label}
+                  {cat.name}
                 </button>
               ))}
             </div>

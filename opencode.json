@@ -6,17 +6,16 @@
       "command": ["npx", "-y", "@upstash/mcp-server@latest"],
       "enabled": true,
       "environment": {
-        "UPSTASH_EMAIL": "green.emerald.mobility.app@gmail.com",
-        "UPSTASH_API_KEY": "a3f0edb0-0f75-4031-ac43-efcf760d03a6"
+        "UPSTASH_EMAIL": "{env:UPSTASH_EMAIL}",
+        "UPSTASH_API_KEY": "{env:UPSTASH_API_KEY}"
       }
     },
     "supabase": {
       "type": "remote",
       "url": "https://mcp.supabase.com/mcp?project_ref=ajteskgdggxwefcrncuu",
       "enabled": true,
-      "oauth": false,
       "headers": {
-        "Authorization": "Bearer sbp_466b043bc00f7726fe25c82270024bbe3c17d34e"
+        "Authorization": "Bearer {env:SUPABASE_ACCESS_TOKEN}"
       }
     },
     "github": {
@@ -24,7 +23,7 @@
       "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
       "enabled": true,
       "environment": {
-        "GITHUB_TOKEN": "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"
+        "GITHUB_TOKEN": "{env:GH_TOKEN}"
       }
     },
     "playwright": {

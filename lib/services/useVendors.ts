@@ -6,6 +6,7 @@ const supabase = createClient();
 export type VendorProfile = {
   user_id: string;
   specialization: string | null;
+  category_id: string | null;
   bio: string | null;
   rating: number;
   total_jobs: number;
@@ -169,10 +170,12 @@ export function useCreateService() {
       price: number;
       description?: string;
       duration_minutes?: number | null;
+      category_id?: string;
     }) => {
+      const { category_id, ...insertData } = service;
       const { data, error } = await supabase
         .from('services')
-        .insert({ ...service, status: 'pending' })
+        .insert({ ...insertData, category_id, status: 'pending' })
         .select()
         .single();
 
@@ -194,6 +197,7 @@ export function useUpdateService() {
       vendor_id: string;
       title?: string;
       category?: string;
+      category_id?: string;
       price?: number;
       description?: string | null;
       duration_minutes?: number | null;

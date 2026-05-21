@@ -62,22 +62,3 @@ export async function deleteFolderContents(
   await supabase.storage.from(bucket).remove(paths);
 }
 
-export async function deleteExistingAvatar(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<void> {
-  const { data: existingFiles, error: listError } = await supabase.storage
-    .from('avatars')
-    .list('', { search: userId });
-
-  if (listError) return;
-  if (!existingFiles?.length) return;
-
-  const filesToDelete = existingFiles
-    .filter((f) => f.name.includes(userId))
-    .map((f) => f.name);
-
-  if (filesToDelete.length > 0) {
-    await supabase.storage.from('avatars').remove(filesToDelete);
-  }
-}

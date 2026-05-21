@@ -1,13 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { Search as SearchIcon, MapPin, Star, SlidersHorizontal, X, ChevronDown, MapPinned, GripHorizontal, RotateCcw } from 'lucide-react';
+import { Search as SearchIcon, MapPin, Star, SlidersHorizontal, X, ChevronDown, MapPinned, GripHorizontal, RotateCcw, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { Suspense, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSearchVendors, useSearchFilterOptions, useDebounce } from '@/lib/services/useSearchVendors';
+import { useCategories } from '@/lib/services/useCategories';
 import { useLocationStore } from '@/store/location';
 import type { SearchFilters } from '@/lib/services/useSearchVendors';
 
@@ -18,18 +19,6 @@ export default function SearchPage() {
     </Suspense>
   );
 }
-
-const chips = [
-  { label: 'Semua', value: '' },
-  { label: 'Tukang Bangunan', value: 'tukang-bangunan' },
-  { label: 'Teknisi Listrik', value: 'teknisi-listrik' },
-  { label: 'Plumbing', value: 'plumbing' },
-  { label: 'Cat & Interior', value: 'cat-interior' },
-  { label: 'AC & Kulkas', value: 'ac-kulkas' },
-  { label: 'Elektronik', value: 'elektronik' },
-  { label: 'Furniture', value: 'furniture' },
-  { label: 'Pest Control', value: 'pest-control' },
-];
 
 const ratingOptions = [
   { label: 'Semua', value: 0 },
@@ -54,6 +43,11 @@ function SearchContent() {
   const inputRef = useRef<HTMLInputElement>(null);
   const userLat = useLocationStore((s) => s.lat);
   const userLng = useLocationStore((s) => s.lng);
+  const { data: categories = [], isLoading: catsLoading } = useCategories();
+  const chips = [
+    { label: 'Semua', value: '' },
+    ...categories.map((cat) => ({ label: cat.name, value: cat.slug })),
+  ];
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<{ city: string; district: string; minRating: number; sort: 'relevance' | 'rating' | 'jobs' | 'newest' | 'nearest' }>({
@@ -230,7 +224,7 @@ function SearchContent() {
             </p>
             <p className="text-sm text-gray-400 mt-1">
               {rawQuery || activeChip || hasActiveFilters
-                ? `Tidak ditemukan untuk "${rawQuery || chips.find(c => c.value === activeChip)?.label || 'filter ini'}"`
+                ? `Tidak ditemukan untuk "${rawQuery || categories.find(c => c.slug === activeChip)?.name || 'filter ini'}"`
                 : 'Vendor akan muncul setelah terdaftar dan terverifikasi'}
             </p>
             {(rawQuery || activeChip || hasActiveFilters) && (

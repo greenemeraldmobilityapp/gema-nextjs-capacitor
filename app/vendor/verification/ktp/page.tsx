@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { ArrowLeft, Upload, Camera, Loader2, Check, User, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Upload, Camera, Loader2, Check, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import CameraCapture from '@/components/shared/CameraCapture';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/store/auth';
 import { useSubmitKtp } from '@/lib/services/useVerification';
@@ -29,9 +29,6 @@ export default function KtpVerificationPage() {
   const router = useRouter();
   const profile = useAuthStore((s) => s.profile);
   const submitKtp = useSubmitKtp();
-  const ktpInputRef = useRef<HTMLInputElement>(null);
-  const selfieInputRef = useRef<HTMLInputElement>(null);
-  const selfieKtpInputRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<Step>('ktp');
   const [formData, setFormData] = useState({ nik: '', name: '' });
@@ -45,25 +42,39 @@ export default function KtpVerificationPage() {
   const [selfieKtpFile, setSelfieKtpFile] = useState<File | null>(null);
   const [selfieKtpPreview, setSelfieKtpPreview] = useState<string | null>(null);
 
-  useEffect(() => {
-    return () => {
-      if (ktpPreview) URL.revokeObjectURL(ktpPreview);
-      if (selfiePreview) URL.revokeObjectURL(selfiePreview);
-      if (selfieKtpPreview) URL.revokeObjectURL(selfieKtpPreview);
-    };
-  }, [ktpPreview, selfiePreview, selfieKtpPreview]);
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraMode, setCameraMode] = useState<'user' | 'environment'>('environment');
 
-  const handleFile = (
-    e: React.ChangeEvent<HTMLInputElement>,
+  type PendingCapture = {
+    setFile: (f: File | null) => void;
+    setPreview: (p: string | null) => void;
+    nextStep: Step;
+  };
+  const [pendingCapture, setPendingCapture] = useState<PendingCapture | null>(null);
+
+  const openCamera = (
+    mode: 'user' | 'environment',
     setFile: (f: File | null) => void,
     setPreview: (p: string | null) => void,
     nextStep: Step,
   ) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
-    setStep(nextStep);
+    setCameraMode(mode);
+    setPendingCapture({ setFile, setPreview, nextStep });
+    setShowCamera(true);
+  };
+
+  const handleCameraCapture = (file: File) => {
+    if (!pendingCapture) return;
+    pendingCapture.setFile(file);
+    pendingCapture.setPreview(URL.createObjectURL(file));
+    setStep(pendingCapture.nextStep);
+    setShowCamera(false);
+    setPendingCapture(null);
+  };
+
+  const handleCameraClose = () => {
+    setShowCamera(false);
+    setPendingCapture(null);
   };
 
   const stepTitle = {
@@ -72,6 +83,23 @@ export default function KtpVerificationPage() {
     selfie_ktp: 'Selfie + Pegang KTP',
     form: 'Data Diri',
   };
+
+  async function cleanupFolder(userId: string, folder: string, keepFileName: string) {
+    try {
+      const { data: files } = await supabase.storage
+        .from('verification')
+        .list(`${userId}/${folder}`);
+      if (!files?.length) return;
+      const toDelete = files
+        .filter((f) => f.name !== keepFileName)
+        .map((f) => `${userId}/${folder}/${f.name}`);
+      if (toDelete.length > 0) {
+        await supabase.storage.from('verification').remove(toDelete);
+      }
+    } catch {
+      // non-fatal
+    }
+  }
 
   const [saving, setSaving] = useState(false);
 
@@ -124,6 +152,10 @@ export default function KtpVerificationPage() {
       const selfieKtpUrl = selfieKtpUrlData?.publicUrl || '';
       if (!selfieKtpUrl) throw new Error('Gagal mendapatkan URL file selfie+KTP');
 
+      await cleanupFolder(userId, 'ktp', ktpPath.split('/').pop()!);
+      await cleanupFolder(userId, 'selfie', selfiePath.split('/').pop()!);
+      await cleanupFolder(userId, 'selfie_ktp', selfieKtpPath.split('/').pop()!);
+
       await submitKtp.mutateAsync({
         userId: profile.id,
         nik: formData.nik,
@@ -144,41 +176,30 @@ export default function KtpVerificationPage() {
   };
 
   const renderUploadZone = (
-    ref: React.RefObject<HTMLInputElement | null>,
     preview: string | null,
     label: string,
     hint: string,
     icon: typeof Camera | typeof Upload,
-    capture: string,
+    mode: 'user' | 'environment',
     nextStep: Step,
     setFile: (f: File | null) => void,
     setPreview: (p: string | null) => void,
   ) => {
     const Icon = icon;
     return (
-      <div>
-        <div
-          onClick={() => ref.current?.click()}
-          className="relative flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50 overflow-hidden"
-        >
-          {preview ? (
-            <Image src={preview} alt={label} fill className="object-contain" />
-          ) : (
-            <div className="flex flex-col items-center text-stone-400">
-              <Icon size={32} className="mb-2" />
-              <p className="text-sm font-medium">{label}</p>
-              <p className="text-xs mt-1">{hint}</p>
-            </div>
-          )}
-        </div>
-        <input
-          ref={ref as React.Ref<HTMLInputElement>}
-          type="file"
-          accept="image/*"
-          capture={capture as 'environment' | 'user'}
-          onChange={(e) => handleFile(e, setFile, setPreview, nextStep)}
-          className="hidden"
-        />
+      <div
+        onClick={() => openCamera(mode, setFile, setPreview, nextStep)}
+        className="relative flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50 overflow-hidden"
+      >
+        {preview ? (
+          <img src={preview} alt={label} className="absolute inset-0 w-full h-full object-contain" />
+        ) : (
+          <div className="flex flex-col items-center text-stone-400">
+            <Icon size={32} className="mb-2" />
+            <p className="text-sm font-medium">{label}</p>
+            <p className="text-xs mt-1">{hint}</p>
+          </div>
+        )}
       </div>
     );
   };
@@ -213,17 +234,17 @@ export default function KtpVerificationPage() {
       <form onSubmit={handleSubmit} className="flex-1 p-4 space-y-4">
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-elegant space-y-5">
           {step === 'ktp' && renderUploadZone(
-            ktpInputRef, ktpPreview, 'Ambil foto KTP', 'Pastikan KTP jelas & terbaca', Upload, 'environment',
+            ktpPreview, 'Ambil foto KTP', 'Pastikan KTP jelas & terbaca', Upload, 'environment',
             'selfie', setKtpFile, setKtpPreview,
           )}
 
           {step === 'selfie' && renderUploadZone(
-            selfieInputRef, selfiePreview, 'Ambil foto selfie', 'Foto wajah Anda saja', Camera, 'user',
+            selfiePreview, 'Ambil foto selfie', 'Foto wajah Anda saja', Camera, 'user',
             'selfie_ktp', setSelfieFile, setSelfiePreview,
           )}
 
           {step === 'selfie_ktp' && renderUploadZone(
-            selfieKtpInputRef, selfieKtpPreview, 'Selfie + Pegang KTP', 'Pastikan KTP terlihat jelas di foto', Camera, 'user',
+            selfieKtpPreview, 'Selfie + Pegang KTP', 'Pastikan KTP terlihat jelas di foto', Camera, 'user',
             'form', setSelfieKtpFile, setSelfieKtpPreview,
           )}
 
@@ -238,7 +259,7 @@ export default function KtpVerificationPage() {
                   <div key={i} className="space-y-1.5">
                     <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
                       {item.img ? (
-                        <Image src={item.img} alt={item.label} fill className="object-cover" />
+                        <img src={item.img} alt={item.label} className="absolute inset-0 w-full h-full object-cover" />
                       ) : (
                         <div className="flex items-center justify-center h-full text-stone-300">
                           <User size={24} />
@@ -310,6 +331,13 @@ export default function KtpVerificationPage() {
           </Button>
         )}
       </form>
+      {showCamera && (
+        <CameraCapture
+          facingMode={cameraMode}
+          onCapture={handleCameraCapture}
+          onClose={handleCameraClose}
+        />
+      )}
     </div>
   );
 }

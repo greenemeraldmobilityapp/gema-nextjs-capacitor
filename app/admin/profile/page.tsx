@@ -15,7 +15,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 import { useAdminStats } from '@/lib/services/useAdmin';
 import { createClient } from '@/lib/supabase/client';
-import { compressImage, deleteExistingAvatar } from '@/lib/image-utils';
+import { compressImage, deleteFolderContents } from '@/lib/image-utils';
 import LogoutModal from '@/components/shared/LogoutModal';
 import { toast } from 'sonner';
 
@@ -71,13 +71,14 @@ export default function AdminProfilePage() {
     try {
       const supabase = createClient();
       const compressedBlob = await compressImage(file);
-      const filePath = `${profile.id}/avatar.jpg`;
+      const timestamp = Date.now();
+      const filePath = `admin/${profile.id}/avatar_${timestamp}.jpg`;
 
-      await deleteExistingAvatar(supabase, profile.id);
+      await deleteFolderContents(supabase, 'avatars', `admin/${profile.id}`);
 
       await supabase.storage
         .from('avatars')
-        .upload(filePath, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
+        .upload(filePath, compressedBlob, { contentType: 'image/jpeg' });
 
       const { data: urlData } = supabase.storage
         .from('avatars')

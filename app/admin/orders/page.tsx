@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Loader2, AlertCircle, ShoppingCart, Search, User } from 'lucide-react';
 import { useAllOrders } from '@/lib/services/useAdmin';
+import { useCategories } from '@/lib/services/useCategories';
+import { getCategoryLabel } from '@/lib/category-utils';
 import { cn } from '@/lib/utils';
 
 const statusLabels: Record<string, string> = {
@@ -23,6 +25,7 @@ const paymentLabels: Record<string, string> = {
 
 export default function AdminOrders() {
   const { data: orders, isLoading, error } = useAllOrders();
+  const { data: categories = [] } = useCategories();
   const [filter, setFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
 
@@ -103,7 +106,7 @@ export default function AdminOrders() {
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-gray-900 truncate">{order.service_name}</h3>
-                <p className="text-xs text-gray-500">{order.service_category}</p>
+                <p className="text-xs text-gray-500">{getCategoryLabel(categories, order.service_category)}</p>
                 {order.customer && (
                   <p className="text-xs text-gray-400 mt-1">Customer: {order.customer.full_name}</p>
                 )}

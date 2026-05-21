@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2, AlertCircle, CheckCircle, XCircle, Clock, ShieldChe
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton, SkeletonDetail } from '@/components/ui/skeleton';
+import ImageLightbox from '@/components/shared/ImageLightbox';
 import { useAuthStore } from '@/store/auth';
 import { useVendorDetail, useApproveVerification, useRejectVerification, useRevokeVerification } from '@/lib/services/useAdmin';
 import { toast } from 'sonner';
@@ -24,8 +25,22 @@ function DetailContent() {
   const [actionModal, setActionModal] = useState<'reject' | 'revoke' | null>(null);
   const [actionReason, setActionReason] = useState('');
   const [imgError, setImgError] = useState<Record<string, boolean>>({});
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const submission = vendor?.verification_submissions?.[0] || null;
+
+  const verificationImages = submission ? [
+    submission.ktp_url,
+    submission.selfie_face_url,
+    submission.selfie_url,
+    submission.certificate_url,
+  ].filter(Boolean).map(url => ({ image_url: url! })) : [];
+
+  const openLightbox = (url: string | null) => {
+    if (!url) return;
+    const idx = verificationImages.findIndex(img => img.image_url === url);
+    if (idx >= 0) setLightboxIndex(idx);
+  };
 
   const handleApprove = async () => {
     if (!submission || !admin?.id) return;
@@ -197,7 +212,7 @@ function DetailContent() {
               </h2>
               <div className="space-y-3 text-sm">
                 {submission.ktp_url && (
-                  <div className="rounded-xl overflow-hidden bg-gray-100">
+                  <div className="rounded-xl overflow-hidden bg-gray-100 cursor-pointer" onClick={() => openLightbox(submission.ktp_url)}>
                     {!imgError['ktp'] ? (
                       <Image
                         src={submission.ktp_url}
@@ -245,7 +260,7 @@ function DetailContent() {
                   <Camera size={18} className="text-emerald-600" />
                   Selfie + Pegang KTP
                 </h2>
-                <div className="rounded-xl overflow-hidden bg-gray-100">
+                <div className="rounded-xl overflow-hidden bg-gray-100 cursor-pointer" onClick={() => openLightbox(submission.selfie_url)}>
                   {!imgError['selfie'] ? (
                     <Image
                       src={submission.selfie_url}
@@ -275,6 +290,42 @@ function DetailContent() {
               </div>
             )}
 
+            {submission.selfie_face_url && (
+              <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
+                <h2 className="font-bold text-gray-900 flex items-center gap-2">
+                  <Camera size={18} className="text-emerald-600" />
+                  Selfie Wajah
+                </h2>
+                <div className="rounded-xl overflow-hidden bg-gray-100 cursor-pointer" onClick={() => openLightbox(submission.selfie_face_url)}>
+                  {!imgError['selfie_face'] ? (
+                    <Image
+                      src={submission.selfie_face_url}
+                      alt="Selfie wajah"
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      onError={() => setImgError(p => ({ ...p, selfie_face: true }))}
+                      className="w-full object-contain max-h-60 h-auto"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center py-6 text-gray-400">
+                      <AlertCircle size={32} className="mb-2" />
+                      <p className="text-sm">Gagal memuat gambar</p>
+                      <a
+                        href={submission.selfie_face_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-600 hover:underline text-xs mt-2 flex items-center gap-1"
+                      >
+                        <ExternalLink size={12} />
+                        Buka di tab baru
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {(submission.certificate_url || submission.certificate_name) && (
               <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
                 <h2 className="font-bold text-gray-900 flex items-center gap-2">
@@ -283,7 +334,7 @@ function DetailContent() {
                 </h2>
                 <div className="space-y-3 text-sm">
                   {submission.certificate_url && (
-                    <div className="rounded-xl overflow-hidden bg-gray-100">
+                    <div className="rounded-xl overflow-hidden bg-gray-100 cursor-pointer" onClick={() => openLightbox(submission.certificate_url)}>
                       {submission.certificate_url.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
                         !imgError['cert'] ? (
                           <Image
@@ -509,6 +560,14 @@ function DetailContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {lightboxIndex !== null && verificationImages.length > 0 && (
+        <ImageLightbox
+          images={verificationImages}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
       )}
     </div>
   );

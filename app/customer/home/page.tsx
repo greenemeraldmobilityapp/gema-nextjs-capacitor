@@ -4,29 +4,23 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { MapPin, Wrench, Zap, Droplets, Paintbrush, Star, Percent, LayoutGrid, Map as MapIcon, Wallet, ChevronRight, Sparkles, Search, AlertCircle, Cable, Hammer, Bug, Thermometer, ChevronDown, Store } from 'lucide-react';
+import { MapPin, Star, LayoutGrid, Map as MapIcon, Wallet, ChevronRight, Sparkles, Search, AlertCircle, ChevronDown, Store } from 'lucide-react';
+import { PromoCarousel } from '@/components/shared/PromoCarousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
 import { useVendors, useNearbyVendors } from '@/lib/services/useVendors';
 import { useActivePromos } from '@/lib/services/usePromos';
 import { useWallet } from '@/lib/services/useWallet';
+import { useCategories } from '@/lib/services/useCategories';
 import { useAuthStore } from '@/store/auth';
 import { useLocationStore } from '@/store/location';
+import { getCategoryIcon, getCategoryColor } from '@/lib/category-utils';
 import type { VendorProfile } from '@/lib/services/useVendors';
 
 const VendorMap = dynamic(() => import('@/components/shared/VendorMap'), { ssr: false });
-
-const categories = [
-  { id: '1', title: 'Tukang Bangunan', icon: Wrench, color: 'bg-orange-100 text-orange-600', slug: 'tukang-bangunan' },
-  { id: '2', title: 'Teknisi Listrik', icon: Zap, color: 'bg-yellow-100 text-yellow-600', slug: 'teknisi-listrik' },
-  { id: '3', title: 'Plumbing', icon: Droplets, color: 'bg-blue-100 text-blue-600', slug: 'plumbing' },
-  { id: '4', title: 'Cat & Interior', icon: Paintbrush, color: 'bg-purple-100 text-purple-600', slug: 'cat-interior' },
-  { id: '5', title: 'AC & Kulkas', icon: Thermometer, color: 'bg-cyan-100 text-cyan-600', slug: 'ac-kulkas' },
-  { id: '6', title: 'Elektronik', icon: Cable, color: 'bg-pink-100 text-pink-600', slug: 'elektronik' },
-  { id: '7', title: 'Furniture', icon: Hammer, color: 'bg-amber-100 text-amber-600', slug: 'furniture' },
-  { id: '8', title: 'Pest Control', icon: Bug, color: 'bg-lime-100 text-lime-600', slug: 'pest-control' },
-];
 
 export default function CustomerHome() {
   const router = useRouter();
@@ -52,7 +46,32 @@ export default function CustomerHome() {
   const { data: nearbyVendors } = useNearbyVendors(userLocation?.lat, userLocation?.lng);
   const { data: promos, isLoading: promosLoading } = useActivePromos();
   const { data: wallet } = useWallet(profile?.id);
-  const promo = promos?.[0];
+  const { data: categories = [] } = useCategories();
+
+  const { data: categoryPopularity } = useQuery({
+    queryKey: ['category-popularity'],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('orders').select('service_category');
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      for (const o of data || []) {
+        const cat = o.service_category;
+        counts[cat] = (counts[cat] || 0) + 1;
+      }
+      return counts;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const sortedCategories = useMemo(() => {
+    if (!categoryPopularity) return categories;
+    return [...categories].sort((a, b) => {
+      const freqA = categoryPopularity[a.slug] || 0;
+      const freqB = categoryPopularity[b.slug] || 0;
+      return freqB - freqA;
+    });
+  }, [categories, categoryPopularity]);
 
   const displayVendors = (userLocation ? nearbyVendors : vendors) || [];
   const topVendors = [...(vendors || [])].sort((a, b) => {
@@ -187,85 +206,50 @@ export default function CustomerHome() {
         {!isVendor && (
           <Link
             href="/customer/register-vendor"
-            className="block rounded-2xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 p-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
+            className="block w-full bg-white border border-emerald-500 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-200">
-                <Store size={22} className="text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-heading font-bold text-gray-900 text-sm">Daftar sebagai Mitra Kami</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Kelola layanan, terima pesanan, dan dapatkan penghasilan</p>
-              </div>
-              <ChevronRight size={18} className="text-gray-300 group-hover:text-emerald-500 transition-colors shrink-0" />
-            </div>
-          </Link>
-        )}
-
-        {promosLoading ? (
-          <div className="w-full bg-white rounded-[24px] p-4 border-2 border-emerald-300 animate-pulse shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gray-200" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-32 bg-gray-200 rounded" />
-                <div className="h-3 w-48 bg-gray-100 rounded" />
-              </div>
-            </div>
-          </div>
-        ) : promo ? (
-          <Link href={`/wallet/promo?id=${promo.id}`}>
-            <div className="w-full bg-white border-2 border-emerald-300 rounded-[24px] p-4 flex items-center justify-between shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="w-12 h-12 shrink-0 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-200">
-                  <Percent size={18} className="text-white" />
+                  <Store size={18} className="text-white" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-bold text-gray-900 text-sm leading-tight">{promo.title}</h3>
-                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{promo.description}</p>
+                  <h3 className="font-bold text-gray-900 text-sm leading-tight">Daftar sebagai Mitra Kami</h3>
+                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">Gabung dan mulai dapatkan penghasilan dari keahlianmu</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0 ml-2">
-                <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl px-3 py-1.5 flex items-center justify-center shadow-sm">
-                  <span className="text-white font-bold text-sm">{promo.discount}%</span>
+                <div className="h-9 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 flex items-center justify-center shadow-md shadow-emerald-200">
+                  <span className="text-white font-bold text-sm">Daftar</span>
                 </div>
                 <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
               </div>
             </div>
           </Link>
-        ) : (
-          <Link href="/wallet/vouchers">
-            <div className="w-full bg-white border-2 border-emerald-300 rounded-[24px] p-4 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-200">
-                  <Percent size={18} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 text-sm">Promo untukmu</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">Lihat promo & voucher tersedia</p>
-                </div>
-              </div>
-              <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" />
-            </div>
-          </Link>
         )}
+
+        <PromoCarousel promos={promos} isLoading={promosLoading} />
 
         <div className="space-y-3">
           <div className="border-l-4 border-emerald-500 pl-3">
               <h2 className="text-base font-heading font-bold text-gray-900">Kategori</h2>
           </div>
           <div className="grid grid-cols-4 gap-2.5">
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/customer/search?category=${cat.slug}`}
-                className="flex flex-col items-center gap-2 p-2.5 rounded-2xl border border-gray-100 bg-white shadow-sm cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 group"
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${cat.color}`}>
-                  <cat.icon size={18} />
-                </div>
-                <span className="text-[11px] font-semibold text-center text-gray-700 leading-tight">{cat.title}</span>
-              </Link>
-            ))}
+            {sortedCategories.map((cat) => {
+              const Icon = getCategoryIcon(cat.slug);
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/customer/search?category=${cat.slug}`}
+                  className="flex flex-col items-center gap-2 p-2.5 rounded-2xl border border-gray-200 bg-white shadow-sm cursor-pointer hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 group"
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${getCategoryColor(cat.slug)}`}>
+                    <Icon size={18} />
+                  </div>
+                  <span className="text-[11px] font-semibold text-center text-gray-700 leading-tight">{cat.name}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
 

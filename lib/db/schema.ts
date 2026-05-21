@@ -27,8 +27,18 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+export const categories = pgTable('categories', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
+  name: text('name').notNull(),
+  iconName: text('icon_name').default('Wrench').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 export const vendorProfiles = pgTable('vendor_profiles', {
   userId: uuid('user_id').primaryKey().references(() => users.id),
+  categoryId: uuid('category_id').references(() => categories.id),
   specialization: text('specialization'),
   bio: text('bio'),
   rating: doublePrecision('rating').default(0),
@@ -65,6 +75,7 @@ export const services = pgTable('services', {
   vendorId: uuid('vendor_id').references(() => vendorProfiles.userId).notNull(),
   title: text('title').notNull(),
   category: text('category').notNull(),
+  categoryId: uuid('category_id').references(() => categories.id),
   price: integer('price').notNull(),
   description: text('description'),
   imageUrl: text('image_url'),

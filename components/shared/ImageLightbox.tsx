@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import Image from 'next/image';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Plus, Minus } from 'lucide-react';
 
 interface ImageLightboxProps {
   images: { image_url: string }[];
@@ -13,9 +12,17 @@ interface ImageLightboxProps {
 
 export default function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxProps) {
   const [current, setCurrent] = useState(initialIndex);
+  const [mounted, setMounted] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const isPanning = useRef(false);
+  const lastPos = useRef({ x: 0, y: 0 });
+  const pinchDist = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
-  const [mounted, setMounted] = useState(false);
+  const wasPinching = useRef(false);
+  const [showHint, setShowHint] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -25,13 +32,20 @@ export default function ImageLightbox({ images, initialIndex, onClose }: ImageLi
     };
   }, []);
 
+  const resetZoom = useCallback(() => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, []);
+
   const goNext = useCallback(() => {
     setCurrent((prev) => Math.min(images.length - 1, prev + 1));
-  }, [images.length]);
+    resetZoom();
+  }, [images.length, resetZoom]);
 
   const goPrev = useCallback(() => {
     setCurrent((prev) => Math.max(0, prev - 1));
-  }, []);
+    resetZoom();
+  }, [resetZoom]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -43,13 +57,134 @@ export default function ImageLightbox({ images, initialIndex, onClose }: ImageLi
     return () => window.removeEventListener('keydown', handler);
   }, [onClose, goPrev, goNext]);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+  useEffect(() => {
+    const timer = setTimeout(() => setShowHint(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (e.deltaY === 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const delta = e.deltaY > 0 ? -0.15 : 0.15;
+    const newScale = Math.max(1, Math.min(5, scale + delta));
+    if (newScale === scale) return;
+
+    if (newScale > 1) {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const scaleChange = newScale / scale;
+        setPosition((prev) => ({
+          x: centerX - scaleChange * (centerX - prev.x),
+          y: centerY - scaleChange * (centerY - prev.y),
+        }));
+      }
+    } else {
+      setPosition({ x: 0, y: 0 });
+    }
+    setScale(newScale);
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    touchEndX.current = e.changedTouches[0].clientX;
-    const diff = touchStartX.current - touchEndX.current;
+  const handleDoubleClick = () => {
+    if (scale > 1.5) {
+      resetZoom();
+    } else {
+      setScale(2.5);
+      setShowHint(false);
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (scale <= 1) return;
+    e.preventDefault();
+    isPanning.current = true;
+    lastPos.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isPanning.current || scale <= 1) return;
+    const dx = e.clientX - lastPos.current.x;
+    const dy = e.clientY - lastPos.current.y;
+    lastPos.current = { x: e.clientX, y: e.clientY };
+    setPosition((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+  };
+
+  const handleMouseUp = () => {
+    isPanning.current = false;
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      wasPinching.current = true;
+      pinchDist.current = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY,
+      );
+    } else if (e.touches.length === 1 && scale > 1) {
+      isPanning.current = true;
+      lastPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    } else if (e.touches.length === 1) {
+      touchStartX.current = e.touches[0].clientX;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY,
+      );
+      if (pinchDist.current > 0) {
+        const newScale = Math.max(1, Math.min(5, scale * (dist / pinchDist.current)));
+        if (newScale !== scale) {
+          setScale(newScale);
+          setShowHint(false);
+        }
+      }
+      pinchDist.current = dist;
+    } else if (e.touches.length === 1 && isPanning.current) {
+      const dx = e.touches[0].clientX - lastPos.current.x;
+      const dy = e.touches[0].clientY - lastPos.current.y;
+      lastPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      setPosition((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+    }
+  };
+
+  const zoomIn = () => {
+    const newScale = Math.min(5, scale + 0.5);
+    if (newScale !== scale) {
+      setScale(newScale);
+      setShowHint(false);
+    }
+  };
+
+  const zoomOut = () => {
+    const newScale = Math.max(1, scale - 0.5);
+    if (newScale !== scale) {
+      setScale(newScale);
+      if (newScale === 1) setPosition({ x: 0, y: 0 });
+      setShowHint(false);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (wasPinching.current) {
+      wasPinching.current = false;
+      pinchDist.current = 0;
+      return;
+    }
+    isPanning.current = false;
+    if (scale > 1) return;
+    touchEndX.current = touchStartX.current;
+  };
+
+  const handleSwipeEnd = (e: React.TouchEvent) => {
+    if (wasPinching.current || scale > 1) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) {
       if (diff > 0) goNext();
       else goPrev();
@@ -67,7 +202,7 @@ export default function ImageLightbox({ images, initialIndex, onClose }: ImageLi
       aria-label="Galeri gambar"
     >
       <button
-        onClick={onClose}
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
         className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
         aria-label="Tutup galeri"
       >
@@ -84,7 +219,7 @@ export default function ImageLightbox({ images, initialIndex, onClose }: ImageLi
         {images.map((_, idx) => (
           <button
             key={idx}
-            onClick={(e) => { e.stopPropagation(); setCurrent(idx); }}
+            onClick={(e) => { e.stopPropagation(); setCurrent(idx); resetZoom(); }}
             className={`w-2 h-2 rounded-full transition-all ${
               idx === current ? 'bg-white scale-110' : 'bg-white/40 hover:bg-white/60'
             }`}
@@ -113,20 +248,66 @@ export default function ImageLightbox({ images, initialIndex, onClose }: ImageLi
         </button>
       )}
 
+      {showHint && scale === 1 && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10 px-4 py-2 rounded-xl bg-white/10 backdrop-blur-sm text-white/70 text-xs pointer-events-none transition-opacity duration-1000">
+          Scroll untuk zoom • Klik 2x untuk zoom • Drag untuk pan
+        </div>
+      )}
+
+      <div className="absolute bottom-20 right-4 z-10 flex flex-col gap-2">
+        <button
+          onClick={(e) => { e.stopPropagation(); zoomIn(); }}
+          disabled={scale >= 5}
+          className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed active:bg-white/30"
+          aria-label="Perbesar"
+        >
+          <Plus size={20} />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); zoomOut(); }}
+          disabled={scale <= 1}
+          className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed active:bg-white/30"
+          aria-label="Perkecil"
+        >
+          <Minus size={20} />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); resetZoom(); }}
+          disabled={scale <= 1}
+          className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-[11px] font-medium text-white/80 hover:bg-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed active:bg-white/30"
+          aria-label="Reset zoom"
+        >
+          1:1
+        </button>
+      </div>
+
       <div
-        className="w-full h-full flex items-center justify-center p-4 sm:p-8"
+        ref={containerRef}
+        className="w-full h-full flex items-center justify-center p-4 sm:p-8 overflow-hidden cursor-grab active:cursor-grabbing"
         onClick={(e) => e.stopPropagation()}
+        onWheel={handleWheel}
+        onDoubleClick={handleDoubleClick}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={(e) => { handleTouchEnd(); handleSwipeEnd(e); }}
+        style={{ touchAction: scale > 1 ? 'none' : 'pan-x pan-y' }}
       >
         <img
           src={images[current].image_url}
           alt={`Gambar ${current + 1}`}
-          className="max-w-full max-h-full object-contain rounded-lg select-none pointer-events-none"
+          className="max-w-full max-h-full object-contain rounded-lg select-none"
           draggable={false}
+          style={{
+            transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
+            transition: isPanning.current || wasPinching.current ? 'none' : 'transform 0.15s ease-out',
+          }}
         />
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

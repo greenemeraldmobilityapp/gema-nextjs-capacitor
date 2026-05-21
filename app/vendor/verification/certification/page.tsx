@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { ArrowLeft, Upload, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import CameraCapture from '@/components/shared/CameraCapture';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/store/auth';
 import { useLatestSubmission, useSubmitCertificate } from '@/lib/services/useVerification';
@@ -19,12 +19,11 @@ export default function CertificationPage() {
   const profile = useAuthStore((s) => s.profile);
   const { data: submission, isLoading, error } = useLatestSubmission(profile?.id);
   const submitCertificate = useSubmitCertificate();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const fileDataPromiseRef = useRef<Promise<{ buffer: ArrayBuffer; contentType: string; fileName: string } | null>>(Promise.resolve(null));
   const [formData, setFormData] = useState({ name: '', publisher: '', year: '' });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
 
   useEffect(() => {
     if (error) toast.error(error instanceof Error ? error.message : 'Gagal memuat data verifikasi');
@@ -46,21 +45,11 @@ export default function CertificationPage() {
     }
   }, [submission]);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
+  const handleCertCapture = (f: File) => {
     if (preview) URL.revokeObjectURL(preview);
-    fileDataPromiseRef.current = new Promise(resolve => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const data = { buffer: reader.result as ArrayBuffer, contentType: f.type || 'image/jpeg', fileName: f.name };
-        resolve(data);
-      };
-      reader.onerror = () => { resolve(null); };
-      reader.readAsArrayBuffer(f);
-    });
     setFile(f);
     setPreview(URL.createObjectURL(f));
+    setShowCamera(false);
   };
 
   const hasCertData = file !== null || formData.name.trim() || formData.publisher.trim() || formData.year.trim();
@@ -79,8 +68,14 @@ export default function CertificationPage() {
     const submitPromise = (async () => {
       let certUrl: string | null = null;
       let uploadedFileName: string | null = null;
-      const fileData = await fileDataPromiseRef.current;
-      if (fileData) {
+      if (file) {
+        const reader = new FileReader();
+        const fileData = await new Promise<{ buffer: ArrayBuffer; contentType: string; fileName: string } | null>((resolve) => {
+          reader.onload = () => resolve({ buffer: reader.result as ArrayBuffer, contentType: file.type || 'image/jpeg', fileName: file.name });
+          reader.onerror = () => resolve(null);
+          reader.readAsArrayBuffer(file);
+        });
+        if (!fileData) throw new Error('Gagal membaca file sertifikat');
         const userId = profile.id;
         const safeName = fileData.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
         uploadedFileName = `${Date.now()}_${safeName}`;
@@ -200,18 +195,17 @@ export default function CertificationPage() {
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Unggah Sertifikat (Opsional)</label>
               <div
-                onClick={() => inputRef.current?.click()}
+                onClick={() => setShowCamera(true)}
                 className="relative flex flex-col items-center justify-center w-full min-h-[8rem] border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-emerald-400 transition-colors bg-stone-50 overflow-hidden"
               >
                 {preview ? (
-                  <Image src={preview} alt="Preview sertifikat" fill className="object-contain !max-h-40 !rounded-2xl" />
+                  <img src={preview} alt="Preview sertifikat" className="w-full max-h-40 object-contain rounded-2xl" />
                 ) : submission.certificate_url ? (
                   <div className="relative flex flex-col items-center py-6 text-emerald-600">
-                    <Image
+                    <img
                       src={submission.certificate_url}
                       alt="Sertifikat terupload"
-                      fill
-                      className="object-contain !max-h-32 !rounded-xl opacity-60"
+                      className="w-full max-h-32 object-contain rounded-xl opacity-60"
                     />
                     <p className="text-xs mt-2 text-stone-400">Tap untuk mengganti file</p>
                   </div>
@@ -223,7 +217,6 @@ export default function CertificationPage() {
                   </div>
                 )}
               </div>
-              <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Nama Sertifikat</label>
@@ -272,6 +265,13 @@ export default function CertificationPage() {
             </Button>
           </div>
         </form>
+      )}
+      {showCamera && (
+        <CameraCapture
+          facingMode="environment"
+          onCapture={handleCertCapture}
+          onClose={() => setShowCamera(false)}
+        />
       )}
     </div>
   );

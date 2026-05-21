@@ -1,35 +1,25 @@
 'use client';
 
-import { Suspense, useEffect, useState, useRef } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
-import { ArrowLeft, User, Camera, Loader2, ImageOff } from 'lucide-react';
+import { ArrowLeft, User, Camera, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import BottomSheetSelect, { type BottomSheetOption } from '@/components/shared/BottomSheetSelect';
+import CameraCapture from '@/components/shared/CameraCapture';
 import { useAuthStore } from '@/store/auth';
 import { useVendor } from '@/lib/services/useVendors';
+import { useCategories } from '@/lib/services/useCategories';
 import { createClient } from '@/lib/supabase/client';
-import { compressImage, deleteExistingAvatar } from '@/lib/image-utils';
+import { compressImage, deleteFolderContents } from '@/lib/image-utils';
 import { toast } from 'sonner';
 
 const supabase = createClient();
 
-const SPECIALIZATION_OPTIONS: BottomSheetOption[] = [
-  { value: 'Tukang Bangunan', label: 'Tukang Bangunan' },
-  { value: 'Teknisi Listrik', label: 'Teknisi Listrik' },
-  { value: 'Plumbing', label: 'Plumbing' },
-  { value: 'Cat & Interior', label: 'Cat & Interior' },
-  { value: 'AC & Kulkas', label: 'AC & Kulkas' },
-  { value: 'Elektronik', label: 'Elektronik' },
-  { value: 'Furniture', label: 'Furniture' },
-  { value: 'Pest Control', label: 'Pest Control' },
-];
-
 const AVATAR_MAX_SIZE = 5 * 1024 * 1024;
-const AVATAR_ACCEPT = 'image/jpeg,image/png,image/webp';
 
 export default function VendorEditProfilePage() {
   return (
@@ -46,11 +36,13 @@ function EditProfileForm() {
   const profile = useAuthStore((s) => s.profile);
   const setProfile = useAuthStore((s) => s.setProfile);
   const { data: vendor, isLoading } = useVendor(profile?.id);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { data: categories = [] } = useCategories();
+  const [showCamera, setShowCamera] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
     specialization: '',
+    categoryId: '',
     bio: '',
   });
   const [saved, setSaved] = useState(false);
@@ -61,13 +53,16 @@ function EditProfileForm() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    if (vendor && profile) {
+    if (vendor && profile && !initialized.current) {
+      initialized.current = true;
       setFormData({
         fullName: profile.full_name || '',
         phone: vendor.users?.phone || '',
         specialization: vendor.specialization || '',
+        categoryId: vendor.category_id || '',
         bio: vendor.bio || '',
       });
       if (vendor.avatar_url) {
@@ -77,10 +72,7 @@ function EditProfileForm() {
     }
   }, [vendor, profile]);
 
-  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleAvatarCapture = (file: File) => {
     if (file.size > AVATAR_MAX_SIZE) {
       setUploadError(`Ukuran file maksimal ${AVATAR_MAX_SIZE / 1024 / 1024}MB`);
       return;
@@ -92,23 +84,25 @@ function EditProfileForm() {
     }
 
     setUploadError(null);
+    if (avatarPreview?.startsWith('blob:')) {
+      URL.revokeObjectURL(avatarPreview);
+    }
     setAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
+    setShowCamera(false);
   };
 
-  const uploadAvatar = async (userId: string): Promise<string | null> => {
-    if (!avatarFile) return avatarPreview?.startsWith('http') ? avatarPreview : null;
-
+  const uploadAvatar = async (file: File, userId: string): Promise<string | null> => {
     setUploading(true);
-    const compressedBlob = await compressImage(avatarFile);
-    const filePath = `vendor_${userId}.jpg`;
+    const compressedBlob = await compressImage(file);
+    const timestamp = Date.now();
+    const filePath = `vendor/${userId}/avatar_${timestamp}.jpg`;
 
-    await deleteExistingAvatar(supabase, userId);
+    await deleteFolderContents(supabase, 'avatars', `vendor/${userId}`);
 
     const { error: uploadErr } = await supabase.storage
       .from('avatars')
       .upload(filePath, compressedBlob, {
-        upsert: true,
         contentType: 'image/jpeg',
       });
 
@@ -135,7 +129,14 @@ function EditProfileForm() {
       let avatarUrl: string | null = null;
 
       if (avatarFile) {
-        avatarUrl = await uploadAvatar(profile.id);
+        avatarUrl = await uploadAvatar(avatarFile, profile.id);
+        if (avatarUrl) {
+          setAvatarPreview(`${avatarUrl}?t=${Date.now()}`);
+        }
+        if (avatarPreview?.startsWith('blob:')) {
+          URL.revokeObjectURL(avatarPreview);
+        }
+        setAvatarFile(null);
       } else if (avatarPreview?.startsWith('http')) {
         avatarUrl = avatarPreview;
       }
@@ -162,6 +163,7 @@ function EditProfileForm() {
       const updateData: Record<string, unknown> = {
         user_id: profile.id,
         specialization: formData.specialization || null,
+        category_id: formData.categoryId || null,
         bio: formData.bio || null,
       };
       if (avatarUrl !== null) {
@@ -208,9 +210,9 @@ function EditProfileForm() {
     }
   };
 
-  const triggerFileInput = () => {
+  const openCamera = () => {
     setUploadError(null);
-    fileInputRef.current?.click();
+    setShowCamera(true);
   };
 
   if (isLoading) {
@@ -251,7 +253,7 @@ function EditProfileForm() {
             )}
             <button
               type="button"
-              onClick={triggerFileInput}
+              onClick={openCamera}
               disabled={uploading}
               className="absolute -bottom-1 -right-1 w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-md border-2 border-white hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -267,14 +269,6 @@ function EditProfileForm() {
             <p className="text-xs text-red-500 mt-1">{uploadError}</p>
           )}
         </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={AVATAR_ACCEPT}
-          onChange={handleAvatarSelect}
-          className="hidden"
-        />
 
         {saved && (
           <div className="p-3 bg-emerald-50/80 border border-emerald-200/50 text-emerald-700 rounded-xl text-sm text-center font-medium backdrop-blur-sm">
@@ -319,8 +313,11 @@ function EditProfileForm() {
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Spesialisasi</label>
             <BottomSheetSelect
               value={formData.specialization}
-              onChange={(v) => setFormData(prev => ({ ...prev, specialization: v }))}
-              options={SPECIALIZATION_OPTIONS}
+              onChange={(v) => {
+                const cat = categories.find((c) => c.name === v);
+                setFormData(prev => ({ ...prev, specialization: v, categoryId: cat?.id || '' }));
+              }}
+              options={categories.map((cat) => ({ value: cat.name, label: cat.name }))}
               placeholder="Pilih spesialisasi"
             />
           </div>
@@ -345,6 +342,13 @@ function EditProfileForm() {
           {uploading ? 'Mengupload foto...' : saving ? 'Menyimpan...' : 'Simpan Perubahan'}
         </Button>
       </form>
+      {showCamera && (
+        <CameraCapture
+          facingMode="user"
+          onCapture={handleAvatarCapture}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
     </div>
   );
 }
